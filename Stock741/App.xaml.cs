@@ -8,7 +8,9 @@ namespace Stock741
         {
             base.OnStartup(e);
             // Ouvre MarqueWindow au démarrage
-            MarqueWindow window = new MarqueWindow();
+            //MainWindow window = new MainWindow();
+            //MarqueWindow window = new MarqueWindow();
+            ProduitWindow window = new ProduitWindow();
             window.Show();
         }
     }

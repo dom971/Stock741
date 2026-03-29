@@ -9,6 +9,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using Stock741.ViewModels;
+
 namespace Stock741
 {
     /// <summary>
@@ -19,6 +21,13 @@ namespace Stock741
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = new MainViewModel();
         }
+
+        //private void Button_Click(object sender, RoutedEventArgs e)
+        //{
+        //    MessageBox.Show("Bonjour ! Bienvenue dans WPF !");
+        //}
+
     }
 }
