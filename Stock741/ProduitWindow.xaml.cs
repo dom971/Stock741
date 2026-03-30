@@ -7,8 +7,7 @@ namespace Stock741
     {
         public ProduitWindow()
         {
-            InitializeComponent();
-            DataContext = new ProduitViewModel();
+            InitializeComponent();            
         }
     }
 }

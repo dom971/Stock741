@@ -1,14 +1,15 @@
-﻿using Stock741.Commands;
-using Stock741.Models; // Assure-toi que Produit.cs est dans Models
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Stock741.Models;
+using Stock741.Repositories;
+using Stock741.Commands;
 
 namespace Stock741.ViewModels
 {
-    public class ProduitViewModel : INotifyPropertyChanged
+    public class ProduitViewModel : BaseViewModel
     {
+        private readonly ProduitRepository _repository;
+
         public ObservableCollection<Produit> Produits { get; set; }
 
         private string _nom;
@@ -24,13 +25,6 @@ namespace Stock741.ViewModels
             get => _quantite;
             set { _quantite = value; OnPropertyChanged(); }
         }
-
-        //private Produit _produitSelectionne;
-        //public Produit ProduitSelectionne
-        //{
-        //    get => _produitSelectionne;
-        //    set { _produitSelectionne = value; OnPropertyChanged(); }
-        //}
 
         private Produit _produitSelectionne;
         public Produit ProduitSelectionne
@@ -49,46 +43,36 @@ namespace Stock741.ViewModels
             }
         }
 
-
-        // Commandes
         public ICommand AjouterProduitCommand { get; }
+        public ICommand ModifierProduitCommand { get; }
         public ICommand SupprimerProduitCommand { get; }
 
-        public ICommand ModifierProduitCommand { get; }
-
-        public int NombreProduits => Produits.Count;
-
-
-
-
-
-        public ProduitViewModel()
+        public ProduitViewModel(ProduitRepository repository)
         {
-            Produits = new ObservableCollection<Produit>();
+            _repository = repository;
+
+            Produits = new ObservableCollection<Produit>(_repository.GetAll());
 
             AjouterProduitCommand = new RelayCommand(_ => AjouterProduit());
-            SupprimerProduitCommand = new RelayCommand(_ => SupprimerProduit());
             ModifierProduitCommand = new RelayCommand(_ => ModifierProduit());
+            SupprimerProduitCommand = new RelayCommand(_ => SupprimerProduit());
         }
 
         private void AjouterProduit()
         {
             if (string.IsNullOrWhiteSpace(Nom)) return;
 
-            Produits.Add(new Produit { Nom = Nom, Quantite = Quantite });
-            OnPropertyChanged(nameof(NombreProduits));
+            var produit = new Produit
+            {
+                Nom = Nom,
+                Quantite = Quantite
+            };
 
-            // Réinitialiser les champs
+            _repository.Add(produit);
+            Produits.Add(produit);
+
             Nom = "";
             Quantite = 0;
-        }
-
-        private void SupprimerProduit()
-        {
-            if (ProduitSelectionne == null) return;
-
-            Produits.Remove(ProduitSelectionne);
-            OnPropertyChanged(nameof(NombreProduits));
         }
 
         private void ModifierProduit()
@@ -98,15 +82,15 @@ namespace Stock741.ViewModels
             ProduitSelectionne.Nom = Nom;
             ProduitSelectionne.Quantite = Quantite;
 
-            OnPropertyChanged(nameof(Produits));
+            _repository.Update(ProduitSelectionne);
         }
 
-
-        // INotifyPropertyChanged
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string name = null)
+        private void SupprimerProduit()
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+            if (ProduitSelectionne == null) return;
+
+            _repository.Delete(ProduitSelectionne);
+            Produits.Remove(ProduitSelectionne);
         }
     }
 }
