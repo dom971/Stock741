@@ -1,0 +1,31 @@
+﻿<Window x:Class="Stock741.Views.MarqueWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Gestion Marques" Height="350" Width="400">
+    <StackPanel Margin="10">
+
+        <TextBlock Text="Nom :" />
+        <TextBox Text="{Binding Nom, UpdateSourceTrigger=PropertyChanged}" />
+
+        <TextBlock Text="Actif :" Margin="0,5"/>
+        <CheckBox IsChecked="{Binding Actif}" Content="Actif" Margin="0,0,0,10"/>
+
+        <StackPanel Orientation="Horizontal" Margin="0,10">
+            <Button Content="Ajouter" Command="{Binding AjouterMarqueCommand}" Width="100" Margin="5"/>
+            <Button Content="Modifier" Command="{Binding ModifierMarqueCommand}" Width="100" Margin="5"/>
+            <Button Content="Supprimer" Command="{Binding SupprimerMarqueCommand}" Width="100" Margin="5"/>
+        </StackPanel>
+
+        <DataGrid ItemsSource="{Binding Marques}"
+                  SelectedItem="{Binding MarqueSelectionnee}"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  Height="200">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Nom" Binding="{Binding Nom}" Width="*"/>
+                <DataGridCheckBoxColumn Header="Actif" Binding="{Binding Actif}" Width="50"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+    </StackPanel>
+</Window>

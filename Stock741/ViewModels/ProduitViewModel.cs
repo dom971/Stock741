@@ -38,7 +38,7 @@ namespace Stock741.ViewModels
                 if (_produitSelectionne != null)
                 {
                     Nom = _produitSelectionne.Nom;
-                    Quantite = _produitSelectionne.Quantite;
+                    //Quantite = _produitSelectionne.Quantite;
                 }
             }
         }
@@ -65,7 +65,7 @@ namespace Stock741.ViewModels
             var produit = new Produit
             {
                 Nom = Nom,
-                Quantite = Quantite
+                //Quantite = Quantite
             };
 
             _repository.Add(produit);
@@ -80,7 +80,7 @@ namespace Stock741.ViewModels
             if (ProduitSelectionne == null) return;
 
             ProduitSelectionne.Nom = Nom;
-            ProduitSelectionne.Quantite = Quantite;
+            //ProduitSelectionne.Quantite = Quantite;
 
             _repository.Update(ProduitSelectionne);
         }

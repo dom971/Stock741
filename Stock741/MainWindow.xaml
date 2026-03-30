@@ -1,10 +1,13 @@
 ﻿<Window x:Class="Stock741.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Stock App" Height="350" Width="525">
-    <StackPanel Margin="10">
-        <TextBox Text="{Binding Nom, UpdateSourceTrigger=PropertyChanged}" 
-             Width="200" Margin="0,0,0,10"/>
-        <TextBlock Text="{Binding Nom}" FontSize="16"/>
+        Title="Stock741" Height="250" Width="300">
+    <StackPanel Margin="20" VerticalAlignment="Center">
+        <Button Content="Gérer Produits" Height="40" Margin="0,10,0,10"
+                Click="BtnProduits_Click"/>
+        <Button Content="Gérer Marques" Height="40" Margin="0,10,0,10"
+                Click="BtnMarques_Click"/>
+        <Button Content="Quitter" Height="40" Margin="0,10,0,10"
+                Click="BtnQuitter_Click"/>
     </StackPanel>
 </Window>

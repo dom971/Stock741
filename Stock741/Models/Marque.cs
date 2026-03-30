@@ -1,11 +1,10 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.CompilerServices;
 
 namespace Stock741.Models
 {
-    public class Produit : INotifyPropertyChanged
+    public class Marque : INotifyPropertyChanged
     {
         public int Id { get; set; }
 
@@ -15,14 +14,7 @@ namespace Stock741.Models
             get => _nom;
             set { _nom = value; OnPropertyChanged(); }
         }
-       
-        // 🔗 Clé étrangère vers Marque
-        public int? MarqueId { get; set; }
 
-        // Navigation vers Marque (optionnelle mais utile)
-        public Marque Marque { get; set; }
-
-        // Nouveau champ
         private bool _actif = true;
         public bool Actif
         {
@@ -30,15 +22,11 @@ namespace Stock741.Models
             set { _actif = value; OnPropertyChanged(); }
         }
 
-        // (Optionnel) Concurrence optimiste
         [Timestamp]
         public byte[] RowVersion { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
-
         protected void OnPropertyChanged([CallerMemberName] string name = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }
