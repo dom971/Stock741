@@ -11,8 +11,8 @@ using Stock741.Data;
 namespace Stock741.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260330192711_Init")]
-    partial class Init
+    [Migration("20260330214959_majProduit")]
+    partial class majProduit
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -61,7 +61,10 @@ namespace Stock741.Migrations
                     b.Property<bool>("Actif")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("MarqueId")
+                    b.Property<int>("MarqueId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MarqueId1")
                         .HasColumnType("int");
 
                     b.Property<string>("Nom")
@@ -78,6 +81,8 @@ namespace Stock741.Migrations
 
                     b.HasIndex("MarqueId");
 
+                    b.HasIndex("MarqueId1");
+
                     b.ToTable("Produits");
                 });
 
@@ -86,9 +91,19 @@ namespace Stock741.Migrations
                     b.HasOne("Stock741.Models.Marque", "Marque")
                         .WithMany()
                         .HasForeignKey("MarqueId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Stock741.Models.Marque", null)
+                        .WithMany("Produits")
+                        .HasForeignKey("MarqueId1");
 
                     b.Navigation("Marque");
+                });
+
+            modelBuilder.Entity("Stock741.Models.Marque", b =>
+                {
+                    b.Navigation("Produits");
                 });
 #pragma warning restore 612, 618
         }

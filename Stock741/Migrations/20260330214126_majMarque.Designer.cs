@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Stock741.Data;
 
@@ -10,9 +11,11 @@ using Stock741.Data;
 namespace Stock741.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260330214126_majMarque")]
+    partial class majMarque
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,7 +37,7 @@ namespace Stock741.Migrations
 
                     b.Property<string>("Nom")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -43,9 +46,6 @@ namespace Stock741.Migrations
                         .HasColumnType("rowversion");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Nom")
-                        .IsUnique();
 
                     b.ToTable("Marques");
                 });
@@ -69,7 +69,7 @@ namespace Stock741.Migrations
 
                     b.Property<string>("Nom")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -82,9 +82,6 @@ namespace Stock741.Migrations
                     b.HasIndex("MarqueId");
 
                     b.HasIndex("MarqueId1");
-
-                    b.HasIndex("Nom")
-                        .IsUnique();
 
                     b.ToTable("Produits");
                 });

@@ -1,26 +1,63 @@
 ﻿<Window x:Class="Stock741.Views.ProduitWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Produits" Height="450" Width="800">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Section Ajout / Modification -->
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+            <Label Content="Nom:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Width="200" Text="{Binding NomSelectionne, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0"/>
+            <Label Content="Marque:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <ComboBox Width="150" ItemsSource="{Binding Marques}" DisplayMemberPath="Nom"
+                      SelectedItem="{Binding MarqueSelectionnee}" Margin="0,0,10,0"/>
+            <CheckBox Content="Actif" IsChecked="{Binding ActifSelectionne}" Margin="10,0,0,0"/>
+            <Button Content="Ajouter" Command="{Binding AjouterProduitCommand}" Margin="10,0,0,0"/>
+            <Button Content="Modifier" Command="{Binding ModifierProduitCommand}" Margin="10,0,0,0"/>
+            <Button Content="Supprimer" Command="{Binding SupprimerProduitCommand}" Margin="10,0,0,0"/>
+        </StackPanel>
+
+        <!-- DataGrid -->
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Produits}" AutoGenerateColumns="False"
+                  SelectedItem="{Binding ProduitSelectionne}" CanUserAddRows="False" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Id" Binding="{Binding Id}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Nom" Binding="{Binding Nom}"/>
+                <DataGridTextColumn Header="Marque" Binding="{Binding Marque.Nom}" IsReadOnly="True"/>
+                <DataGridCheckBoxColumn Header="Actif" Binding="{Binding Actif}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Window>
+    
+    
+    <!--<Window x:Class="Stock741.Views.ProduitWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Gestion Produits" Height="450" Width="800">
 
     <StackPanel Margin="10">
 
-        <!-- Nom du produit -->
+        --><!-- Nom du produit --><!--
         <TextBlock Text="Nom :" Margin="0,5"/>
         <TextBox Text="{Binding Nom, UpdateSourceTrigger=PropertyChanged}" />
 
-        <!-- Quantité --><!--
+        --><!-- Quantité --><!--
         <TextBlock Text="Quantité :" Margin="0,5"/>
         <TextBox Text="{Binding Quantite, UpdateSourceTrigger=PropertyChanged}" />-->
 
-        <!-- Boutons CRUD -->
+        <!-- Boutons CRUD --><!--
         <StackPanel Orientation="Horizontal" Margin="0,10">
             <Button Content="Ajouter" Command="{Binding AjouterProduitCommand}" Width="100" Margin="5"/>
             <Button Content="Modifier" Command="{Binding ModifierProduitCommand}" Width="100" Margin="5"/>
             <Button Content="Supprimer" Command="{Binding SupprimerProduitCommand}" Width="100" Margin="5"/>
         </StackPanel>
 
-        <!-- DataGrid pour afficher les produits -->
+        --><!-- DataGrid pour afficher les produits --><!--
         <DataGrid ItemsSource="{Binding Produits}"
                   SelectedItem="{Binding ProduitSelectionne}"
                   AutoGenerateColumns="False"
@@ -29,9 +66,9 @@
                   Margin="0,10">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Nom" Binding="{Binding Nom}" Width="*" />
-                <!--<DataGridTextColumn Header="Quantité" Binding="{Binding Quantite}" Width="100" />-->
+                --><!--<DataGridTextColumn Header="Quantité" Binding="{Binding Quantite}" Width="100" />--><!--
             </DataGrid.Columns>
         </DataGrid>
 
     </StackPanel>
-</Window>
+</Window>-->

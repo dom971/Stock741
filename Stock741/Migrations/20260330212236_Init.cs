@@ -32,9 +32,10 @@ namespace Stock741.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Nom = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MarqueId = table.Column<int>(type: "int", nullable: true),
+                    MarqueId = table.Column<int>(type: "int", nullable: false),
                     Actif = table.Column<bool>(type: "bit", nullable: false),
-                    RowVersion = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: false)
+                    RowVersion = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: false),
+                    MarqueId1 = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -45,12 +46,22 @@ namespace Stock741.Migrations
                         principalTable: "Marques",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Produits_Marques_MarqueId1",
+                        column: x => x.MarqueId1,
+                        principalTable: "Marques",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Produits_MarqueId",
                 table: "Produits",
                 column: "MarqueId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Produits_MarqueId1",
+                table: "Produits",
+                column: "MarqueId1");
         }
 
         /// <inheritdoc />
