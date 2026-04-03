@@ -1,0 +1,44 @@
+﻿<UserControl x:Class="Stock741.Views.MaterielView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">    
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+            <Label Content="Nom:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Width="200"
+                     Text="{Binding NomSelectionne, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,10,0"/>
+            <CheckBox Content="Actif" IsChecked="{Binding ActifSelectionne}" Margin="5,0,10,0" VerticalAlignment="Center"/>
+            <Button Content="Ajouter"    Command="{Binding AjouterMaterielCommand}"   Margin="5,0,0,0"/>
+            <Button Content="Modifier"   Command="{Binding ModifierMaterielCommand}"  Margin="5,0,0,0"/>
+            <Button Content="Supprimer"  Command="{Binding SupprimerMaterielCommand}" Margin="5,0,0,0"/>
+        </StackPanel>
+
+        <TextBlock Grid.Row="1"
+                   Text="{Binding ErreurGlobale}"
+                   Foreground="Red"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,5"
+                   Visibility="{Binding ErreurGlobale, Converter={StaticResource StringToVisibilityConverter}}"/>
+
+        <DataGrid Grid.Row="2"
+                  ItemsSource="{Binding Materiels}"
+                  AutoGenerateColumns="False"
+                  SelectedItem="{Binding MaterielSelectionne}"
+                  CanUserAddRows="False"
+                  IsReadOnly="True"
+                  EnableRowVirtualization="True"
+                  EnableColumnVirtualization="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Id"  Binding="{Binding Id}"  Width="Auto"/>
+                <DataGridTextColumn Header="Nom" Binding="{Binding Nom}" Width="*"/>
+                <DataGridCheckBoxColumn Header="Actif" Binding="{Binding Actif}" Width="Auto"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

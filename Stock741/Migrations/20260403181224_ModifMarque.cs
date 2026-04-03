@@ -5,7 +5,7 @@
 namespace Stock741.Migrations
 {
     /// <inheritdoc />
-    public partial class majProduit : Migration
+    public partial class ModifMarque : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

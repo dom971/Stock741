@@ -7,11 +7,11 @@ using Stock741.Repositories;
 
 namespace Stock741.ViewModels
 {
-    public class MarqueViewModel : BaseViewModel
+    public class MaterielViewModel : BaseViewModel
     {
-        private readonly MarqueRepository _repository;
+        private readonly MaterielRepository _repository;
 
-        public ObservableCollection<Marque> Marques { get; set; }
+        public ObservableCollection<Materiel> Materiels { get; set; }
 
         private string _nomSelectionne;
         public string NomSelectionne
@@ -27,19 +27,19 @@ namespace Stock741.ViewModels
             set { _actifSelectionne = value; OnPropertyChanged(); }
         }
 
-        private Marque _marqueSelectionnee;
-        public Marque MarqueSelectionnee
+        private Materiel _materielSelectionne;
+        public Materiel MaterielSelectionne
         {
-            get => _marqueSelectionnee;
+            get => _materielSelectionne;
             set
             {
-                _marqueSelectionnee = value;
+                _materielSelectionne = value;
                 OnPropertyChanged();
                 if (value != null)
                 {
                     NomSelectionne = value.Nom;
                     ActifSelectionne = value.Actif;
-                }
+                }                   
             }
         }
 
@@ -59,32 +59,32 @@ namespace Stock741.ViewModels
             set { _erreurGlobale = value; OnPropertyChanged(); }
         }
 
-        public ICommand AjouterMarqueCommand { get; }
-        public ICommand ModifierMarqueCommand { get; }
-        public ICommand SupprimerMarqueCommand { get; }
+        public ICommand AjouterMaterielCommand { get; }
+        public ICommand ModifierMaterielCommand { get; }
+        public ICommand SupprimerMaterielCommand { get; }
 
-        public MarqueViewModel(MarqueRepository repository)
+        public MaterielViewModel(MaterielRepository repository)
         {
             _repository = repository;
-            Marques = new ObservableCollection<Marque>(_repository.GetAll());
+            Materiels = new ObservableCollection<Materiel>(_repository.GetAll());
 
-            AjouterMarqueCommand = new RelayCommand(AjouterMarque);
-            ModifierMarqueCommand = new RelayCommand(ModifierMarque);
-            SupprimerMarqueCommand = new RelayCommand(SupprimerMarque);
+            AjouterMaterielCommand = new RelayCommand(AjouterMateriel);
+            ModifierMaterielCommand = new RelayCommand(ModifierMateriel);
+            SupprimerMaterielCommand = new RelayCommand(SupprimerMateriel);
         }
 
         private void ValidateNom()
         {
             if (string.IsNullOrWhiteSpace(NomSelectionne))
                 ErreurNom = "Nom obligatoire";
-            else if (Marques.Any(m => m.Nom.ToLower() == NomSelectionne.ToLower() &&
-                                      (MarqueSelectionnee == null || m.Id != MarqueSelectionnee.Id)))
+            else if (Materiels.Any(m => m.Nom.ToLower() == NomSelectionne.ToLower() &&
+                                        (MaterielSelectionne == null || m.Id != MaterielSelectionne.Id)))
                 ErreurNom = "Nom déjà utilisé";
             else
                 ErreurNom = string.Empty;
         }
 
-        private void AjouterMarque(object obj)
+        private void AjouterMateriel(object obj)
         {
             ValidateNom();
             if (HasErreur)
@@ -93,25 +93,26 @@ namespace Stock741.ViewModels
                 return;
             }
 
-            var marque = new Marque { Nom = NomSelectionne, Actif = ActifSelectionne };
+            var materiel = new Materiel { Nom = NomSelectionne, Actif = ActifSelectionne };
 
             try
             {
-                _repository.Add(marque);
-                Marques.Add(marque);
+                _repository.Add(materiel);
+                Materiels.Add(materiel);
                 NomSelectionne = string.Empty;
                 ActifSelectionne = true;
                 ErreurGlobale = string.Empty;
             }
+
             catch (InvalidOperationException ex)
             {
                 ErreurGlobale = ex.Message;
             }
         }
 
-        private void ModifierMarque(object obj)
+        private void ModifierMateriel(object obj)
         {
-            if (MarqueSelectionnee == null) return;
+            if (MaterielSelectionne == null) return;
             ValidateNom();
             if (HasErreur)
             {
@@ -119,50 +120,44 @@ namespace Stock741.ViewModels
                 return;
             }
 
-            var ancienNom = MarqueSelectionnee.Nom;
-            var ancienActif = MarqueSelectionnee.Actif;
+            var ancienNom = MaterielSelectionne.Nom;
+            var ancienActif = MaterielSelectionne.Actif;
 
-            MarqueSelectionnee.Nom = NomSelectionne;
-            MarqueSelectionnee.Actif = ActifSelectionne;
+            MaterielSelectionne.Nom = NomSelectionne;
+            MaterielSelectionne.Actif = ActifSelectionne;
 
             try
             {
-                _repository.Update(MarqueSelectionnee);
-                CollectionViewSource.GetDefaultView(Marques).Refresh();
+                _repository.Update(MaterielSelectionne);
+                CollectionViewSource.GetDefaultView(Materiels).Refresh();
                 ErreurGlobale = string.Empty;
             }
             catch (InvalidOperationException ex)
             {
-                MarqueSelectionnee.Nom = ancienNom;
-                MarqueSelectionnee.Actif = ancienActif;
+                MaterielSelectionne.Nom = ancienNom;
+                MaterielSelectionne.Actif = ancienActif;
                 ErreurGlobale = ex.Message;
             }
+
         }
 
-        private void SupprimerMarque(object obj)
+        private void SupprimerMateriel(object obj)
         {
-            if (MarqueSelectionnee == null) return;
+            if (MaterielSelectionne == null) return;
 
             try
             {
-                _repository.Delete(MarqueSelectionnee);
-                Marques.Remove(MarqueSelectionnee);
-                MarqueSelectionnee = null;
+                _repository.Delete(MaterielSelectionne);
+                Materiels.Remove(MaterielSelectionne);
+                MaterielSelectionne = null;
                 NomSelectionne = string.Empty;
                 ActifSelectionne = true;
                 ErreurGlobale = string.Empty;
             }
-            //catch (InvalidOperationException ex)
-            //{
-            //    ErreurGlobale = ex.Message;
-            //    MarqueSelectionnee = null;  // ← réinitialise même en cas d'erreur
-            //    NomSelectionne = string.Empty;
-            //    ActifSelectionne = true;
-            //}
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
-                ErreurGlobale = ex.Message + " | " + ex.InnerException?.Message + " | " + ex.InnerException?.InnerException?.Message;
-                MarqueSelectionnee = null;
+                ErreurGlobale = ex.Message;
+                MaterielSelectionne = null;
                 NomSelectionne = string.Empty;
                 ActifSelectionne = true;
             }

@@ -11,8 +11,8 @@ using Stock741.Data;
 namespace Stock741.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260330220726_majUniciteNom")]
-    partial class majUniciteNom
+    [Migration("20260403181651_DefaultActifTrue")]
+    partial class DefaultActifTrue
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,7 +33,9 @@ namespace Stock741.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("Actif")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("Nom")
                         .IsRequired()
@@ -53,7 +55,7 @@ namespace Stock741.Migrations
                     b.ToTable("Marques");
                 });
 
-            modelBuilder.Entity("Stock741.Models.Produit", b =>
+            modelBuilder.Entity("Stock741.Models.Materiel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -62,13 +64,9 @@ namespace Stock741.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("Actif")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("MarqueId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("MarqueId1")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("Nom")
                         .IsRequired()
@@ -82,34 +80,10 @@ namespace Stock741.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MarqueId");
-
-                    b.HasIndex("MarqueId1");
-
                     b.HasIndex("Nom")
                         .IsUnique();
 
-                    b.ToTable("Produits");
-                });
-
-            modelBuilder.Entity("Stock741.Models.Produit", b =>
-                {
-                    b.HasOne("Stock741.Models.Marque", "Marque")
-                        .WithMany()
-                        .HasForeignKey("MarqueId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Stock741.Models.Marque", null)
-                        .WithMany("Produits")
-                        .HasForeignKey("MarqueId1");
-
-                    b.Navigation("Marque");
-                });
-
-            modelBuilder.Entity("Stock741.Models.Marque", b =>
-                {
-                    b.Navigation("Produits");
+                    b.ToTable("Materiels");
                 });
 #pragma warning restore 612, 618
         }

@@ -11,8 +11,8 @@ using Stock741.Data;
 namespace Stock741.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260330214959_majProduit")]
-    partial class majProduit
+    [Migration("20260403181224_ModifMarque")]
+    partial class ModifMarque
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -37,7 +37,7 @@ namespace Stock741.Migrations
 
                     b.Property<string>("Nom")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -47,10 +47,13 @@ namespace Stock741.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Nom")
+                        .IsUnique();
+
                     b.ToTable("Marques");
                 });
 
-            modelBuilder.Entity("Stock741.Models.Produit", b =>
+            modelBuilder.Entity("Stock741.Models.Materiel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -61,15 +64,9 @@ namespace Stock741.Migrations
                     b.Property<bool>("Actif")
                         .HasColumnType("bit");
 
-                    b.Property<int>("MarqueId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("MarqueId1")
-                        .HasColumnType("int");
-
                     b.Property<string>("Nom")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -79,31 +76,10 @@ namespace Stock741.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MarqueId");
+                    b.HasIndex("Nom")
+                        .IsUnique();
 
-                    b.HasIndex("MarqueId1");
-
-                    b.ToTable("Produits");
-                });
-
-            modelBuilder.Entity("Stock741.Models.Produit", b =>
-                {
-                    b.HasOne("Stock741.Models.Marque", "Marque")
-                        .WithMany()
-                        .HasForeignKey("MarqueId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Stock741.Models.Marque", null)
-                        .WithMany("Produits")
-                        .HasForeignKey("MarqueId1");
-
-                    b.Navigation("Marque");
-                });
-
-            modelBuilder.Entity("Stock741.Models.Marque", b =>
-                {
-                    b.Navigation("Produits");
+                    b.ToTable("Materiels");
                 });
 #pragma warning restore 612, 618
         }

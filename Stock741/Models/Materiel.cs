@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Stock741.Models
 {
     [Index(nameof(Nom), IsUnique = true)]
-    public class Marque
+    public class Materiel
     {
         [Key]
         public int Id { get; set; }
