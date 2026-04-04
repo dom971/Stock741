@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Stock741.Data;
 
@@ -10,9 +11,11 @@ using Stock741.Data;
 namespace Stock741.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260404140354_AjoutFiche")]
+    partial class AjoutFiche
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -117,9 +120,6 @@ namespace Stock741.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
 
-                    b.Property<int>("FicheId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Nom")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -131,8 +131,6 @@ namespace Stock741.Migrations
                         .HasColumnType("rowversion");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("FicheId");
 
                     b.HasIndex("Nom")
                         .IsUnique();
@@ -181,17 +179,6 @@ namespace Stock741.Migrations
                         .IsUnique();
 
                     b.ToTable("Modeles");
-                });
-
-            modelBuilder.Entity("Stock741.Models.Materiel", b =>
-                {
-                    b.HasOne("Stock741.Models.Fiche", "Fiche")
-                        .WithMany()
-                        .HasForeignKey("FicheId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Fiche");
                 });
 
             modelBuilder.Entity("Stock741.Models.Modele", b =>

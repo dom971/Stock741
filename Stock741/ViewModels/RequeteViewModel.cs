@@ -69,7 +69,7 @@ namespace Stock741.ViewModels
             }
 
             // Bloquer les mots-clés dangereux
-            string[] motsInterdits = { "INSERT", "UPDATE", "DELETE", "DROP", "ALTER", "CREATE", "TRUNCATE", "EXEC", "EXECUTE" };
+            string[] motsInterdits = { "INSERT", "UPDATE", "DELETE", "DROP", "ALTER", "CREATE", "TRUNCATE", "EXEC", "EXECUTE" };            
             foreach (var mot in motsInterdits)
             {
                 if (requeteNormalisee.Contains(mot))

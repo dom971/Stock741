@@ -15,12 +15,20 @@ namespace Stock741.Repositories
         }
 
         public List<Modele> GetAll()
-        {       
-             return _context.Modeles
+        {
+            //return _context.Modeles
+            //   .Include(m => m.Marque)
+            //   .Include(m => m.Materiel)
+            //   .OrderBy(m => m.Nom)
+            //   .ToList();
+
+            return _context.Modeles
                 .Include(m => m.Marque)
                 .Include(m => m.Materiel)
+                    .ThenInclude(m => m.Fiche)
                 .OrderBy(m => m.Nom)
                 .ToList();
+
         }
 
         public void Add(Modele modele)

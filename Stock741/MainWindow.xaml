@@ -12,37 +12,133 @@
         </Grid.ColumnDefinitions>
 
         <!-- Menu latéral -->
-        <Border Background="#2D2D2D">
+        <Border Background="#00643E">
             <StackPanel Margin="10">
+
+                <!-- Logo -->
+                <Image x:Name="Logo"
+                       Width="140"
+                       Height="60"
+                       Margin="0,15,0,5"
+                       HorizontalAlignment="Center"
+                       Stretch="Uniform"/>
+
                 <TextBlock Text="Stock741"
                            Foreground="White"
+                           FontFamily="Arial"
                            FontSize="18"
                            FontWeight="Bold"
-                           Margin="0,20,0,30"
+                           Margin="0,5,0,30"
                            HorizontalAlignment="Center"/>
 
                 <Button Content="Marques"
                         Command="{Binding NaviguerVersCommand}"
                         CommandParameter="Marques"
-                        Style="{StaticResource MenuButtonStyle}"
-                        Margin="0,5"/>
+                        Margin="0,5">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding VueActive}" Value="Marques">
+                                    <Setter Property="Background" Value="#008991"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
 
                 <Button Content="Matériels"
                         Command="{Binding NaviguerVersCommand}"
                         CommandParameter="Materiels"
-                        Style="{StaticResource MenuButtonStyle}"
-                        Margin="0,5"/>
+                        Margin="0,5">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding VueActive}" Value="Materiels">
+                                    <Setter Property="Background" Value="#008991"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
 
                 <Button Content="Modèles"
                         Command="{Binding NaviguerVersCommand}"
                         CommandParameter="Modeles"
-                        Style="{StaticResource MenuButtonStyle}"
-                        Margin="0,5"/>
+                        Margin="0,5">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding VueActive}" Value="Modeles">
+                                    <Setter Property="Background" Value="#008991"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <Button Content="Lieux"
+                        Command="{Binding NaviguerVersCommand}"
+                        CommandParameter="Lieux"
+                        Margin="0,5">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding VueActive}" Value="Lieux">
+                                    <Setter Property="Background" Value="#008991"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <Button Content="Fiches"
+                        Command="{Binding NaviguerVersCommand}"
+                        CommandParameter="Fiches"
+                        Margin="0,5">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding VueActive}" Value="Fiches">
+                                    <Setter Property="Background" Value="#008991"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
                 <Button Content="Requêtes"
                         Command="{Binding NaviguerVersCommand}"
                         CommandParameter="Requetes"
-                        Style="{StaticResource MenuButtonStyle}"
-                        Margin="0,5"/>
+                        Margin="0,5">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding VueActive}" Value="Requetes">
+                                    <Setter Property="Background" Value="#008991"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <Button Content="Quitter"
+                    Margin="0,20,0,0"
+                    VerticalAlignment="Bottom"> 
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#DE1300"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <Button.InputBindings>
+                        <MouseBinding MouseAction="LeftClick" 
+                      Command="{Binding QuitterCommand}"/>
+                    </Button.InputBindings>
+                </Button>
+
             </StackPanel>
         </Border>
 
@@ -53,12 +149,13 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0"
-                       Text="{Binding TitreVueActuelle}"
-                       FontSize="20"
-                       FontWeight="Bold"
-                       Margin="10,10,0,5"
-                       Foreground="#2D2D2D"/>
+            <Border Grid.Row="0" Background="#008991" Padding="10,8">
+                <TextBlock Text="{Binding TitreVueActuelle}"
+                           FontFamily="Arial"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Foreground="White"/>
+            </Border>
 
             <ContentControl Grid.Row="1"
                             Content="{Binding VueActuelle}"

@@ -9,9 +9,9 @@ namespace Stock741.Data
     {
         public DbSet<Marque> Marques { get; set; }
         public DbSet<Materiel> Materiels { get; set; }
-
         public DbSet<Modele> Modeles { get; set; }
-
+        public DbSet<Lieu> Lieux { get; set; }
+        public DbSet<Fiche> Fiches { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -25,6 +25,12 @@ namespace Stock741.Data
             modelBuilder.Entity<Materiel>()
                 .Property(m => m.Actif)
                 .HasDefaultValue(true);
+
+            modelBuilder.Entity<Materiel>()
+                .HasOne(m => m.Fiche)
+                .WithMany()
+                .HasForeignKey(m => m.FicheId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Modele>()
         .       HasOne(m => m.Marque)

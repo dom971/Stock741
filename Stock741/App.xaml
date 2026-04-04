@@ -5,26 +5,110 @@
              xmlns:views="clr-namespace:Stock741.Views"
              xmlns:viewmodels="clr-namespace:Stock741.ViewModels"
              Startup="Application_Startup">
-    
     <Application.Resources>
         <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        <converters:NomFichierToImageConverter x:Key="NomFichierToImageConverter"/>
 
+        <!-- Style boutons menu latéral -->
         <Style x:Key="MenuButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="Arial"/>
             <Setter Property="Height" Value="40"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="Padding" Value="10,0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#444444"/>
+                    <Setter Property="Background" Value="#007A5C"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
 
+        <!-- Style boutons CRUD -->
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#DE1300"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontFamily" Value="Arial"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#B50F00"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#8C0A00"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style TextBox -->
+        <Style TargetType="TextBox">
+            <Setter Property="FontFamily" Value="Arial"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#535353"/>
+            <Setter Property="BorderBrush" Value="#CCCCCC"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="4,2"/>
+        </Style>
+
+        <!-- Style ComboBox -->
+        <Style TargetType="ComboBox">
+            <Setter Property="FontFamily" Value="Arial"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#535353"/>
+            <Setter Property="BorderBrush" Value="#CCCCCC"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <!-- Style Label -->
+        <Style TargetType="Label">
+            <Setter Property="FontFamily" Value="Arial"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#535353"/>
+        </Style>
+
+        <!-- Style DataGrid -->
+        <Style TargetType="DataGrid">
+            <Setter Property="BorderBrush" Value="#CCCCCC"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="RowBackground" Value="White"/>
+            <Setter Property="AlternatingRowBackground" Value="#F5F5F5"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#CCCCCC"/>
+            <Setter Property="VerticalGridLinesBrush" Value="#CCCCCC"/>
+            <Setter Property="FontFamily" Value="Arial"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#535353"/>
+        </Style>
+
+        <!-- Style en-têtes DataGrid -->
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#00643E"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontFamily" Value="Arial"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="BorderBrush" Value="#005C35"/>
+            <Setter Property="BorderThickness" Value="0,0,1,0"/>
+        </Style>
+
+        <!-- DataTemplates -->
         <DataTemplate DataType="{x:Type viewmodels:MarqueViewModel}">
             <views:MarqueView/>
         </DataTemplate>
@@ -36,6 +120,12 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type viewmodels:RequeteViewModel}">
             <views:RequeteView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewmodels:LieuViewModel}">
+            <views:LieuView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewmodels:FicheViewModel}">
+            <views:FicheView/>
         </DataTemplate>
 
     </Application.Resources>

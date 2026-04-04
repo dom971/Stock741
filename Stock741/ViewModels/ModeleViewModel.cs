@@ -191,7 +191,7 @@ namespace Stock741.ViewModels
             };
 
             if (dialog.ShowDialog() == true)
-                CheminPhotoSelectionne = dialog.FileName;
+                CheminPhotoSelectionne = System.IO.Path.GetFileName(dialog.FileName);
         }
 
         private bool FiltrerModele(object obj)

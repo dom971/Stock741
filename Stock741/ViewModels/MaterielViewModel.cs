@@ -10,8 +10,10 @@ namespace Stock741.ViewModels
     public class MaterielViewModel : BaseViewModel
     {
         private readonly MaterielRepository _repository;
+        private readonly FicheRepository _ficheRepository;
 
         public ObservableCollection<Materiel> Materiels { get; set; }
+        public ObservableCollection<Fiche> Fiches { get; set; }
 
         private string _nomSelectionne;
         public string NomSelectionne
@@ -27,6 +29,13 @@ namespace Stock741.ViewModels
             set { _actifSelectionne = value; OnPropertyChanged(); }
         }
 
+        private Fiche _ficheSelectionnee;
+        public Fiche FicheSelectionnee
+        {
+            get => _ficheSelectionnee;
+            set { _ficheSelectionnee = value; OnPropertyChanged(); }
+        }
+
         private Materiel _materielSelectionne;
         public Materiel MaterielSelectionne
         {
@@ -39,7 +48,8 @@ namespace Stock741.ViewModels
                 {
                     NomSelectionne = value.Nom;
                     ActifSelectionne = value.Actif;
-                }                   
+                    FicheSelectionnee = Fiches.FirstOrDefault(f => f.Id == value.FicheId);
+                }
             }
         }
 
@@ -63,10 +73,12 @@ namespace Stock741.ViewModels
         public ICommand ModifierMaterielCommand { get; }
         public ICommand SupprimerMaterielCommand { get; }
 
-        public MaterielViewModel(MaterielRepository repository)
+        public MaterielViewModel(MaterielRepository repository, FicheRepository ficheRepository)
         {
             _repository = repository;
+            _ficheRepository = ficheRepository;
             Materiels = new ObservableCollection<Materiel>(_repository.GetAll());
+            Fiches = new ObservableCollection<Fiche>(_ficheRepository.GetAll());
 
             AjouterMaterielCommand = new RelayCommand(AjouterMateriel);
             ModifierMaterielCommand = new RelayCommand(ModifierMateriel);
@@ -93,17 +105,29 @@ namespace Stock741.ViewModels
                 return;
             }
 
-            var materiel = new Materiel { Nom = NomSelectionne, Actif = ActifSelectionne };
+            if (FicheSelectionnee == null)
+            {
+                ErreurGlobale = "Veuillez sélectionner une fiche.";
+                return;
+            }
+
+            var materiel = new Materiel
+            {
+                Nom = NomSelectionne,
+                Actif = ActifSelectionne,
+                FicheId = FicheSelectionnee.Id
+            };
 
             try
             {
                 _repository.Add(materiel);
+                materiel.Fiche = FicheSelectionnee;
                 Materiels.Add(materiel);
                 NomSelectionne = string.Empty;
                 ActifSelectionne = true;
+                FicheSelectionnee = null;
                 ErreurGlobale = string.Empty;
             }
-
             catch (InvalidOperationException ex)
             {
                 ErreurGlobale = ex.Message;
@@ -120,11 +144,21 @@ namespace Stock741.ViewModels
                 return;
             }
 
+            if (FicheSelectionnee == null)
+            {
+                ErreurGlobale = "Veuillez sélectionner une fiche.";
+                return;
+            }
+
             var ancienNom = MaterielSelectionne.Nom;
             var ancienActif = MaterielSelectionne.Actif;
+            var ancienFicheId = MaterielSelectionne.FicheId;
+            var ancienneFiche = MaterielSelectionne.Fiche;
 
             MaterielSelectionne.Nom = NomSelectionne;
             MaterielSelectionne.Actif = ActifSelectionne;
+            MaterielSelectionne.FicheId = FicheSelectionnee.Id;
+            MaterielSelectionne.Fiche = FicheSelectionnee;
 
             try
             {
@@ -136,9 +170,10 @@ namespace Stock741.ViewModels
             {
                 MaterielSelectionne.Nom = ancienNom;
                 MaterielSelectionne.Actif = ancienActif;
+                MaterielSelectionne.FicheId = ancienFicheId;
+                MaterielSelectionne.Fiche = ancienneFiche;
                 ErreurGlobale = ex.Message;
             }
-
         }
 
         private void SupprimerMateriel(object obj)
@@ -152,6 +187,7 @@ namespace Stock741.ViewModels
                 MaterielSelectionne = null;
                 NomSelectionne = string.Empty;
                 ActifSelectionne = true;
+                FicheSelectionnee = null;
                 ErreurGlobale = string.Empty;
             }
             catch (InvalidOperationException ex)
@@ -160,6 +196,7 @@ namespace Stock741.ViewModels
                 MaterielSelectionne = null;
                 NomSelectionne = string.Empty;
                 ActifSelectionne = true;
+                FicheSelectionnee = null;
             }
         }
     }

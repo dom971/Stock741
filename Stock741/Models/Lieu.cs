@@ -1,11 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Stock741.Models
 {
     [Index(nameof(Nom), IsUnique = true)]
-    public class Materiel
+    public class Lieu
     {
         [Key]
         public int Id { get; set; }
@@ -13,13 +12,7 @@ namespace Stock741.Models
         [Required]
         public string Nom { get; set; }
 
-        public bool Actif { get; set; } = true;
-
         [Timestamp]
         public byte[] RowVersion { get; set; }
-
-        public int FicheId { get; set; }
-        [ForeignKey(nameof(FicheId))]
-        public Fiche Fiche { get; set; }
     }
 }

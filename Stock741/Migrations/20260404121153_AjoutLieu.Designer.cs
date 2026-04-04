@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Stock741.Data;
 
@@ -10,9 +11,11 @@ using Stock741.Data;
 namespace Stock741.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260404121153_AjoutLieu")]
+    partial class AjoutLieu
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -20,32 +23,6 @@ namespace Stock741.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("Stock741.Models.Fiche", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Nom")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Nom")
-                        .IsUnique();
-
-                    b.ToTable("Fiches");
-                });
 
             modelBuilder.Entity("Stock741.Models.Lieu", b =>
                 {
@@ -117,9 +94,6 @@ namespace Stock741.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
 
-                    b.Property<int>("FicheId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Nom")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -131,8 +105,6 @@ namespace Stock741.Migrations
                         .HasColumnType("rowversion");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("FicheId");
 
                     b.HasIndex("Nom")
                         .IsUnique();
@@ -181,17 +153,6 @@ namespace Stock741.Migrations
                         .IsUnique();
 
                     b.ToTable("Modeles");
-                });
-
-            modelBuilder.Entity("Stock741.Models.Materiel", b =>
-                {
-                    b.HasOne("Stock741.Models.Fiche", "Fiche")
-                        .WithMany()
-                        .HasForeignKey("FicheId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Fiche");
                 });
 
             modelBuilder.Entity("Stock741.Models.Modele", b =>

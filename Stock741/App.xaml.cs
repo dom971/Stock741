@@ -14,6 +14,11 @@ namespace Stock741
     {
         public static IServiceProvider ServiceProvider { get; private set; }
 
+        public static string CheminBasePhotos { get; private set; }
+        public static string CheminBaseFiches { get; private set; }
+
+        public static string CheminLogo { get; private set; }
+
         // ⚠️ Cette méthode doit exister exactement comme ça
 
         private void Application_Startup(object sender, StartupEventArgs e)
@@ -22,6 +27,10 @@ namespace Stock741
                 .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile("appsettings.json", optional: false)
                 .Build();
+
+            CheminBasePhotos = config["Photos:CheminBase"];
+            CheminBaseFiches = config["Fiches:CheminBase"];
+            CheminLogo = config["Logo:CheminLogo"];
 
             var services = new ServiceCollection();
 
@@ -36,6 +45,12 @@ namespace Stock741
 
             services.AddTransient<ModeleRepository>();
             services.AddTransient<ModeleViewModel>();
+
+            services.AddTransient<LieuRepository>();
+            services.AddTransient<LieuViewModel>();
+
+            services.AddTransient<FicheRepository>();
+            services.AddTransient<FicheViewModel>();
 
             services.AddTransient<MainViewModel>();
 
