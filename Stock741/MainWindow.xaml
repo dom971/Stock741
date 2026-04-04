@@ -13,9 +13,235 @@
 
         <!-- Menu latéral -->
         <Border Background="#00643E">
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="10">
+
+                    <!-- Logo -->
+                    <Image x:Name="Logo"
+                           Width="140"
+                           Height="60"
+                           Margin="0,15,0,5"
+                           HorizontalAlignment="Center"
+                           Stretch="Uniform"/>
+
+                    <TextBlock Text="Stock741"
+                               Foreground="White"
+                               FontFamily="Arial"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               Margin="0,5,0,20"
+                               HorizontalAlignment="Center"/>
+
+                    <Button Content="Marques"
+                            Command="{Binding NaviguerVersCommand}"
+                            CommandParameter="Marques"
+                            Margin="0,5">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding VueActive}" Value="Marques">
+                                        <Setter Property="Background" Value="#008991"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button Content="Matériels"
+                            Command="{Binding NaviguerVersCommand}"
+                            CommandParameter="Materiels"
+                            Margin="0,5">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding VueActive}" Value="Materiels">
+                                        <Setter Property="Background" Value="#008991"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button Content="Modèles"
+                            Command="{Binding NaviguerVersCommand}"
+                            CommandParameter="Modeles"
+                            Margin="0,5">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding VueActive}" Value="Modeles">
+                                        <Setter Property="Background" Value="#008991"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button Content="Lieux"
+                            Command="{Binding NaviguerVersCommand}"
+                            CommandParameter="Lieux"
+                            Margin="0,5">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding VueActive}" Value="Lieux">
+                                        <Setter Property="Background" Value="#008991"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button Content="Fiches"
+                            Command="{Binding NaviguerVersCommand}"
+                            CommandParameter="Fiches"
+                            Margin="0,5">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding VueActive}" Value="Fiches">
+                                        <Setter Property="Background" Value="#008991"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button Content="Statuts"
+                            Command="{Binding NaviguerVersCommand}"
+                            CommandParameter="Statuts"
+                            Margin="0,5">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding VueActive}" Value="Statuts">
+                                        <Setter Property="Background" Value="#008991"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button Content="Fournisseurs"
+                            Command="{Binding NaviguerVersCommand}"
+                            CommandParameter="Fournisseurs"
+                            Margin="0,5">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding VueActive}" Value="Fournisseurs">
+                                        <Setter Property="Background" Value="#008991"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button Content="Opérateurs"
+                            Command="{Binding NaviguerVersCommand}"
+                            CommandParameter="Operateurs"
+                            Margin="0,5">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding VueActive}" Value="Operateurs">
+                                        <Setter Property="Background" Value="#008991"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button Content="Forfaits"
+                            Command="{Binding NaviguerVersCommand}"
+                            CommandParameter="Forfaits"
+                            Margin="0,5">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding VueActive}" Value="Forfaits">
+                                        <Setter Property="Background" Value="#008991"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button Content="Requêtes"
+                            Command="{Binding NaviguerVersCommand}"
+                            CommandParameter="Requetes"
+                            Margin="0,5">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding VueActive}" Value="Requetes">
+                                        <Setter Property="Background" Value="#008991"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button Content="Quitter"
+                            Command="{Binding QuitterCommand}"
+                            Margin="0,20,0,10">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#DE1300"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Zone de contenu -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Background="#008991" Padding="10,8">
+                <TextBlock Text="{Binding TitreVueActuelle}"
+                           FontFamily="Arial"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Foreground="White"/>
+            </Border>
+
+            <ContentControl Grid.Row="1"
+                            Content="{Binding VueActuelle}"
+                            Margin="10"/>
+        </Grid>
+    </Grid>
+</Window>
+    
+    
+    <!--<Window x:Class="Stock741.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Stock741"
+        Icon="stock741.ico"
+        WindowState="Maximized"
+        WindowStyle="SingleBorderWindow">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="180"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        --><!-- Menu latéral --><!--
+        <Border Background="#00643E">
             <StackPanel Margin="10">
 
-                <!-- Logo -->
+                --><!-- Logo --><!--
                 <Image x:Name="Logo"
                        Width="140"
                        Height="60"
@@ -106,6 +332,66 @@
                     </Button.Style>
                 </Button>
 
+                <Button Content="Statuts"
+                    Command="{Binding NaviguerVersCommand}"
+                    CommandParameter="Statuts"
+                    Margin="0,5">       
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding VueActive}" Value="Statuts">
+                                    <Setter Property="Background" Value="#008991"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <Button Content="Fournisseurs"
+                    Command="{Binding NaviguerVersCommand}"
+                    CommandParameter="Fournisseurs"
+                    Margin="0,5">   
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding VueActive}" Value="Fournisseurs">
+                                    <Setter Property="Background" Value="#008991"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <Button Content="Opérateurs"
+                    Command="{Binding NaviguerVersCommand}"
+                    CommandParameter="Operateurs"
+                    Margin="0,5">   
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding VueActive}" Value="Operateurs">
+                                    <Setter Property="Background" Value="#008991"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <Button Content="Forfaits"
+                    Command="{Binding NaviguerVersCommand}"
+                    CommandParameter="Forfaits"
+                    Margin="0,5">   
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding VueActive}" Value="Forfaits">
+                                    <Setter Property="Background" Value="#008991"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
                 <Button Content="Requêtes"
                         Command="{Binding NaviguerVersCommand}"
                         CommandParameter="Requetes"
@@ -142,7 +428,7 @@
             </StackPanel>
         </Border>
 
-        <!-- Zone de contenu -->
+        --><!-- Zone de contenu --><!--
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -162,4 +448,4 @@
                             Margin="10"/>
         </Grid>
     </Grid>
-</Window>
+</Window>-->

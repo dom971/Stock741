@@ -12,6 +12,10 @@ namespace Stock741.Data
         public DbSet<Modele> Modeles { get; set; }
         public DbSet<Lieu> Lieux { get; set; }
         public DbSet<Fiche> Fiches { get; set; }
+        public DbSet<Statut> Statuts { get; set; }
+        public DbSet<Fournisseur> Fournisseurs { get; set; }
+        public DbSet<Operateur> Operateurs { get; set; }
+        public DbSet<Forfait> Forfaits { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -42,6 +46,12 @@ namespace Stock741.Data
                 .HasOne(m => m.Materiel)
                 .WithMany()
                 .HasForeignKey(m => m.MaterielId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Forfait>()
+                .HasOne(f => f.Operateur)
+                .WithMany()
+                .HasForeignKey(f => f.OperateurId)
                 .OnDelete(DeleteBehavior.Restrict);
 
 

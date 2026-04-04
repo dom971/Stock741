@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Stock741.Data;
 
@@ -10,9 +11,11 @@ using Stock741.Data;
 namespace Stock741.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260404221554_AjoutOperateur")]
+    partial class AjoutOperateur
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,40 +48,6 @@ namespace Stock741.Migrations
                         .IsUnique();
 
                     b.ToTable("Fiches");
-                });
-
-            modelBuilder.Entity("Stock741.Models.Forfait", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("Actif")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Nom")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("OperateurId")
-                        .HasColumnType("int");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Nom")
-                        .IsUnique();
-
-                    b.HasIndex("OperateurId");
-
-                    b.ToTable("Forfaits");
                 });
 
             modelBuilder.Entity("Stock741.Models.Fournisseur", b =>
@@ -297,17 +266,6 @@ namespace Stock741.Migrations
                         .IsUnique();
 
                     b.ToTable("Statuts");
-                });
-
-            modelBuilder.Entity("Stock741.Models.Forfait", b =>
-                {
-                    b.HasOne("Stock741.Models.Operateur", "Operateur")
-                        .WithMany()
-                        .HasForeignKey("OperateurId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Operateur");
                 });
 
             modelBuilder.Entity("Stock741.Models.Materiel", b =>

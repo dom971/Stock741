@@ -127,6 +127,18 @@
         <DataTemplate DataType="{x:Type viewmodels:FicheViewModel}">
             <views:FicheView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type viewmodels:StatutViewModel}">
+            <views:StatutView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewmodels:FournisseurViewModel}">
+            <views:FournisseurView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewmodels:OperateurViewModel}">
+            <views:OperateurView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewmodels:ForfaitViewModel}">
+            <views:ForfaitView/>
+        </DataTemplate>
 
     </Application.Resources>
 </Application>

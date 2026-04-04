@@ -52,6 +52,18 @@ namespace Stock741
             services.AddTransient<FicheRepository>();
             services.AddTransient<FicheViewModel>();
 
+            services.AddTransient<StatutRepository>();
+            services.AddTransient<StatutViewModel>();
+
+            services.AddTransient<FournisseurRepository>();
+            services.AddTransient<FournisseurViewModel>();
+
+            services.AddTransient<OperateurRepository>();
+            services.AddTransient<OperateurViewModel>();
+
+            services.AddTransient<ForfaitRepository>();
+            services.AddTransient<ForfaitViewModel>();
+
             services.AddTransient<MainViewModel>();
 
             services.AddTransient<RequeteViewModel>();
