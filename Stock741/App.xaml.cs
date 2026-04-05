@@ -64,6 +64,9 @@ namespace Stock741
             services.AddTransient<ForfaitRepository>();
             services.AddTransient<ForfaitViewModel>();
 
+            services.AddTransient<EdsRepository>();
+            services.AddTransient<EdsViewModel>();
+
             services.AddTransient<MainViewModel>();
 
             services.AddTransient<RequeteViewModel>();

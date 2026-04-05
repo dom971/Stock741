@@ -17,9 +17,10 @@ namespace Stock741.Repositories
         public List<Forfait> GetAll()
         {
             return _context.Forfaits
-                .Include(f => f.Operateur)
-                .OrderBy(f => f.Nom)
-                .ToList();
+        .Include(f => f.Operateur)
+        .OrderBy(f => f.Operateur.Nom)
+        .ThenBy(f => f.Nom)
+        .ToList();
         }
 
         public void Add(Forfait forfait)

@@ -1,0 +1,203 @@
+﻿<UserControl x:Class="Stock741.Views.EdsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Section Informations principales -->
+        <Border Grid.Row="0" Background="#E8F5E9" BorderBrush="#00643E" BorderThickness="0,0,0,1" Padding="5,3" Margin="0,0,0,5">
+            <TextBlock Text="Informations principales" FontWeight="Bold" Foreground="#00643E"/>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Column="0" Content="Code:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Grid.Column="1"
+                     Text="{Binding CnxSelectionne, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,10,0"/>
+
+            <Label Grid.Column="2" Content="Nom:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Grid.Column="3"
+                     Text="{Binding NomSelectionne, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,10,0"/>
+
+            <CheckBox Grid.Column="4" Content="Actif" IsChecked="{Binding ActifSelectionne}"
+                      VerticalAlignment="Center" Margin="0,0,15,0"/>
+
+            <StackPanel Grid.Column="5" Orientation="Horizontal">
+                <Button Content="Ajouter"     Command="{Binding AjouterEdsCommand}"     Margin="0,0,5,0"/>
+                <Button Content="Modifier"    Command="{Binding ModifierEdsCommand}"    Margin="0,0,5,0"/>
+                <Button Content="Supprimer"   Command="{Binding SupprimerEdsCommand}"   Margin="0,0,5,0"/>
+                <Button Content="Initialiser" Command="{Binding InitialiserEdsCommand}"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Section Adresse -->
+        <Border Grid.Row="2" Background="#E8F5E9" BorderBrush="#00643E" BorderThickness="0,0,0,1" Padding="5,3" Margin="0,0,0,5">
+            <TextBlock Text="Adresse" FontWeight="Bold" Foreground="#00643E"/>
+        </Border>
+
+        <!-- Adr1 + Adr2 -->
+        <Grid Grid.Row="3" Margin="0,0,0,5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Column="0" Content="Adr1:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Grid.Column="1"
+                     Text="{Binding Adr1Selectionne, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,10,0"/>
+
+            <Label Grid.Column="2" Content="Adr2:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Grid.Column="3"
+                     Text="{Binding Adr2Selectionne, UpdateSourceTrigger=PropertyChanged}"/>
+        </Grid>
+
+        <!-- Adr3 + Adr4 -->
+        <Grid Grid.Row="4" Margin="0,0,0,5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Column="0" Content="Adr3:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Grid.Column="1"
+                     Text="{Binding Adr3Selectionne, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,10,0"/>
+
+            <Label Grid.Column="2" Content="Adr4:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Grid.Column="3"
+                     Text="{Binding Adr4Selectionne, UpdateSourceTrigger=PropertyChanged}"/>
+        </Grid>
+
+        <!-- Mail -->
+        <Grid Grid.Row="5" Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Column="0" Content="Mail:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Grid.Column="1"
+                     Text="{Binding MailContactSelectionne, UpdateSourceTrigger=PropertyChanged}"/>
+        </Grid>
+
+        <!-- Section Horaires -->
+        <Border Grid.Row="6" Background="#E8F5E9" BorderBrush="#00643E" BorderThickness="0,0,0,1" Padding="5,3" Margin="0,0,0,5">
+            <TextBlock Text="Horaires" FontWeight="Bold" Foreground="#00643E"/>
+        </Border>
+
+        <!-- Lundi + Mardi + Mercredi -->
+        <Grid Grid.Row="7" Margin="0,0,0,5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="180"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="180"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="180"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Column="0" Content="Lundi:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Grid.Column="1"
+                     Text="{Binding HorLundiSelectionne, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,10,0"/>
+
+            <Label Grid.Column="2" Content="Mardi:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Grid.Column="3"
+                     Text="{Binding HorMardiSelectionne, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,10,0"/>
+
+            <Label Grid.Column="4" Content="Mercredi:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Grid.Column="5"
+                     Text="{Binding HorMercrediSelectionne, UpdateSourceTrigger=PropertyChanged}"/>
+        </Grid>
+
+        <!-- Jeudi + Vendredi + Samedi -->
+        <Grid Grid.Row="8" Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="180"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="180"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="180"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Column="0" Content="Jeudi:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Grid.Column="1"
+                     Text="{Binding HorJeudiSelectionne, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,10,0"/>
+
+            <Label Grid.Column="2" Content="Vendredi:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Grid.Column="3"
+                     Text="{Binding HorVendrediSelectionne, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,10,0"/>
+
+            <Label Grid.Column="4" Content="Samedi:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Grid.Column="5"
+                     Text="{Binding HorSamediSelectionne, UpdateSourceTrigger=PropertyChanged}"/>
+        </Grid>
+
+        <!-- Erreur -->
+        <TextBlock Grid.Row="9"
+                   Text="{Binding ErreurGlobale}"
+                   Foreground="Red"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,5"
+                   Visibility="{Binding ErreurGlobale, Converter={StaticResource StringToVisibilityConverter}}"/>
+
+        <!-- DataGrid -->
+        <DataGrid Grid.Row="10"
+                  ItemsSource="{Binding EdsList}"
+                  AutoGenerateColumns="False"
+                  SelectedItem="{Binding EdsSelectionne}"
+                  CanUserAddRows="False"
+                  IsReadOnly="True"
+                  EnableRowVirtualization="True"
+                  EnableColumnVirtualization="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Id"    Binding="{Binding Id}"          Width="Auto"/>
+                <DataGridTextColumn Header="Code"  Binding="{Binding Cnx}"         Width="Auto"/>
+                <DataGridTextColumn Header="Nom"   Binding="{Binding Nom}"         Width="*"/>
+                <DataGridTextColumn Header="Adr1"  Binding="{Binding Adr1}"        Width="Auto"/>
+                <DataGridTextColumn Header="Adr2"  Binding="{Binding Adr2}"        Width="Auto"/>
+                <DataGridTextColumn Header="Adr3"  Binding="{Binding Adr3}"        Width="Auto"/>
+                <DataGridTextColumn Header="Adr4"  Binding="{Binding Adr4}"        Width="Auto"/>
+                <DataGridTextColumn Header="Mail"  Binding="{Binding MailContact}" Width="Auto"/>
+                <DataGridCheckBoxColumn Header="Actif" Binding="{Binding Actif}"   Width="Auto"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

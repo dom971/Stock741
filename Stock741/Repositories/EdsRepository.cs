@@ -5,23 +5,23 @@ using Stock741.Models;
 
 namespace Stock741.Repositories
 {
-    public class MarqueRepository
+    public class EdsRepository
     {
         private readonly AppDbContext _context;
 
-        public MarqueRepository(AppDbContext context)
+        public EdsRepository(AppDbContext context)
         {
             _context = context;
         }
 
-        public List<Marque> GetAll()
+        public List<Eds> GetAll()
         {
-            return _context.Marques.OrderBy(m => m.Nom).ToList();
+            return _context.Eds.OrderBy(e => e.Nom).ToList();
         }
 
-        public void Add(Marque marque)
+        public void Add(Eds eds)
         {
-            _context.Marques.Add(marque);
+            _context.Eds.Add(eds);
             try
             {
                 _context.SaveChanges();
@@ -29,14 +29,14 @@ namespace Stock741.Repositories
             catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 2601 ||
                                                 (ex.InnerException as SqlException)?.Number == 2627)
             {
-                _context.Entry(marque).State = EntityState.Detached;
-                throw new InvalidOperationException("Une marque avec ce nom existe déjà.", ex);
+                _context.Entry(eds).State = EntityState.Detached;
+                throw new InvalidOperationException("Un EDS avec ce code existe déjà.", ex);
             }
         }
 
-        public void Update(Marque marque)
+        public void Update(Eds eds)
         {
-            _context.Marques.Update(marque);
+            _context.Eds.Update(eds);
             try
             {
                 _context.SaveChanges();
@@ -44,12 +44,12 @@ namespace Stock741.Repositories
             catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 2601 ||
                                                 (ex.InnerException as SqlException)?.Number == 2627)
             {
-                _context.Entry(marque).State = EntityState.Detached;
-                throw new InvalidOperationException("Une marque avec ce nom existe déjà.", ex);
+                _context.Entry(eds).State = EntityState.Detached;
+                throw new InvalidOperationException("Un EDS avec ce code existe déjà.", ex);
             }
         }
 
-        public void Delete(Marque marque)
+        public void Delete(Eds eds)
         {
             try
             {
@@ -59,10 +59,10 @@ namespace Stock741.Repositories
                 try
                 {
                     using var commande = connexion.CreateCommand();
-                    commande.CommandText = "DELETE FROM Marques WHERE Id = @Id";
+                    commande.CommandText = "DELETE FROM Eds WHERE Id = @Id";
                     var param = commande.CreateParameter();
                     param.ParameterName = "@Id";
-                    param.Value = marque.Id;
+                    param.Value = eds.Id;
                     commande.Parameters.Add(param);
                     commande.ExecuteNonQuery();
                 }
@@ -73,13 +73,12 @@ namespace Stock741.Repositories
             }
             catch (SqlException ex) when (ex.Number == 547)
             {
-                throw new InvalidOperationException("Impossible de supprimer : cette marque est utilisée dans un modèle.", ex);
+                throw new InvalidOperationException("Impossible de supprimer : cet EDS est utilisé.", ex);
             }
             catch (SqlException ex)
             {
                 throw new InvalidOperationException("Erreur lors de la suppression.", ex);
             }
         }
-
     }
 }

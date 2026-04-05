@@ -16,6 +16,7 @@ namespace Stock741.Data
         public DbSet<Fournisseur> Fournisseurs { get; set; }
         public DbSet<Operateur> Operateurs { get; set; }
         public DbSet<Forfait> Forfaits { get; set; }
+        public DbSet<Eds> Eds { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 

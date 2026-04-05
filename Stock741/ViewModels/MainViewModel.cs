@@ -16,6 +16,7 @@ namespace Stock741.ViewModels
         private readonly FournisseurViewModel _fournisseurViewModel;
         private readonly OperateurViewModel _operateurViewModel;
         private readonly ForfaitViewModel _forfaitViewModel;
+        private readonly EdsViewModel _edsViewModel;
 
         private object _vueActuelle;
         public object VueActuelle
@@ -51,7 +52,8 @@ namespace Stock741.ViewModels
                              StatutViewModel statutViewModel,
                              FournisseurViewModel fournisseurViewModel,
                              OperateurViewModel operateurViewModel,
-                             ForfaitViewModel forfaitViewModel)
+                             ForfaitViewModel forfaitViewModel,
+                             EdsViewModel edsViewModel)
         {
             _marqueViewModel = marqueViewModel;
             _materielViewModel = materielViewModel;
@@ -78,6 +80,7 @@ namespace Stock741.ViewModels
             _fournisseurViewModel = fournisseurViewModel;
             _operateurViewModel = operateurViewModel;
             _forfaitViewModel = forfaitViewModel;
+            _edsViewModel = edsViewModel;
         }
 
         private void NaviguerVers(object parametre)
@@ -129,6 +132,11 @@ namespace Stock741.ViewModels
                     VueActuelle = _forfaitViewModel;
                     TitreVueActuelle = "Forfaits";
                     VueActive = "Forfaits";
+                    break;
+                case "Eds":
+                    VueActuelle = _edsViewModel;
+                    TitreVueActuelle = "EDS";
+                    VueActive = "Eds";
                     break;
                 case "Requetes":
                     VueActuelle = _requeteViewModel;

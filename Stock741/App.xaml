@@ -139,6 +139,9 @@
         <DataTemplate DataType="{x:Type viewmodels:ForfaitViewModel}">
             <views:ForfaitView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type viewmodels:EdsViewModel}">
+            <views:EdsView/>
+        </DataTemplate>
 
     </Application.Resources>
 </Application>
