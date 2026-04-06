@@ -57,7 +57,7 @@ namespace Stock741.ViewModels
         {
             get => _erreurGlobale;
             set { _erreurGlobale = value; OnPropertyChanged(); }
-        }
+        } 
 
         public ICommand AjouterMarqueCommand { get; }
         public ICommand ModifierMarqueCommand { get; }
@@ -71,6 +71,18 @@ namespace Stock741.ViewModels
             AjouterMarqueCommand = new RelayCommand(AjouterMarque);
             ModifierMarqueCommand = new RelayCommand(ModifierMarque);
             SupprimerMarqueCommand = new RelayCommand(SupprimerMarque);
+        }
+
+        public void Rafraichir()
+        {
+            Marques.Clear();
+            foreach (var m in _repository.GetAll())
+                Marques.Add(m);
+        }
+
+        public void EffacerErreur()
+        {
+            ErreurGlobale = string.Empty;
         }
 
         private void ValidateNom()
@@ -98,7 +110,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Add(marque);
-                Marques.Add(marque);
+                //Marques.Add(marque);
+                Rafraichir();
                 NomSelectionne = string.Empty;
                 ActifSelectionne = true;
                 ErreurGlobale = string.Empty;
@@ -127,8 +140,8 @@ namespace Stock741.ViewModels
 
             try
             {
-                _repository.Update(MarqueSelectionnee);
-                CollectionViewSource.GetDefaultView(Marques).Refresh();
+                _repository.Update(MarqueSelectionnee);                
+                Rafraichir();
                 ErreurGlobale = string.Empty;
             }
             catch (InvalidOperationException ex)
@@ -145,23 +158,17 @@ namespace Stock741.ViewModels
 
             try
             {
-                _repository.Delete(MarqueSelectionnee);
-                Marques.Remove(MarqueSelectionnee);
+                _repository.Delete(MarqueSelectionnee);                
+                Rafraichir();
                 MarqueSelectionnee = null;
                 NomSelectionne = string.Empty;
                 ActifSelectionne = true;
                 ErreurGlobale = string.Empty;
-            }
-            //catch (InvalidOperationException ex)
-            //{
-            //    ErreurGlobale = ex.Message;
-            //    MarqueSelectionnee = null;  // ← réinitialise même en cas d'erreur
-            //    NomSelectionne = string.Empty;
-            //    ActifSelectionne = true;
-            //}
+            }            
             catch (Exception ex)
-            {
-                ErreurGlobale = ex.Message + " | " + ex.InnerException?.Message + " | " + ex.InnerException?.InnerException?.Message;
+            {                
+                ErreurGlobale = ex.Message;
+                ErreurNom = string.Empty;
                 MarqueSelectionnee = null;
                 NomSelectionne = string.Empty;
                 ActifSelectionne = true;

@@ -47,7 +47,7 @@ namespace Stock741.ViewModels
         {
             get => _erreurGlobale;
             set { _erreurGlobale = value; OnPropertyChanged(); }
-        }
+        }        
 
         public ICommand AjouterFournisseurCommand { get; }
         public ICommand ModifierFournisseurCommand { get; }
@@ -61,6 +61,18 @@ namespace Stock741.ViewModels
             AjouterFournisseurCommand = new RelayCommand(AjouterFournisseur);
             ModifierFournisseurCommand = new RelayCommand(ModifierFournisseur);
             SupprimerFournisseurCommand = new RelayCommand(SupprimerFournisseur);
+        }
+
+        public void Rafraichir()
+        {
+            Fournisseurs.Clear();
+            foreach (var m in _repository.GetAll())
+                Fournisseurs.Add(m);
+        }
+
+        public void EffacerErreur()
+        {
+            ErreurGlobale = string.Empty;
         }
 
         private void ValidateNom()
@@ -88,7 +100,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Add(fournisseur);
-                Fournisseurs.Add(fournisseur);
+                //Fournisseurs.Add(fournisseur);
+                Rafraichir();
                 NomSelectionne = string.Empty;
                 ErreurGlobale = string.Empty;
             }
@@ -114,7 +127,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Update(FournisseurSelectionne);
-                CollectionViewSource.GetDefaultView(Fournisseurs).Refresh();
+                //CollectionViewSource.GetDefaultView(Fournisseurs).Refresh();
+                Rafraichir();
                 ErreurGlobale = string.Empty;
             }
             catch (InvalidOperationException ex)
@@ -131,7 +145,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Delete(FournisseurSelectionne);
-                Fournisseurs.Remove(FournisseurSelectionne);
+                //Fournisseurs.Remove(FournisseurSelectionne);
+                Rafraichir();
                 FournisseurSelectionne = null;
                 NomSelectionne = string.Empty;
                 ErreurGlobale = string.Empty;

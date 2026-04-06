@@ -16,7 +16,10 @@ namespace Stock741.Repositories
 
         public List<Operateur> GetAll()
         {
-            return _context.Operateurs.OrderBy(o => o.Nom).ToList();
+            return _context.Operateurs
+                .AsNoTracking()
+                .OrderBy(o => o.Nom)
+                .ToList();
         }
 
         public void Add(Operateur operateur)

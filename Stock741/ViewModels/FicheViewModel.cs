@@ -47,7 +47,7 @@ namespace Stock741.ViewModels
         {
             get => _erreurGlobale;
             set { _erreurGlobale = value; OnPropertyChanged(); }
-        }
+        }        
 
         public ICommand AjouterFicheCommand { get; }
         public ICommand ModifierFicheCommand { get; }
@@ -61,6 +61,18 @@ namespace Stock741.ViewModels
             AjouterFicheCommand = new RelayCommand(AjouterFiche);
             ModifierFicheCommand = new RelayCommand(ModifierFiche);
             SupprimerFicheCommand = new RelayCommand(SupprimerFiche);
+        }
+
+        public void Rafraichir()
+        {
+            Fiches.Clear();
+            foreach (var m in _repository.GetAll())
+                Fiches.Add(m);
+        }
+
+        public void EffacerErreur()
+        {
+            ErreurGlobale = string.Empty;
         }
 
         private void ValidateNom()
@@ -88,7 +100,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Add(fiche);
-                Fiches.Add(fiche);
+                //Fiches.Add(fiche);
+                Rafraichir();
                 NomSelectionne = string.Empty;
                 ErreurGlobale = string.Empty;
             }
@@ -114,7 +127,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Update(FicheSelectionnee);
-                CollectionViewSource.GetDefaultView(Fiches).Refresh();
+                //CollectionViewSource.GetDefaultView(Fiches).Refresh();
+                Rafraichir();
                 ErreurGlobale = string.Empty;
             }
             catch (InvalidOperationException ex)
@@ -131,7 +145,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Delete(FicheSelectionnee);
-                Fiches.Remove(FicheSelectionnee);
+                //Fiches.Remove(FicheSelectionnee);
+                Rafraichir();
                 FicheSelectionnee = null;
                 NomSelectionne = string.Empty;
                 ErreurGlobale = string.Empty;

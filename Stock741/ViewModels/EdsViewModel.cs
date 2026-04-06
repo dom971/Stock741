@@ -169,7 +169,7 @@ namespace Stock741.ViewModels
         {
             get => _erreurGlobale;
             set { _erreurGlobale = value; OnPropertyChanged(); }
-        }
+        }        
 
         public ICommand AjouterEdsCommand { get; }
         public ICommand ModifierEdsCommand { get; }
@@ -185,6 +185,18 @@ namespace Stock741.ViewModels
             ModifierEdsCommand = new RelayCommand(ModifierEds);
             SupprimerEdsCommand = new RelayCommand(SupprimerEds);
             InitialiserEdsCommand = new RelayCommand(InitialiserEds);
+        }
+
+        public void Rafraichir()
+        {
+            EdsList.Clear();
+            foreach (var m in _repository.GetAll())
+                EdsList.Add(m);
+        }
+
+        public void EffacerErreur()
+        {
+            ErreurGlobale = string.Empty;
         }
 
         private void ValidateCnx()
@@ -263,8 +275,9 @@ namespace Stock741.ViewModels
 
             try
             {
-                _repository.Add(eds);
-                EdsList.Add(eds);
+                _repository.Add(eds);                
+                //EdsList.Add(eds);
+                Rafraichir();
                 ResetChamps();
             }
             catch (InvalidOperationException ex)
@@ -319,7 +332,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Update(EdsSelectionne);
-                CollectionViewSource.GetDefaultView(EdsList).Refresh();
+                //CollectionViewSource.GetDefaultView(EdsList).Refresh();
+                Rafraichir();
                 ErreurGlobale = string.Empty;
             }
             catch (InvalidOperationException ex)
@@ -350,7 +364,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Delete(EdsSelectionne);
-                EdsList.Remove(EdsSelectionne);
+                //EdsList.Remove(EdsSelectionne);
+                Rafraichir();
                 EdsSelectionne = null;
                 ResetChamps();
             }

@@ -17,10 +17,11 @@ namespace Stock741.Repositories
         public List<Forfait> GetAll()
         {
             return _context.Forfaits
-        .Include(f => f.Operateur)
-        .OrderBy(f => f.Operateur.Nom)
-        .ThenBy(f => f.Nom)
-        .ToList();
+            .AsNoTracking()
+            .Include(f => f.Operateur)
+            .OrderBy(f => f.Operateur.Nom)
+            .ThenBy(f => f.Nom)
+            .ToList();
         }
 
         public void Add(Forfait forfait)
@@ -45,6 +46,11 @@ namespace Stock741.Repositories
             {
                 _context.SaveChanges();
             }
+            catch (DbUpdateConcurrencyException)
+            {
+                _context.Entry(forfait).State = EntityState.Detached;
+                throw new InvalidOperationException("Ce forfait a été modifié ou supprimé par un autre utilisateur. Veuillez rafraîchir la vue.", null);
+            }
             catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 2601 ||
                                                 (ex.InnerException as SqlException)?.Number == 2627)
             {
@@ -68,12 +74,19 @@ namespace Stock741.Repositories
                     param.ParameterName = "@Id";
                     param.Value = forfait.Id;
                     commande.Parameters.Add(param);
-                    commande.ExecuteNonQuery();
+                    var lignesAffectees = commande.ExecuteNonQuery();
+
+                    if (lignesAffectees == 0)
+                        throw new InvalidOperationException("Ce forfait a été supprimé par un autre utilisateur. Veuillez rafraîchir la vue.");
                 }
                 finally
                 {
                     connexion.Close();
                 }
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
             }
             catch (SqlException ex) when (ex.Number == 547)
             {
@@ -84,5 +97,52 @@ namespace Stock741.Repositories
                 throw new InvalidOperationException("Erreur lors de la suppression.", ex);
             }
         }
+
+        //public void Update(Forfait forfait)
+        //{
+        //    _context.Forfaits.Update(forfait);
+        //    try
+        //    {
+        //        _context.SaveChanges();
+        //    }
+        //    catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 2601 ||
+        //                                        (ex.InnerException as SqlException)?.Number == 2627)
+        //    {
+        //        _context.Entry(forfait).State = EntityState.Detached;
+        //        throw new InvalidOperationException("Un forfait avec ce nom existe déjà.", ex);
+        //    }
+        //}
+
+        //public void Delete(Forfait forfait)
+        //{
+        //    try
+        //    {
+        //        var connexion = _context.Database.GetDbConnection();
+        //        connexion.Open();
+
+        //        try
+        //        {
+        //            using var commande = connexion.CreateCommand();
+        //            commande.CommandText = "DELETE FROM Forfaits WHERE Id = @Id";
+        //            var param = commande.CreateParameter();
+        //            param.ParameterName = "@Id";
+        //            param.Value = forfait.Id;
+        //            commande.Parameters.Add(param);
+        //            commande.ExecuteNonQuery();
+        //        }
+        //        finally
+        //        {
+        //            connexion.Close();
+        //        }
+        //    }
+        //    catch (SqlException ex) when (ex.Number == 547)
+        //    {
+        //        throw new InvalidOperationException("Impossible de supprimer : ce forfait est utilisé.", ex);
+        //    }
+        //    catch (SqlException ex)
+        //    {
+        //        throw new InvalidOperationException("Erreur lors de la suppression.", ex);
+        //    }
+        //}
     }
 }

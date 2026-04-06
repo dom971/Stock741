@@ -67,7 +67,7 @@ namespace Stock741.ViewModels
         {
             get => _erreurGlobale;
             set { _erreurGlobale = value; OnPropertyChanged(); }
-        }
+        }      
 
         public ICommand AjouterMaterielCommand { get; }
         public ICommand ModifierMaterielCommand { get; }
@@ -83,6 +83,18 @@ namespace Stock741.ViewModels
             AjouterMaterielCommand = new RelayCommand(AjouterMateriel);
             ModifierMaterielCommand = new RelayCommand(ModifierMateriel);
             SupprimerMaterielCommand = new RelayCommand(SupprimerMateriel);
+        }
+
+        public void Rafraichir()
+        {
+            Materiels.Clear();
+            foreach (var m in _repository.GetAll())
+                Materiels.Add(m);
+        }
+
+        public void EffacerErreur()
+        {
+            ErreurGlobale = string.Empty;
         }
 
         private void ValidateNom()
@@ -122,7 +134,8 @@ namespace Stock741.ViewModels
             {
                 _repository.Add(materiel);
                 materiel.Fiche = FicheSelectionnee;
-                Materiels.Add(materiel);
+                //Materiels.Add(materiel);
+                Rafraichir();
                 NomSelectionne = string.Empty;
                 ActifSelectionne = true;
                 FicheSelectionnee = null;
@@ -163,7 +176,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Update(MaterielSelectionne);
-                CollectionViewSource.GetDefaultView(Materiels).Refresh();
+                //CollectionViewSource.GetDefaultView(Materiels).Refresh();
+                Rafraichir();
                 ErreurGlobale = string.Empty;
             }
             catch (InvalidOperationException ex)
@@ -183,7 +197,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Delete(MaterielSelectionne);
-                Materiels.Remove(MaterielSelectionne);
+                //Materiels.Remove(MaterielSelectionne);
+                Rafraichir();
                 MaterielSelectionne = null;
                 NomSelectionne = string.Empty;
                 ActifSelectionne = true;

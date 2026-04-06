@@ -48,7 +48,7 @@ namespace Stock741.ViewModels
         {
             get => _erreurGlobale;
             set { _erreurGlobale = value; OnPropertyChanged(); }
-        }
+        }       
 
         public ICommand AjouterOperateurCommand { get; }
         public ICommand ModifierOperateurCommand { get; }
@@ -62,6 +62,18 @@ namespace Stock741.ViewModels
             AjouterOperateurCommand = new RelayCommand(AjouterOperateur);
             ModifierOperateurCommand = new RelayCommand(ModifierOperateur);
             SupprimerOperateurCommand = new RelayCommand(SupprimerOperateur);
+        }
+
+        public void Rafraichir()
+        {
+            Operateurs.Clear();
+            foreach (var m in _repository.GetAll())
+                Operateurs.Add(m);
+        }
+
+        public void EffacerErreur()
+        {
+            ErreurGlobale = string.Empty;
         }
 
         private void ValidateNom()
@@ -89,7 +101,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Add(operateur);
-                Operateurs.Add(operateur);
+                //Operateurs.Add(operateur);
+                Rafraichir();
                 NomSelectionne = string.Empty;
                 ErreurGlobale = string.Empty;
             }
@@ -115,7 +128,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Update(OperateurSelectionne);
-                CollectionViewSource.GetDefaultView(Operateurs).Refresh();
+                //CollectionViewSource.GetDefaultView(Operateurs).Refresh();
+                Rafraichir();
                 ErreurGlobale = string.Empty;
             }
             catch (InvalidOperationException ex)
@@ -132,7 +146,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Delete(OperateurSelectionne);
-                Operateurs.Remove(OperateurSelectionne);
+                //Operateurs.Remove(OperateurSelectionne);
+                Rafraichir();
                 OperateurSelectionne = null;
                 NomSelectionne = string.Empty;
                 ErreurGlobale = string.Empty;

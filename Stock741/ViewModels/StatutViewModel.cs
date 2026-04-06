@@ -74,6 +74,18 @@ namespace Stock741.ViewModels
             SupprimerStatutCommand = new RelayCommand(SupprimerStatut);
         }
 
+        public void Rafraichir()
+        {
+            Statuts.Clear();
+            foreach (var m in _repository.GetAll())
+                Statuts.Add(m);
+        }
+
+        public void EffacerErreur()
+        {
+            ErreurGlobale = string.Empty;
+        }
+
         private void ValidateNom()
         {
             if (string.IsNullOrWhiteSpace(NomSelectionne))
@@ -109,7 +121,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Add(statut);
-                Statuts.Add(statut);
+                //Statuts.Add(statut);
+                Rafraichir();
                 NomSelectionne = string.Empty;
                 TypeSelectionne = null;
                 ErreurGlobale = string.Empty;
@@ -145,7 +158,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Update(StatutSelectionne);
-                CollectionViewSource.GetDefaultView(Statuts).Refresh();
+                //CollectionViewSource.GetDefaultView(Statuts).Refresh();
+                Rafraichir();
                 ErreurGlobale = string.Empty;
             }
             catch (InvalidOperationException ex)
@@ -163,7 +177,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Delete(StatutSelectionne);
-                Statuts.Remove(StatutSelectionne);
+                //Statuts.Remove(StatutSelectionne);
+                Rafraichir();
                 StatutSelectionne = null;
                 NomSelectionne = string.Empty;
                 TypeSelectionne = null;

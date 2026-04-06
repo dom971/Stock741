@@ -117,7 +117,7 @@ namespace Stock741.ViewModels
         {
             get => _filtreMateriel;
             set { _filtreMateriel = value; OnPropertyChanged(); AppliquerFiltre(); }
-        }
+        }      
 
         public ICommand ReinitialiserfiltreCommand { get; }
 
@@ -153,6 +153,18 @@ namespace Stock741.ViewModels
         }
 
         public void Rafraichir()
+        {
+            Modeles.Clear();
+            foreach (var m in _repository.GetAll())
+                Modeles.Add(m);
+        }
+
+        public void EffacerErreur()
+        {
+            ErreurGlobale = string.Empty;
+        }
+
+        public void RafraichirFiltres()
         {
             Marques.Clear();
             foreach (var m in _marqueRepository.GetAll())
@@ -257,7 +269,8 @@ namespace Stock741.ViewModels
                 _repository.Add(modele);
                 modele.Marque = MarqueSelectionnee;
                 modele.Materiel = MaterielSelectionne;
-                Modeles.Add(modele);
+                //Modeles.Add(modele);
+                Rafraichir();
                 NomSelectionne = string.Empty;
                 CheminPhotoSelectionne = string.Empty;
                 ActifSelectionne = true;
@@ -316,7 +329,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Update(ModeleSelectionne);
-                CollectionViewSource.GetDefaultView(Modeles).Refresh();
+                //CollectionViewSource.GetDefaultView(Modeles).Refresh();
+                Rafraichir();
                 ErreurGlobale = string.Empty;
             }
             catch (InvalidOperationException ex)
@@ -337,7 +351,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Delete(ModeleSelectionne);
-                Modeles.Remove(ModeleSelectionne);
+                //Modeles.Remove(ModeleSelectionne);
+                Rafraichir();
                 ModeleSelectionne = null;
                 NomSelectionne = string.Empty;
                 CheminPhotoSelectionne = string.Empty;

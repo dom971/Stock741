@@ -47,7 +47,7 @@ namespace Stock741.ViewModels
         {
             get => _erreurGlobale;
             set { _erreurGlobale = value; OnPropertyChanged(); }
-        }
+        }        
 
         public ICommand AjouterLieuCommand { get; }
         public ICommand ModifierLieuCommand { get; }
@@ -61,6 +61,17 @@ namespace Stock741.ViewModels
             AjouterLieuCommand = new RelayCommand(AjouterLieu);
             ModifierLieuCommand = new RelayCommand(ModifierLieu);
             SupprimerLieuCommand = new RelayCommand(SupprimerLieu);
+        }
+        public void Rafraichir()
+        {
+            Lieux.Clear();
+            foreach (var m in _repository.GetAll())
+                Lieux.Add(m);
+        }
+
+        public void EffacerErreur()
+        {
+            ErreurGlobale = string.Empty;
         }
 
         private void ValidateNom()
@@ -88,7 +99,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Add(lieu);
-                Lieux.Add(lieu);
+                //Lieux.Add(lieu);
+                Rafraichir();
                 NomSelectionne = string.Empty;
                 ErreurGlobale = string.Empty;
             }
@@ -114,7 +126,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Update(LieuSelectionne);
-                CollectionViewSource.GetDefaultView(Lieux).Refresh();
+                //CollectionViewSource.GetDefaultView(Lieux).Refresh();
+                Rafraichir();
                 ErreurGlobale = string.Empty;
             }
             catch (InvalidOperationException ex)
@@ -131,7 +144,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Delete(LieuSelectionne);
-                Lieux.Remove(LieuSelectionne);
+                //Lieux.Remove(LieuSelectionne);
+                Rafraichir();
                 LieuSelectionne = null;
                 NomSelectionne = string.Empty;
                 ErreurGlobale = string.Empty;

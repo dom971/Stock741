@@ -68,7 +68,7 @@ namespace Stock741.ViewModels
         {
             get => _erreurGlobale;
             set { _erreurGlobale = value; OnPropertyChanged(); }
-        }
+        }             
 
         public ICommand AjouterForfaitCommand { get; }
         public ICommand ModifierForfaitCommand { get; }
@@ -84,6 +84,18 @@ namespace Stock741.ViewModels
             AjouterForfaitCommand = new RelayCommand(AjouterForfait);
             ModifierForfaitCommand = new RelayCommand(ModifierForfait);
             SupprimerForfaitCommand = new RelayCommand(SupprimerForfait);
+        }
+
+        public void Rafraichir()
+        {
+            Forfaits.Clear();
+            foreach (var m in _repository.GetAll())
+                Forfaits.Add(m);
+        }
+
+        public void EffacerErreur()
+        {
+            ErreurGlobale = string.Empty;
         }
 
         private void ValidateNom()
@@ -123,7 +135,8 @@ namespace Stock741.ViewModels
             {
                 _repository.Add(forfait);
                 forfait.Operateur = OperateurSelectionne;
-                Forfaits.Add(forfait);
+                //Forfaits.Add(forfait);
+                Rafraichir();
                 NomSelectionne = string.Empty;
                 ActifSelectionne = true;
                 OperateurSelectionne = null;
@@ -164,7 +177,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Update(ForfaitSelectionne);
-                CollectionViewSource.GetDefaultView(Forfaits).Refresh();
+                //CollectionViewSource.GetDefaultView(Forfaits).Refresh();
+                Rafraichir();
                 ErreurGlobale = string.Empty;
             }
             catch (InvalidOperationException ex)
@@ -184,7 +198,8 @@ namespace Stock741.ViewModels
             try
             {
                 _repository.Delete(ForfaitSelectionne);
-                Forfaits.Remove(ForfaitSelectionne);
+                //Forfaits.Remove(ForfaitSelectionne);
+                Rafraichir();
                 ForfaitSelectionne = null;
                 NomSelectionne = string.Empty;
                 ActifSelectionne = true;

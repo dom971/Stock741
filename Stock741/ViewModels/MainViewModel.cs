@@ -88,52 +88,72 @@ namespace Stock741.ViewModels
             switch (parametre)
             {
                 case "Lieux":
+                    _lieuViewModel.Rafraichir();
+                    _lieuViewModel.EffacerErreur();
                     VueActuelle = _lieuViewModel;
                     TitreVueActuelle = "Lieux";
                     VueActive = "Lieux";
                     break;
                 case "Marques":
+                    _marqueViewModel.Rafraichir();
+                    _marqueViewModel.EffacerErreur();
                     VueActuelle = _marqueViewModel;
                     TitreVueActuelle = "Marques";
                     VueActive = "Marques";
                     break;
                 case "Materiels":
+                    _materielViewModel.Rafraichir();
+                    _materielViewModel.EffacerErreur();
                     VueActuelle = _materielViewModel;
                     TitreVueActuelle = "Matériels";
                     VueActive = "Materiels";
                     break;
                 case "Fiches":
+                    _ficheViewModel.Rafraichir();
+                    _ficheViewModel.EffacerErreur();
                     VueActuelle = _ficheViewModel;
                     TitreVueActuelle = "Fiches";
                     VueActive = "Fiches";
                     break;
                 case "Modeles":
                     _modeleViewModel.Rafraichir();
+                    _modeleViewModel.EffacerErreur();
+                    _modeleViewModel.RafraichirFiltres();
                     VueActuelle = _modeleViewModel;
                     TitreVueActuelle = "Modèles";
                     VueActive = "Modeles";
                     break;
                 case "Statuts":
+                    _statutViewModel.Rafraichir();
+                    _statutViewModel.EffacerErreur();
                     VueActuelle = _statutViewModel;
                     TitreVueActuelle = "Statuts";
                     VueActive = "Statuts";
                     break;
                 case "Fournisseurs":
+                    _fournisseurViewModel.Rafraichir();
+                    _fournisseurViewModel.EffacerErreur();
                     VueActuelle = _fournisseurViewModel;
                     TitreVueActuelle = "Fournisseurs";
                     VueActive = "Fournisseurs";
                     break;
                 case "Operateurs":
+                    _operateurViewModel.Rafraichir();
+                    _operateurViewModel.EffacerErreur();
                     VueActuelle = _operateurViewModel;
                     TitreVueActuelle = "Opérateurs";
                     VueActive = "Operateurs";
                     break;
                 case "Forfaits":
+                    _forfaitViewModel.Rafraichir();
+                    _forfaitViewModel.EffacerErreur();
                     VueActuelle = _forfaitViewModel;
                     TitreVueActuelle = "Forfaits";
                     VueActive = "Forfaits";
                     break;
                 case "Eds":
+                    _edsViewModel.Rafraichir();
+                    _edsViewModel.EffacerErreur();
                     VueActuelle = _edsViewModel;
                     TitreVueActuelle = "EDS";
                     VueActive = "Eds";

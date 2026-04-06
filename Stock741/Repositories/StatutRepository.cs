@@ -16,7 +16,10 @@ namespace Stock741.Repositories
 
         public List<Statut> GetAll()
         {
-            return _context.Statuts.OrderBy(s => s.Nom).ToList();
+            return _context.Statuts
+                .AsNoTracking()
+                .OrderBy(s => s.Nom)
+                .ToList();
         }
 
         public void Add(Statut statut)
