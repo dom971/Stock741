@@ -1,5 +1,5 @@
 ﻿using System.Collections.ObjectModel;
-using System.Windows.Data;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Stock741.Commands;
 using Stock741.Models;
@@ -169,7 +169,7 @@ namespace Stock741.ViewModels
         {
             get => _erreurGlobale;
             set { _erreurGlobale = value; OnPropertyChanged(); }
-        }        
+        }
 
         public ICommand AjouterEdsCommand { get; }
         public ICommand ModifierEdsCommand { get; }
@@ -179,24 +179,12 @@ namespace Stock741.ViewModels
         public EdsViewModel(EdsRepository repository)
         {
             _repository = repository;
-            EdsList = new ObservableCollection<Eds>(_repository.GetAll());
+            EdsList = new ObservableCollection<Eds>();
 
-            AjouterEdsCommand = new RelayCommand(AjouterEds);
-            ModifierEdsCommand = new RelayCommand(ModifierEds);
-            SupprimerEdsCommand = new RelayCommand(SupprimerEds);
+            AjouterEdsCommand = new AsyncRelayCommand(AjouterEds);
+            ModifierEdsCommand = new AsyncRelayCommand(ModifierEds);
+            SupprimerEdsCommand = new AsyncRelayCommand(SupprimerEds);
             InitialiserEdsCommand = new RelayCommand(InitialiserEds);
-        }
-
-        public void Rafraichir()
-        {
-            EdsList.Clear();
-            foreach (var m in _repository.GetAll())
-                EdsList.Add(m);
-        }
-
-        public void EffacerErreur()
-        {
-            ErreurGlobale = string.Empty;
         }
 
         private void ValidateCnx()
@@ -244,7 +232,23 @@ namespace Stock741.ViewModels
             ResetChamps();
         }
 
-        private void AjouterEds(object obj)
+        public async Task Rafraichir()
+        {
+            var liste = await _repository.GetAll();
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                EdsList.Clear();
+                foreach (var e in liste)
+                    EdsList.Add(e);
+            });
+        }
+
+        public void EffacerErreur()
+        {
+            ErreurGlobale = string.Empty;
+        }
+
+        private async Task AjouterEds(object obj)
         {
             ValidateCnx();
             ValidateNom();
@@ -275,9 +279,8 @@ namespace Stock741.ViewModels
 
             try
             {
-                _repository.Add(eds);                
-                //EdsList.Add(eds);
-                Rafraichir();
+                await _repository.Add(eds);
+                await Rafraichir();
                 ResetChamps();
             }
             catch (InvalidOperationException ex)
@@ -286,7 +289,7 @@ namespace Stock741.ViewModels
             }
         }
 
-        private void ModifierEds(object obj)
+        private async Task ModifierEds(object obj)
         {
             if (EdsSelectionne == null) return;
             ValidateCnx();
@@ -331,9 +334,8 @@ namespace Stock741.ViewModels
 
             try
             {
-                _repository.Update(EdsSelectionne);
-                //CollectionViewSource.GetDefaultView(EdsList).Refresh();
-                Rafraichir();
+                await _repository.Update(EdsSelectionne);
+                await Rafraichir();
                 ErreurGlobale = string.Empty;
             }
             catch (InvalidOperationException ex)
@@ -357,15 +359,14 @@ namespace Stock741.ViewModels
             }
         }
 
-        private void SupprimerEds(object obj)
+        private async Task SupprimerEds(object obj)
         {
             if (EdsSelectionne == null) return;
 
             try
             {
-                _repository.Delete(EdsSelectionne);
-                //EdsList.Remove(EdsSelectionne);
-                Rafraichir();
+                await _repository.Delete(EdsSelectionne);
+                await Rafraichir();
                 EdsSelectionne = null;
                 ResetChamps();
             }

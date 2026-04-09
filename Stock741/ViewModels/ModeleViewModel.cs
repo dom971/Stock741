@@ -1,6 +1,5 @@
-﻿
-using System.Collections.ObjectModel;
-using System.Windows.Data;
+﻿using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Stock741.Commands;
 using Stock741.Models;
@@ -72,6 +71,27 @@ namespace Stock741.ViewModels
             }
         }
 
+        private string _filtreNom = string.Empty;
+        public string FiltreNom
+        {
+            get => _filtreNom;
+            set { _filtreNom = value; OnPropertyChanged(); AppliquerFiltre(); }
+        }
+
+        private Marque _filtreMarque;
+        public Marque FiltreMarque
+        {
+            get => _filtreMarque;
+            set { _filtreMarque = value; OnPropertyChanged(); AppliquerFiltre(); }
+        }
+
+        private Materiel _filtreMateriel;
+        public Materiel FiltreMateriel
+        {
+            get => _filtreMateriel;
+            set { _filtreMateriel = value; OnPropertyChanged(); AppliquerFiltre(); }
+        }
+
         private string _erreurNom;
         public string ErreurNom
         {
@@ -96,36 +116,11 @@ namespace Stock741.ViewModels
             set { _erreurGlobale = value; OnPropertyChanged(); }
         }
 
-
-        //Filtres
-        private string _filtreNom = string.Empty;
-        public string FiltreNom
-        {
-            get => _filtreNom;
-            set { _filtreNom = value; OnPropertyChanged(); AppliquerFiltre(); }
-        }
-
-        private Marque _filtreMarque;
-        public Marque FiltreMarque
-        {
-            get => _filtreMarque;
-            set { _filtreMarque = value; OnPropertyChanged(); AppliquerFiltre(); }
-        }
-
-        private Materiel _filtreMateriel;
-        public Materiel FiltreMateriel
-        {
-            get => _filtreMateriel;
-            set { _filtreMateriel = value; OnPropertyChanged(); AppliquerFiltre(); }
-        }      
-
-        public ICommand ReinitialiserfiltreCommand { get; }
-
         public ICommand AjouterModeleCommand { get; }
         public ICommand ModifierModeleCommand { get; }
         public ICommand SupprimerModeleCommand { get; }
         public ICommand ParcourirPhotoCommand { get; }
-                
+        public ICommand ReinitialiserFiltreCommand { get; }
 
         public ModeleViewModel(ModeleRepository repository,
                                MarqueRepository marqueRepository,
@@ -135,44 +130,15 @@ namespace Stock741.ViewModels
             _marqueRepository = marqueRepository;
             _materielRepository = materielRepository;
 
-            Modeles = new ObservableCollection<Modele>(_repository.GetAll());
-            Marques = new ObservableCollection<Marque>(_marqueRepository.GetAll());
-            Materiels = new ObservableCollection<Materiel>(_materielRepository.GetAll());
+            Modeles = new ObservableCollection<Modele>();
+            Marques = new ObservableCollection<Marque>();
+            Materiels = new ObservableCollection<Materiel>();
 
-            AjouterModeleCommand = new RelayCommand(AjouterModele);
-            ModifierModeleCommand = new RelayCommand(ModifierModele);
-            SupprimerModeleCommand = new RelayCommand(SupprimerModele);
+            AjouterModeleCommand = new AsyncRelayCommand(AjouterModele);
+            ModifierModeleCommand = new AsyncRelayCommand(ModifierModele);
+            SupprimerModeleCommand = new AsyncRelayCommand(SupprimerModele);
             ParcourirPhotoCommand = new RelayCommand(ParcourirPhoto);
-
-
-            ReinitialiserfiltreCommand = new RelayCommand(ReinitialiserFiltre);
-
-            // Active le filtre sur la collection
-            CollectionViewSource.GetDefaultView(Modeles).Filter = FiltrerModele;
-
-        }
-
-        public void Rafraichir()
-        {
-            Modeles.Clear();
-            foreach (var m in _repository.GetAll())
-                Modeles.Add(m);
-        }
-
-        public void EffacerErreur()
-        {
-            ErreurGlobale = string.Empty;
-        }
-
-        public void RafraichirFiltres()
-        {
-            Marques.Clear();
-            foreach (var m in _marqueRepository.GetAll())
-                Marques.Add(m);
-
-            Materiels.Clear();
-            foreach (var m in _materielRepository.GetAll())
-                Materiels.Add(m);
+            ReinitialiserFiltreCommand = new RelayCommand(ReinitialiserFiltre);
         }
 
         private void ValidateNom()
@@ -194,18 +160,6 @@ namespace Stock741.ViewModels
                 ErreurChemin = string.Empty;
         }
 
-        private void ParcourirPhoto(object obj)
-        {
-            var dialog = new Microsoft.Win32.OpenFileDialog
-            {
-                Filter = "Images|*.jpg;*.jpeg;*.png;*.bmp;*.gif",
-                Title = "Sélectionner une photo"
-            };
-
-            if (dialog.ShowDialog() == true)
-                CheminPhotoSelectionne = System.IO.Path.GetFileName(dialog.FileName);
-        }
-
         private bool FiltrerModele(object obj)
         {
             if (obj is not Modele modele) return false;
@@ -224,7 +178,7 @@ namespace Stock741.ViewModels
 
         private void AppliquerFiltre()
         {
-            CollectionViewSource.GetDefaultView(Modeles).Refresh();
+            System.Windows.Data.CollectionViewSource.GetDefaultView(Modeles).Refresh();
         }
 
         private void ReinitialiserFiltre(object obj)
@@ -234,7 +188,49 @@ namespace Stock741.ViewModels
             FiltreMateriel = null;
         }
 
-        private void AjouterModele(object obj)
+        private void ParcourirPhoto(object obj)
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "Images|*.jpg;*.jpeg;*.png;*.bmp;*.gif",
+                Title = "Sélectionner une photo"
+            };
+
+            if (dialog.ShowDialog() == true)
+                CheminPhotoSelectionne = System.IO.Path.GetFileName(dialog.FileName);
+        }
+
+        public async Task Rafraichir()
+        {
+            var liste = await _repository.GetAll();
+            var marques = await _marqueRepository.GetAll();
+            var materiels = await _materielRepository.GetAll();
+
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                Modeles.Clear();
+                foreach (var m in liste)
+                    Modeles.Add(m);
+
+                Marques.Clear();
+                foreach (var m in marques)
+                    Marques.Add(m);
+
+                Materiels.Clear();
+                foreach (var m in materiels)
+                    Materiels.Add(m);
+
+                var view = System.Windows.Data.CollectionViewSource.GetDefaultView(Modeles);
+                view.Filter = FiltrerModele;
+            });
+        }
+
+        public void EffacerErreur()
+        {
+            ErreurGlobale = string.Empty;
+        }
+
+        private async Task AjouterModele(object obj)
         {
             ValidateNom();
             ValidateChemin();
@@ -266,11 +262,8 @@ namespace Stock741.ViewModels
 
             try
             {
-                _repository.Add(modele);
-                modele.Marque = MarqueSelectionnee;
-                modele.Materiel = MaterielSelectionne;
-                //Modeles.Add(modele);
-                Rafraichir();
+                await _repository.Add(modele);
+                await Rafraichir();
                 NomSelectionne = string.Empty;
                 CheminPhotoSelectionne = string.Empty;
                 ActifSelectionne = true;
@@ -281,16 +274,10 @@ namespace Stock741.ViewModels
             catch (InvalidOperationException ex)
             {
                 ErreurGlobale = ex.Message;
-                ModeleSelectionne = null;
-                NomSelectionne = string.Empty;
-                CheminPhotoSelectionne = string.Empty;
-                ActifSelectionne = true;
-                MarqueSelectionnee = null;
-                MaterielSelectionne = null;
             }
         }
 
-        private void ModifierModele(object obj)
+        private async Task ModifierModele(object obj)
         {
             if (ModeleSelectionne == null) return;
             ValidateNom();
@@ -323,14 +310,11 @@ namespace Stock741.ViewModels
             ModeleSelectionne.Actif = ActifSelectionne;
             ModeleSelectionne.MarqueId = MarqueSelectionnee.Id;
             ModeleSelectionne.MaterielId = MaterielSelectionne.Id;
-            ModeleSelectionne.Marque = MarqueSelectionnee;
-            ModeleSelectionne.Materiel = MaterielSelectionne;
 
             try
             {
-                _repository.Update(ModeleSelectionne);
-                //CollectionViewSource.GetDefaultView(Modeles).Refresh();
-                Rafraichir();
+                await _repository.Update(ModeleSelectionne);
+                await Rafraichir();
                 ErreurGlobale = string.Empty;
             }
             catch (InvalidOperationException ex)
@@ -344,15 +328,14 @@ namespace Stock741.ViewModels
             }
         }
 
-        private void SupprimerModele(object obj)
+        private async Task SupprimerModele(object obj)
         {
             if (ModeleSelectionne == null) return;
 
             try
             {
-                _repository.Delete(ModeleSelectionne);
-                //Modeles.Remove(ModeleSelectionne);
-                Rafraichir();
+                await _repository.Delete(ModeleSelectionne);
+                await Rafraichir();
                 ModeleSelectionne = null;
                 NomSelectionne = string.Empty;
                 CheminPhotoSelectionne = string.Empty;
@@ -364,6 +347,12 @@ namespace Stock741.ViewModels
             catch (InvalidOperationException ex)
             {
                 ErreurGlobale = ex.Message;
+                ModeleSelectionne = null;
+                NomSelectionne = string.Empty;
+                CheminPhotoSelectionne = string.Empty;
+                ActifSelectionne = true;
+                MarqueSelectionnee = null;
+                MaterielSelectionne = null;
             }
         }
     }

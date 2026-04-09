@@ -7,80 +7,74 @@ namespace Stock741.Repositories
 {
     public class StatutRepository
     {
-        private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        public StatutRepository(AppDbContext context)
+        public StatutRepository(IDbContextFactory<AppDbContext> contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
-        public List<Statut> GetAll()
+        public async Task<List<Statut>> GetAll()
         {
-            return _context.Statuts
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Statuts
                 .AsNoTracking()
                 .OrderBy(s => s.Nom)
-                .ToList();
+                .ToListAsync();
         }
 
-        public void Add(Statut statut)
+        public async Task Add(Statut statut)
         {
-            _context.Statuts.Add(statut);
             try
             {
-                _context.SaveChanges();
+                using var context = _contextFactory.CreateDbContext();
+                context.Statuts.Add(statut);
+                await context.SaveChangesAsync();
             }
             catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 2601 ||
                                                 (ex.InnerException as SqlException)?.Number == 2627)
             {
-                _context.Entry(statut).State = EntityState.Detached;
                 throw new InvalidOperationException("Un statut avec ce nom existe déjà.", ex);
             }
         }
 
-        public void Update(Statut statut)
+        public async Task Update(Statut statut)
         {
-            _context.Statuts.Update(statut);
             try
             {
-                _context.SaveChanges();
+                using var context = _contextFactory.CreateDbContext();
+                context.Statuts.Update(statut);
+                await context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new InvalidOperationException("Ce statut a été modifié ou supprimé par un autre utilisateur. Veuillez rafraîchir la vue.");
             }
             catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 2601 ||
                                                 (ex.InnerException as SqlException)?.Number == 2627)
             {
-                _context.Entry(statut).State = EntityState.Detached;
                 throw new InvalidOperationException("Un statut avec ce nom existe déjà.", ex);
             }
         }
 
-        public void Delete(Statut statut)
+        public async Task Delete(Statut statut)
         {
             try
             {
-                var connexion = _context.Database.GetDbConnection();
-                connexion.Open();
-
-                try
-                {
-                    using var commande = connexion.CreateCommand();
-                    commande.CommandText = "DELETE FROM Statuts WHERE Id = @Id";
-                    var param = commande.CreateParameter();
-                    param.ParameterName = "@Id";
-                    param.Value = statut.Id;
-                    commande.Parameters.Add(param);
-                    commande.ExecuteNonQuery();
-                }
-                finally
-                {
-                    connexion.Close();
-                }
+                using var context = _contextFactory.CreateDbContext();
+                var tracked = await context.Statuts.FindAsync(statut.Id);
+                if (tracked == null)
+                    throw new InvalidOperationException("Ce statut a été supprimé par un autre utilisateur. Veuillez rafraîchir la vue.");
+                context.Statuts.Remove(tracked);
+                await context.SaveChangesAsync();
             }
-            catch (SqlException ex) when (ex.Number == 547)
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
+            catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 547)
             {
                 throw new InvalidOperationException("Impossible de supprimer : ce statut est utilisé.", ex);
-            }
-            catch (SqlException ex)
-            {
-                throw new InvalidOperationException("Erreur lors de la suppression.", ex);
             }
         }
     }

@@ -1,5 +1,5 @@
 ﻿using System.Collections.ObjectModel;
-using System.Windows.Data;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Stock741.Commands;
 using Stock741.Models;
@@ -67,7 +67,7 @@ namespace Stock741.ViewModels
         {
             get => _erreurGlobale;
             set { _erreurGlobale = value; OnPropertyChanged(); }
-        }      
+        }
 
         public ICommand AjouterMaterielCommand { get; }
         public ICommand ModifierMaterielCommand { get; }
@@ -77,24 +77,12 @@ namespace Stock741.ViewModels
         {
             _repository = repository;
             _ficheRepository = ficheRepository;
-            Materiels = new ObservableCollection<Materiel>(_repository.GetAll());
-            Fiches = new ObservableCollection<Fiche>(_ficheRepository.GetAll());
+            Materiels = new ObservableCollection<Materiel>();
+            Fiches = new ObservableCollection<Fiche>();
 
-            AjouterMaterielCommand = new RelayCommand(AjouterMateriel);
-            ModifierMaterielCommand = new RelayCommand(ModifierMateriel);
-            SupprimerMaterielCommand = new RelayCommand(SupprimerMateriel);
-        }
-
-        public void Rafraichir()
-        {
-            Materiels.Clear();
-            foreach (var m in _repository.GetAll())
-                Materiels.Add(m);
-        }
-
-        public void EffacerErreur()
-        {
-            ErreurGlobale = string.Empty;
+            AjouterMaterielCommand = new AsyncRelayCommand(AjouterMateriel);
+            ModifierMaterielCommand = new AsyncRelayCommand(ModifierMateriel);
+            SupprimerMaterielCommand = new AsyncRelayCommand(SupprimerMateriel);
         }
 
         private void ValidateNom()
@@ -108,7 +96,28 @@ namespace Stock741.ViewModels
                 ErreurNom = string.Empty;
         }
 
-        private void AjouterMateriel(object obj)
+        public async Task Rafraichir()
+        {
+            var materiels = await _repository.GetAll();
+            var fiches = await _ficheRepository.GetAll();
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                Materiels.Clear();
+                foreach (var m in materiels)
+                    Materiels.Add(m);
+
+                Fiches.Clear();
+                foreach (var f in fiches)
+                    Fiches.Add(f);
+            });
+        }
+
+        public void EffacerErreur()
+        {
+            ErreurGlobale = string.Empty;
+        }
+
+        private async Task AjouterMateriel(object obj)
         {
             ValidateNom();
             if (HasErreur)
@@ -132,10 +141,8 @@ namespace Stock741.ViewModels
 
             try
             {
-                _repository.Add(materiel);
-                materiel.Fiche = FicheSelectionnee;
-                //Materiels.Add(materiel);
-                Rafraichir();
+                await _repository.Add(materiel);
+                await Rafraichir();
                 NomSelectionne = string.Empty;
                 ActifSelectionne = true;
                 FicheSelectionnee = null;
@@ -147,7 +154,7 @@ namespace Stock741.ViewModels
             }
         }
 
-        private void ModifierMateriel(object obj)
+        private async Task ModifierMateriel(object obj)
         {
             if (MaterielSelectionne == null) return;
             ValidateNom();
@@ -175,9 +182,8 @@ namespace Stock741.ViewModels
 
             try
             {
-                _repository.Update(MaterielSelectionne);
-                //CollectionViewSource.GetDefaultView(Materiels).Refresh();
-                Rafraichir();
+                await _repository.Update(MaterielSelectionne);
+                await Rafraichir();
                 ErreurGlobale = string.Empty;
             }
             catch (InvalidOperationException ex)
@@ -190,15 +196,14 @@ namespace Stock741.ViewModels
             }
         }
 
-        private void SupprimerMateriel(object obj)
+        private async Task SupprimerMateriel(object obj)
         {
             if (MaterielSelectionne == null) return;
 
             try
             {
-                _repository.Delete(MaterielSelectionne);
-                //Materiels.Remove(MaterielSelectionne);
-                Rafraichir();
+                await _repository.Delete(MaterielSelectionne);
+                await Rafraichir();
                 MaterielSelectionne = null;
                 NomSelectionne = string.Empty;
                 ActifSelectionne = true;

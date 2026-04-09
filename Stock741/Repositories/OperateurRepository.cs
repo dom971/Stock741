@@ -7,80 +7,74 @@ namespace Stock741.Repositories
 {
     public class OperateurRepository
     {
-        private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        public OperateurRepository(AppDbContext context)
+        public OperateurRepository(IDbContextFactory<AppDbContext> contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
-        public List<Operateur> GetAll()
+        public async Task<List<Operateur>> GetAll()
         {
-            return _context.Operateurs
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Operateurs
                 .AsNoTracking()
                 .OrderBy(o => o.Nom)
-                .ToList();
+                .ToListAsync();
         }
 
-        public void Add(Operateur operateur)
+        public async Task Add(Operateur operateur)
         {
-            _context.Operateurs.Add(operateur);
             try
             {
-                _context.SaveChanges();
+                using var context = _contextFactory.CreateDbContext();
+                context.Operateurs.Add(operateur);
+                await context.SaveChangesAsync();
             }
             catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 2601 ||
                                                 (ex.InnerException as SqlException)?.Number == 2627)
             {
-                _context.Entry(operateur).State = EntityState.Detached;
                 throw new InvalidOperationException("Un opérateur avec ce nom existe déjà.", ex);
             }
         }
 
-        public void Update(Operateur operateur)
+        public async Task Update(Operateur operateur)
         {
-            _context.Operateurs.Update(operateur);
             try
             {
-                _context.SaveChanges();
+                using var context = _contextFactory.CreateDbContext();
+                context.Operateurs.Update(operateur);
+                await context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new InvalidOperationException("Cet opérateur a été modifié ou supprimé par un autre utilisateur. Veuillez rafraîchir la vue.");
             }
             catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 2601 ||
                                                 (ex.InnerException as SqlException)?.Number == 2627)
             {
-                _context.Entry(operateur).State = EntityState.Detached;
                 throw new InvalidOperationException("Un opérateur avec ce nom existe déjà.", ex);
             }
         }
 
-        public void Delete(Operateur operateur)
+        public async Task Delete(Operateur operateur)
         {
             try
             {
-                var connexion = _context.Database.GetDbConnection();
-                connexion.Open();
-
-                try
-                {
-                    using var commande = connexion.CreateCommand();
-                    commande.CommandText = "DELETE FROM Operateurs WHERE Id = @Id";
-                    var param = commande.CreateParameter();
-                    param.ParameterName = "@Id";
-                    param.Value = operateur.Id;
-                    commande.Parameters.Add(param);
-                    commande.ExecuteNonQuery();
-                }
-                finally
-                {
-                    connexion.Close();
-                }
+                using var context = _contextFactory.CreateDbContext();
+                var tracked = await context.Operateurs.FindAsync(operateur.Id);
+                if (tracked == null)
+                    throw new InvalidOperationException("Cet opérateur a été supprimé par un autre utilisateur. Veuillez rafraîchir la vue.");
+                context.Operateurs.Remove(tracked);
+                await context.SaveChangesAsync();
             }
-            catch (SqlException ex) when (ex.Number == 547)
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
+            catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 547)
             {
                 throw new InvalidOperationException("Impossible de supprimer : cet opérateur est utilisé.", ex);
-            }
-            catch (SqlException ex)
-            {
-                throw new InvalidOperationException("Erreur lors de la suppression.", ex);
             }
         }
     }

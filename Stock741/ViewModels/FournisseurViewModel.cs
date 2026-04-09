@@ -1,5 +1,5 @@
 ﻿using System.Collections.ObjectModel;
-using System.Windows.Data;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Stock741.Commands;
 using Stock741.Models;
@@ -47,7 +47,7 @@ namespace Stock741.ViewModels
         {
             get => _erreurGlobale;
             set { _erreurGlobale = value; OnPropertyChanged(); }
-        }        
+        }
 
         public ICommand AjouterFournisseurCommand { get; }
         public ICommand ModifierFournisseurCommand { get; }
@@ -56,23 +56,11 @@ namespace Stock741.ViewModels
         public FournisseurViewModel(FournisseurRepository repository)
         {
             _repository = repository;
-            Fournisseurs = new ObservableCollection<Fournisseur>(_repository.GetAll());
+            Fournisseurs = new ObservableCollection<Fournisseur>();
 
-            AjouterFournisseurCommand = new RelayCommand(AjouterFournisseur);
-            ModifierFournisseurCommand = new RelayCommand(ModifierFournisseur);
-            SupprimerFournisseurCommand = new RelayCommand(SupprimerFournisseur);
-        }
-
-        public void Rafraichir()
-        {
-            Fournisseurs.Clear();
-            foreach (var m in _repository.GetAll())
-                Fournisseurs.Add(m);
-        }
-
-        public void EffacerErreur()
-        {
-            ErreurGlobale = string.Empty;
+            AjouterFournisseurCommand = new AsyncRelayCommand(AjouterFournisseur);
+            ModifierFournisseurCommand = new AsyncRelayCommand(ModifierFournisseur);
+            SupprimerFournisseurCommand = new AsyncRelayCommand(SupprimerFournisseur);
         }
 
         private void ValidateNom()
@@ -86,7 +74,23 @@ namespace Stock741.ViewModels
                 ErreurNom = string.Empty;
         }
 
-        private void AjouterFournisseur(object obj)
+        public async Task Rafraichir()
+        {
+            var liste = await _repository.GetAll();
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                Fournisseurs.Clear();
+                foreach (var f in liste)
+                    Fournisseurs.Add(f);
+            });
+        }
+
+        public void EffacerErreur()
+        {
+            ErreurGlobale = string.Empty;
+        }
+
+        private async Task AjouterFournisseur(object obj)
         {
             ValidateNom();
             if (HasErreur)
@@ -99,9 +103,8 @@ namespace Stock741.ViewModels
 
             try
             {
-                _repository.Add(fournisseur);
-                //Fournisseurs.Add(fournisseur);
-                Rafraichir();
+                await _repository.Add(fournisseur);
+                await Rafraichir();
                 NomSelectionne = string.Empty;
                 ErreurGlobale = string.Empty;
             }
@@ -111,7 +114,7 @@ namespace Stock741.ViewModels
             }
         }
 
-        private void ModifierFournisseur(object obj)
+        private async Task ModifierFournisseur(object obj)
         {
             if (FournisseurSelectionne == null) return;
             ValidateNom();
@@ -126,9 +129,8 @@ namespace Stock741.ViewModels
 
             try
             {
-                _repository.Update(FournisseurSelectionne);
-                //CollectionViewSource.GetDefaultView(Fournisseurs).Refresh();
-                Rafraichir();
+                await _repository.Update(FournisseurSelectionne);
+                await Rafraichir();
                 ErreurGlobale = string.Empty;
             }
             catch (InvalidOperationException ex)
@@ -138,15 +140,14 @@ namespace Stock741.ViewModels
             }
         }
 
-        private void SupprimerFournisseur(object obj)
+        private async Task SupprimerFournisseur(object obj)
         {
             if (FournisseurSelectionne == null) return;
 
             try
             {
-                _repository.Delete(FournisseurSelectionne);
-                //Fournisseurs.Remove(FournisseurSelectionne);
-                Rafraichir();
+                await _repository.Delete(FournisseurSelectionne);
+                await Rafraichir();
                 FournisseurSelectionne = null;
                 NomSelectionne = string.Empty;
                 ErreurGlobale = string.Empty;

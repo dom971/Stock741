@@ -34,9 +34,12 @@ namespace Stock741
 
             var services = new ServiceCollection();
 
-            services.AddDbContext<AppDbContext>(options =>
+            //services.AddDbContext<AppDbContext>(options =>
+            //    options.UseSqlServer(config.GetConnectionString("Default")));
+
+            services.AddDbContextFactory<AppDbContext>(options =>
                 options.UseSqlServer(config.GetConnectionString("Default")));
-           
+
             services.AddTransient<MarqueRepository>();            
             services.AddTransient<MarqueViewModel>();
 

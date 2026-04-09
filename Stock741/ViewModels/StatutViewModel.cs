@@ -1,5 +1,5 @@
 ﻿using System.Collections.ObjectModel;
-using System.Windows.Data;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Stock741.Commands;
 using Stock741.Models;
@@ -67,23 +67,11 @@ namespace Stock741.ViewModels
         public StatutViewModel(StatutRepository repository)
         {
             _repository = repository;
-            Statuts = new ObservableCollection<Statut>(_repository.GetAll());
+            Statuts = new ObservableCollection<Statut>();
 
-            AjouterStatutCommand = new RelayCommand(AjouterStatut);
-            ModifierStatutCommand = new RelayCommand(ModifierStatut);
-            SupprimerStatutCommand = new RelayCommand(SupprimerStatut);
-        }
-
-        public void Rafraichir()
-        {
-            Statuts.Clear();
-            foreach (var m in _repository.GetAll())
-                Statuts.Add(m);
-        }
-
-        public void EffacerErreur()
-        {
-            ErreurGlobale = string.Empty;
+            AjouterStatutCommand = new AsyncRelayCommand(AjouterStatut);
+            ModifierStatutCommand = new AsyncRelayCommand(ModifierStatut);
+            SupprimerStatutCommand = new AsyncRelayCommand(SupprimerStatut);
         }
 
         private void ValidateNom()
@@ -97,7 +85,23 @@ namespace Stock741.ViewModels
                 ErreurNom = string.Empty;
         }
 
-        private void AjouterStatut(object obj)
+        public async Task Rafraichir()
+        {
+            var liste = await _repository.GetAll();
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                Statuts.Clear();
+                foreach (var s in liste)
+                    Statuts.Add(s);
+            });
+        }
+
+        public void EffacerErreur()
+        {
+            ErreurGlobale = string.Empty;
+        }
+
+        private async Task AjouterStatut(object obj)
         {
             ValidateNom();
             if (HasErreur)
@@ -120,9 +124,8 @@ namespace Stock741.ViewModels
 
             try
             {
-                _repository.Add(statut);
-                //Statuts.Add(statut);
-                Rafraichir();
+                await _repository.Add(statut);
+                await Rafraichir();
                 NomSelectionne = string.Empty;
                 TypeSelectionne = null;
                 ErreurGlobale = string.Empty;
@@ -133,7 +136,7 @@ namespace Stock741.ViewModels
             }
         }
 
-        private void ModifierStatut(object obj)
+        private async Task ModifierStatut(object obj)
         {
             if (StatutSelectionne == null) return;
             ValidateNom();
@@ -157,9 +160,8 @@ namespace Stock741.ViewModels
 
             try
             {
-                _repository.Update(StatutSelectionne);
-                //CollectionViewSource.GetDefaultView(Statuts).Refresh();
-                Rafraichir();
+                await _repository.Update(StatutSelectionne);
+                await Rafraichir();
                 ErreurGlobale = string.Empty;
             }
             catch (InvalidOperationException ex)
@@ -170,15 +172,14 @@ namespace Stock741.ViewModels
             }
         }
 
-        private void SupprimerStatut(object obj)
+        private async Task SupprimerStatut(object obj)
         {
             if (StatutSelectionne == null) return;
 
             try
             {
-                _repository.Delete(StatutSelectionne);
-                //Statuts.Remove(StatutSelectionne);
-                Rafraichir();
+                await _repository.Delete(StatutSelectionne);
+                await Rafraichir();
                 StatutSelectionne = null;
                 NomSelectionne = string.Empty;
                 TypeSelectionne = null;

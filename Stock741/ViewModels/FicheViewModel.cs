@@ -1,5 +1,5 @@
 ﻿using System.Collections.ObjectModel;
-using System.Windows.Data;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Stock741.Commands;
 using Stock741.Models;
@@ -47,7 +47,7 @@ namespace Stock741.ViewModels
         {
             get => _erreurGlobale;
             set { _erreurGlobale = value; OnPropertyChanged(); }
-        }        
+        }
 
         public ICommand AjouterFicheCommand { get; }
         public ICommand ModifierFicheCommand { get; }
@@ -56,23 +56,11 @@ namespace Stock741.ViewModels
         public FicheViewModel(FicheRepository repository)
         {
             _repository = repository;
-            Fiches = new ObservableCollection<Fiche>(_repository.GetAll());
+            Fiches = new ObservableCollection<Fiche>();
 
-            AjouterFicheCommand = new RelayCommand(AjouterFiche);
-            ModifierFicheCommand = new RelayCommand(ModifierFiche);
-            SupprimerFicheCommand = new RelayCommand(SupprimerFiche);
-        }
-
-        public void Rafraichir()
-        {
-            Fiches.Clear();
-            foreach (var m in _repository.GetAll())
-                Fiches.Add(m);
-        }
-
-        public void EffacerErreur()
-        {
-            ErreurGlobale = string.Empty;
+            AjouterFicheCommand = new AsyncRelayCommand(AjouterFiche);
+            ModifierFicheCommand = new AsyncRelayCommand(ModifierFiche);
+            SupprimerFicheCommand = new AsyncRelayCommand(SupprimerFiche);
         }
 
         private void ValidateNom()
@@ -86,7 +74,23 @@ namespace Stock741.ViewModels
                 ErreurNom = string.Empty;
         }
 
-        private void AjouterFiche(object obj)
+        public async Task Rafraichir()
+        {
+            var liste = await _repository.GetAll();
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                Fiches.Clear();
+                foreach (var f in liste)
+                    Fiches.Add(f);
+            });
+        }
+
+        public void EffacerErreur()
+        {
+            ErreurGlobale = string.Empty;
+        }
+
+        private async Task AjouterFiche(object obj)
         {
             ValidateNom();
             if (HasErreur)
@@ -99,9 +103,8 @@ namespace Stock741.ViewModels
 
             try
             {
-                _repository.Add(fiche);
-                //Fiches.Add(fiche);
-                Rafraichir();
+                await _repository.Add(fiche);
+                await Rafraichir();
                 NomSelectionne = string.Empty;
                 ErreurGlobale = string.Empty;
             }
@@ -111,7 +114,7 @@ namespace Stock741.ViewModels
             }
         }
 
-        private void ModifierFiche(object obj)
+        private async Task ModifierFiche(object obj)
         {
             if (FicheSelectionnee == null) return;
             ValidateNom();
@@ -126,9 +129,8 @@ namespace Stock741.ViewModels
 
             try
             {
-                _repository.Update(FicheSelectionnee);
-                //CollectionViewSource.GetDefaultView(Fiches).Refresh();
-                Rafraichir();
+                await _repository.Update(FicheSelectionnee);
+                await Rafraichir();
                 ErreurGlobale = string.Empty;
             }
             catch (InvalidOperationException ex)
@@ -138,15 +140,14 @@ namespace Stock741.ViewModels
             }
         }
 
-        private void SupprimerFiche(object obj)
+        private async Task SupprimerFiche(object obj)
         {
             if (FicheSelectionnee == null) return;
 
             try
             {
-                _repository.Delete(FicheSelectionnee);
-                //Fiches.Remove(FicheSelectionnee);
-                Rafraichir();
+                await _repository.Delete(FicheSelectionnee);
+                await Rafraichir();
                 FicheSelectionnee = null;
                 NomSelectionne = string.Empty;
                 ErreurGlobale = string.Empty;

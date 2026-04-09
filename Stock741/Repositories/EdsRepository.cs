@@ -7,140 +7,75 @@ namespace Stock741.Repositories
 {
     public class EdsRepository
     {
-        private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        public EdsRepository(AppDbContext context)
+        public EdsRepository(IDbContextFactory<AppDbContext> contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
-        public List<Eds> GetAll()
+        public async Task<List<Eds>> GetAll()
         {
-            return _context.Eds
-                .AsNoTracking().
-                 OrderBy(e => e.Nom)               
-                .ToList();
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Eds
+                .AsNoTracking()
+                .OrderBy(e => e.Nom)
+                .ToListAsync();
         }
 
-        public void Add(Eds eds)
+        public async Task Add(Eds eds)
         {
-            _context.Eds.Add(eds);
             try
             {
-                _context.SaveChanges();
+                using var context = _contextFactory.CreateDbContext();
+                context.Eds.Add(eds);
+                await context.SaveChangesAsync();
             }
             catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 2601 ||
                                                 (ex.InnerException as SqlException)?.Number == 2627)
             {
-                _context.Entry(eds).State = EntityState.Detached;
                 throw new InvalidOperationException("Un EDS avec ce code existe déjà.", ex);
             }
         }
 
-        public void Update(Eds eds)
+        public async Task Update(Eds eds)
         {
-            _context.Eds.Update(eds);
             try
             {
-                _context.SaveChanges();
+                using var context = _contextFactory.CreateDbContext();
+                context.Eds.Update(eds);
+                await context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                _context.Entry(eds).State = EntityState.Detached;
-                throw new InvalidOperationException("Cet EDS a été modifié ou supprimé par un autre utilisateur. Veuillez rafraîchir la vue.", null);
+                throw new InvalidOperationException("Cet EDS a été modifié ou supprimé par un autre utilisateur. Veuillez rafraîchir la vue.");
             }
             catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 2601 ||
                                                 (ex.InnerException as SqlException)?.Number == 2627)
             {
-                _context.Entry(eds).State = EntityState.Detached;
                 throw new InvalidOperationException("Un EDS avec ce code existe déjà.", ex);
             }
         }
 
-        public void Delete(Eds eds)
+        public async Task Delete(Eds eds)
         {
             try
             {
-                var connexion = _context.Database.GetDbConnection();
-                connexion.Open();
-
-                try
-                {
-                    using var commande = connexion.CreateCommand();
-                    commande.CommandText = "DELETE FROM Eds WHERE Id = @Id";
-                    var param = commande.CreateParameter();
-                    param.ParameterName = "@Id";
-                    param.Value = eds.Id;
-                    commande.Parameters.Add(param);
-                    var lignesAffectees = commande.ExecuteNonQuery();
-
-                    if (lignesAffectees == 0)
-                        throw new InvalidOperationException("Cet EDS a été supprimé par un autre utilisateur. Veuillez rafraîchir la vue.");
-                }
-                finally
-                {
-                    connexion.Close();
-                }
+                using var context = _contextFactory.CreateDbContext();
+                var tracked = await context.Eds.FindAsync(eds.Id);
+                if (tracked == null)
+                    throw new InvalidOperationException("Cet EDS a été supprimé par un autre utilisateur. Veuillez rafraîchir la vue.");
+                context.Eds.Remove(tracked);
+                await context.SaveChangesAsync();
             }
             catch (InvalidOperationException)
             {
                 throw;
             }
-            catch (SqlException ex) when (ex.Number == 547)
+            catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 547)
             {
                 throw new InvalidOperationException("Impossible de supprimer : cet EDS est utilisé.", ex);
             }
-            catch (SqlException ex)
-            {
-                throw new InvalidOperationException("Erreur lors de la suppression.", ex);
-            }
         }
-
-        //public void Update(Eds eds)
-        //{
-        //    _context.Eds.Update(eds);
-        //    try
-        //    {
-        //        _context.SaveChanges();
-        //    }
-        //    catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 2601 ||
-        //                                        (ex.InnerException as SqlException)?.Number == 2627)
-        //    {
-        //        _context.Entry(eds).State = EntityState.Detached;
-        //        throw new InvalidOperationException("Un EDS avec ce code existe déjà.", ex);
-        //    }
-        //}
-
-        //public void Delete(Eds eds)
-        //{
-        //    try
-        //    {
-        //        var connexion = _context.Database.GetDbConnection();
-        //        connexion.Open();
-
-        //        try
-        //        {
-        //            using var commande = connexion.CreateCommand();
-        //            commande.CommandText = "DELETE FROM Eds WHERE Id = @Id";
-        //            var param = commande.CreateParameter();
-        //            param.ParameterName = "@Id";
-        //            param.Value = eds.Id;
-        //            commande.Parameters.Add(param);
-        //            commande.ExecuteNonQuery();
-        //        }
-        //        finally
-        //        {
-        //            connexion.Close();
-        //        }
-        //    }
-        //    catch (SqlException ex) when (ex.Number == 547)
-        //    {
-        //        throw new InvalidOperationException("Impossible de supprimer : cet EDS est utilisé.", ex);
-        //    }
-        //    catch (SqlException ex)
-        //    {
-        //        throw new InvalidOperationException("Erreur lors de la suppression.", ex);
-        //    }
-        //}
     }
 }

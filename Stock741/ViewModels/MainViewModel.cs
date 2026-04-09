@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿
+using System.Windows.Input;
 using Stock741.Commands;
 using Stock741.ViewModels;
 
@@ -40,7 +41,6 @@ namespace Stock741.ViewModels
         }
 
         public ICommand NaviguerVersCommand { get; }
-
         public ICommand QuitterCommand { get; }
 
         public MainViewModel(MarqueViewModel marqueViewModel,
@@ -65,94 +65,87 @@ namespace Stock741.ViewModels
             _fournisseurViewModel = fournisseurViewModel;
             _operateurViewModel = operateurViewModel;
             _forfaitViewModel = forfaitViewModel;
-
+            _edsViewModel = edsViewModel;
 
             NaviguerVersCommand = new RelayCommand(NaviguerVers);
-
             QuitterCommand = new RelayCommand(_ => System.Windows.Application.Current.Shutdown());
 
-            //Vue par défaut
+            // Vue par défaut
             VueActuelle = _marqueViewModel;
             TitreVueActuelle = "Marques";
-            _lieuViewModel = lieuViewModel;
-            _ficheViewModel = ficheViewModel;
-            _statutViewModel = statutViewModel;
-            _fournisseurViewModel = fournisseurViewModel;
-            _operateurViewModel = operateurViewModel;
-            _forfaitViewModel = forfaitViewModel;
-            _edsViewModel = edsViewModel;
+            VueActive = "Marques";
+            _ = _marqueViewModel.Rafraichir();
         }
 
         private void NaviguerVers(object parametre)
         {
             switch (parametre)
             {
-                case "Lieux":
-                    _lieuViewModel.Rafraichir();
-                    _lieuViewModel.EffacerErreur();
-                    VueActuelle = _lieuViewModel;
-                    TitreVueActuelle = "Lieux";
-                    VueActive = "Lieux";
-                    break;
                 case "Marques":
-                    _marqueViewModel.Rafraichir();
+                    _ = _marqueViewModel.Rafraichir();
                     _marqueViewModel.EffacerErreur();
                     VueActuelle = _marqueViewModel;
                     TitreVueActuelle = "Marques";
                     VueActive = "Marques";
                     break;
                 case "Materiels":
-                    _materielViewModel.Rafraichir();
+                    _ = _materielViewModel.Rafraichir();
                     _materielViewModel.EffacerErreur();
                     VueActuelle = _materielViewModel;
                     TitreVueActuelle = "Matériels";
                     VueActive = "Materiels";
                     break;
+                case "Modeles":
+                    _ = _modeleViewModel.Rafraichir();
+                    _modeleViewModel.EffacerErreur();
+                    VueActuelle = _modeleViewModel;
+                    TitreVueActuelle = "Modèles";
+                    VueActive = "Modeles";
+                    break;
+                case "Lieux":
+                    _ = _lieuViewModel.Rafraichir();
+                    _lieuViewModel.EffacerErreur();
+                    VueActuelle = _lieuViewModel;
+                    TitreVueActuelle = "Lieux";
+                    VueActive = "Lieux";
+                    break;
                 case "Fiches":
-                    _ficheViewModel.Rafraichir();
+                    _ = _ficheViewModel.Rafraichir();
                     _ficheViewModel.EffacerErreur();
                     VueActuelle = _ficheViewModel;
                     TitreVueActuelle = "Fiches";
                     VueActive = "Fiches";
                     break;
-                case "Modeles":
-                    _modeleViewModel.Rafraichir();
-                    _modeleViewModel.EffacerErreur();
-                    _modeleViewModel.RafraichirFiltres();
-                    VueActuelle = _modeleViewModel;
-                    TitreVueActuelle = "Modèles";
-                    VueActive = "Modeles";
-                    break;
                 case "Statuts":
-                    _statutViewModel.Rafraichir();
+                    _ = _statutViewModel.Rafraichir();
                     _statutViewModel.EffacerErreur();
                     VueActuelle = _statutViewModel;
                     TitreVueActuelle = "Statuts";
                     VueActive = "Statuts";
                     break;
                 case "Fournisseurs":
-                    _fournisseurViewModel.Rafraichir();
+                    _ = _fournisseurViewModel.Rafraichir();
                     _fournisseurViewModel.EffacerErreur();
                     VueActuelle = _fournisseurViewModel;
                     TitreVueActuelle = "Fournisseurs";
                     VueActive = "Fournisseurs";
                     break;
                 case "Operateurs":
-                    _operateurViewModel.Rafraichir();
+                    _ = _operateurViewModel.Rafraichir();
                     _operateurViewModel.EffacerErreur();
                     VueActuelle = _operateurViewModel;
                     TitreVueActuelle = "Opérateurs";
                     VueActive = "Operateurs";
                     break;
                 case "Forfaits":
-                    _forfaitViewModel.Rafraichir();
+                    _ = _forfaitViewModel.Rafraichir();
                     _forfaitViewModel.EffacerErreur();
                     VueActuelle = _forfaitViewModel;
                     TitreVueActuelle = "Forfaits";
                     VueActive = "Forfaits";
                     break;
                 case "Eds":
-                    _edsViewModel.Rafraichir();
+                    _ = _edsViewModel.Rafraichir();
                     _edsViewModel.EffacerErreur();
                     VueActuelle = _edsViewModel;
                     TitreVueActuelle = "EDS";
@@ -171,3 +164,4 @@ namespace Stock741.ViewModels
         }
     }
 }
+

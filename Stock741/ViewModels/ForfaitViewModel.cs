@@ -1,6 +1,5 @@
-﻿
-using System.Collections.ObjectModel;
-using System.Windows.Data;
+﻿using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Stock741.Commands;
 using Stock741.Models;
@@ -68,7 +67,7 @@ namespace Stock741.ViewModels
         {
             get => _erreurGlobale;
             set { _erreurGlobale = value; OnPropertyChanged(); }
-        }             
+        }
 
         public ICommand AjouterForfaitCommand { get; }
         public ICommand ModifierForfaitCommand { get; }
@@ -78,24 +77,12 @@ namespace Stock741.ViewModels
         {
             _repository = repository;
             _operateurRepository = operateurRepository;
-            Forfaits = new ObservableCollection<Forfait>(_repository.GetAll());
-            Operateurs = new ObservableCollection<Operateur>(_operateurRepository.GetAll());
+            Forfaits = new ObservableCollection<Forfait>();
+            Operateurs = new ObservableCollection<Operateur>();
 
-            AjouterForfaitCommand = new RelayCommand(AjouterForfait);
-            ModifierForfaitCommand = new RelayCommand(ModifierForfait);
-            SupprimerForfaitCommand = new RelayCommand(SupprimerForfait);
-        }
-
-        public void Rafraichir()
-        {
-            Forfaits.Clear();
-            foreach (var m in _repository.GetAll())
-                Forfaits.Add(m);
-        }
-
-        public void EffacerErreur()
-        {
-            ErreurGlobale = string.Empty;
+            AjouterForfaitCommand = new AsyncRelayCommand(AjouterForfait);
+            ModifierForfaitCommand = new AsyncRelayCommand(ModifierForfait);
+            SupprimerForfaitCommand = new AsyncRelayCommand(SupprimerForfait);
         }
 
         private void ValidateNom()
@@ -109,7 +96,28 @@ namespace Stock741.ViewModels
                 ErreurNom = string.Empty;
         }
 
-        private void AjouterForfait(object obj)
+        public async Task Rafraichir()
+        {
+            var forfaits = await _repository.GetAll();
+            var operateurs = await _operateurRepository.GetAll();
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                Forfaits.Clear();
+                foreach (var f in forfaits)
+                    Forfaits.Add(f);
+
+                Operateurs.Clear();
+                foreach (var o in operateurs)
+                    Operateurs.Add(o);
+            });
+        }
+
+        public void EffacerErreur()
+        {
+            ErreurGlobale = string.Empty;
+        }
+
+        private async Task AjouterForfait(object obj)
         {
             ValidateNom();
             if (HasErreur)
@@ -133,10 +141,8 @@ namespace Stock741.ViewModels
 
             try
             {
-                _repository.Add(forfait);
-                forfait.Operateur = OperateurSelectionne;
-                //Forfaits.Add(forfait);
-                Rafraichir();
+                await _repository.Add(forfait);
+                await Rafraichir();
                 NomSelectionne = string.Empty;
                 ActifSelectionne = true;
                 OperateurSelectionne = null;
@@ -148,7 +154,7 @@ namespace Stock741.ViewModels
             }
         }
 
-        private void ModifierForfait(object obj)
+        private async Task ModifierForfait(object obj)
         {
             if (ForfaitSelectionne == null) return;
             ValidateNom();
@@ -176,9 +182,8 @@ namespace Stock741.ViewModels
 
             try
             {
-                _repository.Update(ForfaitSelectionne);
-                //CollectionViewSource.GetDefaultView(Forfaits).Refresh();
-                Rafraichir();
+                await _repository.Update(ForfaitSelectionne);
+                await Rafraichir();
                 ErreurGlobale = string.Empty;
             }
             catch (InvalidOperationException ex)
@@ -191,15 +196,14 @@ namespace Stock741.ViewModels
             }
         }
 
-        private void SupprimerForfait(object obj)
+        private async Task SupprimerForfait(object obj)
         {
             if (ForfaitSelectionne == null) return;
 
             try
             {
-                _repository.Delete(ForfaitSelectionne);
-                //Forfaits.Remove(ForfaitSelectionne);
-                Rafraichir();
+                await _repository.Delete(ForfaitSelectionne);
+                await Rafraichir();
                 ForfaitSelectionne = null;
                 NomSelectionne = string.Empty;
                 ActifSelectionne = true;

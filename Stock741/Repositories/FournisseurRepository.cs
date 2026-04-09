@@ -7,27 +7,29 @@ namespace Stock741.Repositories
 {
     public class FournisseurRepository
     {
-        private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        public FournisseurRepository(AppDbContext context)
+        public FournisseurRepository(IDbContextFactory<AppDbContext> contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
-        public List<Fournisseur> GetAll()
+        public async Task<List<Fournisseur>> GetAll()
         {
-            return _context.Fournisseurs
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Fournisseurs
                 .AsNoTracking()
                 .OrderBy(f => f.Nom)
-                .ToList();
+                .ToListAsync();
         }
 
-        public void Add(Fournisseur fournisseur)
+        public async Task Add(Fournisseur fournisseur)
         {
             try
             {
-                var connexion = _context.Database.GetDbConnection();
-                connexion.Open();
+                using var context = _contextFactory.CreateDbContext();
+                var connexion = context.Database.GetDbConnection();
+                await connexion.OpenAsync();
                 try
                 {
                     using var commande = connexion.CreateCommand();
@@ -36,12 +38,12 @@ namespace Stock741.Repositories
                     p1.ParameterName = "@Nom";
                     p1.Value = fournisseur.Nom;
                     commande.Parameters.Add(p1);
-                    var id = commande.ExecuteScalar();
+                    var id = await commande.ExecuteScalarAsync();
                     fournisseur.Id = Convert.ToInt32(id);
                 }
                 finally
                 {
-                    connexion.Close();
+                    await connexion.CloseAsync();
                 }
             }
             catch (SqlException ex) when (ex.Number == 2601 || ex.Number == 2627)
@@ -54,12 +56,13 @@ namespace Stock741.Repositories
             }
         }
 
-        public void Update(Fournisseur fournisseur)
+        public async Task Update(Fournisseur fournisseur)
         {
             try
             {
-                var connexion = _context.Database.GetDbConnection();
-                connexion.Open();
+                using var context = _contextFactory.CreateDbContext();
+                var connexion = context.Database.GetDbConnection();
+                await connexion.OpenAsync();
                 try
                 {
                     using var commande = connexion.CreateCommand();
@@ -72,13 +75,13 @@ namespace Stock741.Repositories
                     p2.ParameterName = "@Id";
                     p2.Value = fournisseur.Id;
                     commande.Parameters.Add(p2);
-                    var lignesAffectees = Convert.ToInt32(commande.ExecuteNonQuery());
+                    var lignesAffectees = Convert.ToInt32(await commande.ExecuteNonQueryAsync());
                     if (lignesAffectees == 0)
                         throw new InvalidOperationException("Ce fournisseur a été supprimé par un autre utilisateur. Veuillez rafraîchir la vue.");
                 }
                 finally
                 {
-                    connexion.Close();
+                    await connexion.CloseAsync();
                 }
             }
             catch (InvalidOperationException)
@@ -95,52 +98,13 @@ namespace Stock741.Repositories
             }
         }
 
-        //public void Add(Fournisseur fournisseur)
-        //{
-        //    _context.Fournisseurs.Add(fournisseur);
-        //    try
-        //    {
-        //        _context.SaveChanges();
-        //    }
-        //    catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 2601 ||
-        //                                        (ex.InnerException as SqlException)?.Number == 2627)
-        //    {
-        //        _context.Entry(fournisseur).State = EntityState.Detached;
-        //        throw new InvalidOperationException("Un fournisseur avec ce nom existe déjà.", ex);
-        //    }
-        //}
-
-        //public void Update(Fournisseur fournisseur)
-        //{
-        //    var connexion = _context.Database.GetDbConnection();
-        //    connexion.Open();
-        //    try
-        //    {
-        //        using var commande = connexion.CreateCommand();
-        //        commande.CommandText = "UPDATE Fournisseurs SET Nom = @Nom WHERE Id = @Id";
-        //        var p1 = commande.CreateParameter();
-        //        p1.ParameterName = "@Nom";
-        //        p1.Value = fournisseur.Nom;
-        //        commande.Parameters.Add(p1);
-        //        var p2 = commande.CreateParameter();
-        //        p2.ParameterName = "@Id";
-        //        p2.Value = fournisseur.Id;
-        //        commande.Parameters.Add(p2);
-        //        commande.ExecuteNonQuery();
-        //    }
-        //    finally
-        //    {
-        //        connexion.Close();
-        //    }
-        //}
-
-        public void Delete(Fournisseur fournisseur)
+        public async Task Delete(Fournisseur fournisseur)
         {
             try
             {
-                var connexion = _context.Database.GetDbConnection();
-                connexion.Open();
-
+                using var context = _contextFactory.CreateDbContext();
+                var connexion = context.Database.GetDbConnection();
+                await connexion.OpenAsync();
                 try
                 {
                     using var commande = connexion.CreateCommand();
@@ -149,14 +113,13 @@ namespace Stock741.Repositories
                     param.ParameterName = "@Id";
                     param.Value = fournisseur.Id;
                     commande.Parameters.Add(param);
-                    var lignesAffectees = commande.ExecuteNonQuery();
-
+                    var lignesAffectees = await commande.ExecuteNonQueryAsync();
                     if (lignesAffectees == 0)
                         throw new InvalidOperationException("Ce fournisseur a été supprimé par un autre utilisateur. Veuillez rafraîchir la vue.");
                 }
                 finally
                 {
-                    connexion.Close();
+                    await connexion.CloseAsync();
                 }
             }
             catch (InvalidOperationException)
@@ -172,52 +135,5 @@ namespace Stock741.Repositories
                 throw new InvalidOperationException("Erreur lors de la suppression.", ex);
             }
         }
-
-        //public void Update(Fournisseur fournisseur)
-        //{
-        //    _context.Fournisseurs.Update(fournisseur);
-        //    try
-        //    {
-        //        _context.SaveChanges();
-        //    }
-        //    catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 2601 ||
-        //                                        (ex.InnerException as SqlException)?.Number == 2627)
-        //    {
-        //        _context.Entry(fournisseur).State = EntityState.Detached;
-        //        throw new InvalidOperationException("Un fournisseur avec ce nom existe déjà.", ex);
-        //    }
-        //}
-
-        //public void Delete(Fournisseur fournisseur)
-        //{
-        //    try
-        //    {
-        //        var connexion = _context.Database.GetDbConnection();
-        //        connexion.Open();
-
-        //        try
-        //        {
-        //            using var commande = connexion.CreateCommand();
-        //            commande.CommandText = "DELETE FROM Fournisseurs WHERE Id = @Id";
-        //            var param = commande.CreateParameter();
-        //            param.ParameterName = "@Id";
-        //            param.Value = fournisseur.Id;
-        //            commande.Parameters.Add(param);
-        //            commande.ExecuteNonQuery();
-        //        }
-        //        finally
-        //        {
-        //            connexion.Close();
-        //        }
-        //    }
-        //    catch (SqlException ex) when (ex.Number == 547)
-        //    {
-        //        throw new InvalidOperationException("Impossible de supprimer : ce fournisseur est utilisé.", ex);
-        //    }
-        //    catch (SqlException ex)
-        //    {
-        //        throw new InvalidOperationException("Erreur lors de la suppression.", ex);
-        //    }
-        //}
     }
 }

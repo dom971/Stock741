@@ -1,6 +1,5 @@
-﻿
-using System.Collections.ObjectModel;
-using System.Windows.Data;
+﻿using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Stock741.Commands;
 using Stock741.Models;
@@ -48,7 +47,7 @@ namespace Stock741.ViewModels
         {
             get => _erreurGlobale;
             set { _erreurGlobale = value; OnPropertyChanged(); }
-        }       
+        }
 
         public ICommand AjouterOperateurCommand { get; }
         public ICommand ModifierOperateurCommand { get; }
@@ -57,23 +56,11 @@ namespace Stock741.ViewModels
         public OperateurViewModel(OperateurRepository repository)
         {
             _repository = repository;
-            Operateurs = new ObservableCollection<Operateur>(_repository.GetAll());
+            Operateurs = new ObservableCollection<Operateur>();
 
-            AjouterOperateurCommand = new RelayCommand(AjouterOperateur);
-            ModifierOperateurCommand = new RelayCommand(ModifierOperateur);
-            SupprimerOperateurCommand = new RelayCommand(SupprimerOperateur);
-        }
-
-        public void Rafraichir()
-        {
-            Operateurs.Clear();
-            foreach (var m in _repository.GetAll())
-                Operateurs.Add(m);
-        }
-
-        public void EffacerErreur()
-        {
-            ErreurGlobale = string.Empty;
+            AjouterOperateurCommand = new AsyncRelayCommand(AjouterOperateur);
+            ModifierOperateurCommand = new AsyncRelayCommand(ModifierOperateur);
+            SupprimerOperateurCommand = new AsyncRelayCommand(SupprimerOperateur);
         }
 
         private void ValidateNom()
@@ -87,7 +74,23 @@ namespace Stock741.ViewModels
                 ErreurNom = string.Empty;
         }
 
-        private void AjouterOperateur(object obj)
+        public async Task Rafraichir()
+        {
+            var liste = await _repository.GetAll();
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                Operateurs.Clear();
+                foreach (var o in liste)
+                    Operateurs.Add(o);
+            });
+        }
+
+        public void EffacerErreur()
+        {
+            ErreurGlobale = string.Empty;
+        }
+
+        private async Task AjouterOperateur(object obj)
         {
             ValidateNom();
             if (HasErreur)
@@ -100,9 +103,8 @@ namespace Stock741.ViewModels
 
             try
             {
-                _repository.Add(operateur);
-                //Operateurs.Add(operateur);
-                Rafraichir();
+                await _repository.Add(operateur);
+                await Rafraichir();
                 NomSelectionne = string.Empty;
                 ErreurGlobale = string.Empty;
             }
@@ -112,7 +114,7 @@ namespace Stock741.ViewModels
             }
         }
 
-        private void ModifierOperateur(object obj)
+        private async Task ModifierOperateur(object obj)
         {
             if (OperateurSelectionne == null) return;
             ValidateNom();
@@ -127,9 +129,8 @@ namespace Stock741.ViewModels
 
             try
             {
-                _repository.Update(OperateurSelectionne);
-                //CollectionViewSource.GetDefaultView(Operateurs).Refresh();
-                Rafraichir();
+                await _repository.Update(OperateurSelectionne);
+                await Rafraichir();
                 ErreurGlobale = string.Empty;
             }
             catch (InvalidOperationException ex)
@@ -139,15 +140,14 @@ namespace Stock741.ViewModels
             }
         }
 
-        private void SupprimerOperateur(object obj)
+        private async Task SupprimerOperateur(object obj)
         {
             if (OperateurSelectionne == null) return;
 
             try
             {
-                _repository.Delete(OperateurSelectionne);
-                //Operateurs.Remove(OperateurSelectionne);
-                Rafraichir();
+                await _repository.Delete(OperateurSelectionne);
+                await Rafraichir();
                 OperateurSelectionne = null;
                 NomSelectionne = string.Empty;
                 ErreurGlobale = string.Empty;

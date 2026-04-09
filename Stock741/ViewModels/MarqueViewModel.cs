@@ -1,5 +1,5 @@
 ﻿using System.Collections.ObjectModel;
-using System.Windows.Data;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Stock741.Commands;
 using Stock741.Models;
@@ -57,7 +57,7 @@ namespace Stock741.ViewModels
         {
             get => _erreurGlobale;
             set { _erreurGlobale = value; OnPropertyChanged(); }
-        } 
+        }
 
         public ICommand AjouterMarqueCommand { get; }
         public ICommand ModifierMarqueCommand { get; }
@@ -66,23 +66,11 @@ namespace Stock741.ViewModels
         public MarqueViewModel(MarqueRepository repository)
         {
             _repository = repository;
-            Marques = new ObservableCollection<Marque>(_repository.GetAll());
+            Marques = new ObservableCollection<Marque>();
 
-            AjouterMarqueCommand = new RelayCommand(AjouterMarque);
-            ModifierMarqueCommand = new RelayCommand(ModifierMarque);
-            SupprimerMarqueCommand = new RelayCommand(SupprimerMarque);
-        }
-
-        public void Rafraichir()
-        {
-            Marques.Clear();
-            foreach (var m in _repository.GetAll())
-                Marques.Add(m);
-        }
-
-        public void EffacerErreur()
-        {
-            ErreurGlobale = string.Empty;
+            AjouterMarqueCommand = new AsyncRelayCommand(AjouterMarque);
+            ModifierMarqueCommand = new AsyncRelayCommand(ModifierMarque);
+            SupprimerMarqueCommand = new AsyncRelayCommand(SupprimerMarque);
         }
 
         private void ValidateNom()
@@ -96,7 +84,23 @@ namespace Stock741.ViewModels
                 ErreurNom = string.Empty;
         }
 
-        private void AjouterMarque(object obj)
+        public async Task Rafraichir()
+        {
+            var liste = await _repository.GetAll();
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                Marques.Clear();
+                foreach (var m in liste)
+                    Marques.Add(m);
+            });
+        }
+
+        public void EffacerErreur()
+        {
+            ErreurGlobale = string.Empty;
+        }
+
+        private async Task AjouterMarque(object obj)
         {
             ValidateNom();
             if (HasErreur)
@@ -109,9 +113,8 @@ namespace Stock741.ViewModels
 
             try
             {
-                _repository.Add(marque);
-                //Marques.Add(marque);
-                Rafraichir();
+                await _repository.Add(marque);
+                await Rafraichir();
                 NomSelectionne = string.Empty;
                 ActifSelectionne = true;
                 ErreurGlobale = string.Empty;
@@ -122,7 +125,7 @@ namespace Stock741.ViewModels
             }
         }
 
-        private void ModifierMarque(object obj)
+        private async Task ModifierMarque(object obj)
         {
             if (MarqueSelectionnee == null) return;
             ValidateNom();
@@ -140,8 +143,8 @@ namespace Stock741.ViewModels
 
             try
             {
-                _repository.Update(MarqueSelectionnee);                
-                Rafraichir();
+                await _repository.Update(MarqueSelectionnee);
+                await Rafraichir();
                 ErreurGlobale = string.Empty;
             }
             catch (InvalidOperationException ex)
@@ -152,23 +155,22 @@ namespace Stock741.ViewModels
             }
         }
 
-        private void SupprimerMarque(object obj)
+        private async Task SupprimerMarque(object obj)
         {
             if (MarqueSelectionnee == null) return;
 
             try
             {
-                _repository.Delete(MarqueSelectionnee);                
-                Rafraichir();
+                await _repository.Delete(MarqueSelectionnee);
+                await Rafraichir();
                 MarqueSelectionnee = null;
                 NomSelectionne = string.Empty;
                 ActifSelectionne = true;
                 ErreurGlobale = string.Empty;
-            }            
-            catch (Exception ex)
-            {                
+            }
+            catch (InvalidOperationException ex)
+            {
                 ErreurGlobale = ex.Message;
-                ErreurNom = string.Empty;
                 MarqueSelectionnee = null;
                 NomSelectionne = string.Empty;
                 ActifSelectionne = true;

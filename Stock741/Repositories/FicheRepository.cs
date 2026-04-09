@@ -7,140 +7,75 @@ namespace Stock741.Repositories
 {
     public class FicheRepository
     {
-        private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        public FicheRepository(AppDbContext context)
+        public FicheRepository(IDbContextFactory<AppDbContext> contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
-        public List<Fiche> GetAll()
+        public async Task<List<Fiche>> GetAll()
         {
-            return _context.Fiches
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Fiches
                 .AsNoTracking()
                 .OrderBy(f => f.Nom)
-                .ToList();
+                .ToListAsync();
         }
 
-        public void Add(Fiche fiche)
+        public async Task Add(Fiche fiche)
         {
-            _context.Fiches.Add(fiche);
             try
             {
-                _context.SaveChanges();
+                using var context = _contextFactory.CreateDbContext();
+                context.Fiches.Add(fiche);
+                await context.SaveChangesAsync();
             }
             catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 2601 ||
                                                 (ex.InnerException as SqlException)?.Number == 2627)
             {
-                _context.Entry(fiche).State = EntityState.Detached;
                 throw new InvalidOperationException("Une fiche avec ce nom existe déjà.", ex);
             }
         }
 
-        public void Update(Fiche fiche)
+        public async Task Update(Fiche fiche)
         {
-            _context.Fiches.Update(fiche);
             try
             {
-                _context.SaveChanges();
+                using var context = _contextFactory.CreateDbContext();
+                context.Fiches.Update(fiche);
+                await context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                _context.Entry(fiche).State = EntityState.Detached;
-                throw new InvalidOperationException("Cette fiche a été modifiée ou supprimée par un autre utilisateur. Veuillez rafraîchir la vue.", null);
+                throw new InvalidOperationException("Cette fiche a été modifiée ou supprimée par un autre utilisateur. Veuillez rafraîchir la vue.");
             }
             catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 2601 ||
                                                 (ex.InnerException as SqlException)?.Number == 2627)
             {
-                _context.Entry(fiche).State = EntityState.Detached;
                 throw new InvalidOperationException("Une fiche avec ce nom existe déjà.", ex);
             }
         }
 
-        public void Delete(Fiche fiche)
+        public async Task Delete(Fiche fiche)
         {
             try
             {
-                var connexion = _context.Database.GetDbConnection();
-                connexion.Open();
-
-                try
-                {
-                    using var commande = connexion.CreateCommand();
-                    commande.CommandText = "DELETE FROM Fiches WHERE Id = @Id";
-                    var param = commande.CreateParameter();
-                    param.ParameterName = "@Id";
-                    param.Value = fiche.Id;
-                    commande.Parameters.Add(param);
-                    var lignesAffectees = commande.ExecuteNonQuery();
-
-                    if (lignesAffectees == 0)
-                        throw new InvalidOperationException("Cette fiche a été supprimée par un autre utilisateur. Veuillez rafraîchir la vue.");
-                }
-                finally
-                {
-                    connexion.Close();
-                }
+                using var context = _contextFactory.CreateDbContext();
+                var tracked = await context.Fiches.FindAsync(fiche.Id);
+                if (tracked == null)
+                    throw new InvalidOperationException("Cette fiche a été supprimée par un autre utilisateur. Veuillez rafraîchir la vue.");
+                context.Fiches.Remove(tracked);
+                await context.SaveChangesAsync();
             }
             catch (InvalidOperationException)
             {
                 throw;
             }
-            catch (SqlException ex) when (ex.Number == 547)
+            catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 547)
             {
                 throw new InvalidOperationException("Impossible de supprimer : cette fiche est utilisée.", ex);
             }
-            catch (SqlException ex)
-            {
-                throw new InvalidOperationException("Erreur lors de la suppression.", ex);
-            }
         }
-
-        //public void Update(Fiche fiche)
-        //{
-        //    _context.Fiches.Update(fiche);
-        //    try
-        //    {
-        //        _context.SaveChanges();
-        //    }
-        //    catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 2601 ||
-        //                                        (ex.InnerException as SqlException)?.Number == 2627)
-        //    {
-        //        _context.Entry(fiche).State = EntityState.Detached;
-        //        throw new InvalidOperationException("Une fiche avec ce nom existe déjà.", ex);
-        //    }
-        //}
-
-        //public void Delete(Fiche fiche)
-        //{
-        //    try
-        //    {
-        //        var connexion = _context.Database.GetDbConnection();
-        //        connexion.Open();
-
-        //        try
-        //        {
-        //            using var commande = connexion.CreateCommand();
-        //            commande.CommandText = "DELETE FROM Fiches WHERE Id = @Id";
-        //            var param = commande.CreateParameter();
-        //            param.ParameterName = "@Id";
-        //            param.Value = fiche.Id;
-        //            commande.Parameters.Add(param);
-        //            commande.ExecuteNonQuery();
-        //        }
-        //        finally
-        //        {
-        //            connexion.Close();
-        //        }
-        //    }
-        //    catch (SqlException ex) when (ex.Number == 547)
-        //    {
-        //        throw new InvalidOperationException("Impossible de supprimer : cette fiche est utilisée.", ex);
-        //    }
-        //    catch (SqlException ex)
-        //    {
-        //        throw new InvalidOperationException("Erreur lors de la suppression.", ex);
-        //    }
-        //}
     }
 }
