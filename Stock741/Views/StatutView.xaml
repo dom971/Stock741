@@ -18,9 +18,10 @@
                       ItemsSource="{Binding Types}"
                       SelectedValue="{Binding TypeSelectionne}"
                       Margin="0,0,10,0"/>
-            <Button Content="Ajouter"   Command="{Binding AjouterStatutCommand}"   Margin="5,0,0,0"/>
-            <Button Content="Modifier"  Command="{Binding ModifierStatutCommand}"  Margin="5,0,0,0"/>
-            <Button Content="Supprimer" Command="{Binding SupprimerStatutCommand}" Margin="5,0,0,0"/>
+            <Button Content="Ajouter"    Command="{Binding AjouterStatutCommand}"   Margin="5,0,0,0"/>
+            <Button Content="Modifier"   Command="{Binding ModifierStatutCommand}"  Margin="5,0,0,0"/>
+            <Button Content="Supprimer"  Command="{Binding SupprimerStatutCommand}" Margin="5,0,0,0"/>
+            <Button Content="Actualiser" Command="{Binding ActualiserCommand}"      Margin="15,0,0,0"/>
         </StackPanel>
 
         <TextBlock Grid.Row="1"
@@ -41,7 +42,7 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Id"   Binding="{Binding Id}"   Width="Auto"/>
                 <DataGridTextColumn Header="Nom"  Binding="{Binding Nom}"  Width="*"/>
-                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="Auto"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="150"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

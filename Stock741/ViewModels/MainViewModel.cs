@@ -84,6 +84,7 @@ namespace Stock741.ViewModels
                 case "Marques":
                     _ = _marqueViewModel.Rafraichir();
                     _marqueViewModel.EffacerErreur();
+                    _marqueViewModel.EffacerChamps();
                     VueActuelle = _marqueViewModel;
                     TitreVueActuelle = "Marques";
                     VueActive = "Marques";
@@ -91,13 +92,15 @@ namespace Stock741.ViewModels
                 case "Materiels":
                     _ = _materielViewModel.Rafraichir();
                     _materielViewModel.EffacerErreur();
+                    _materielViewModel.EffacerChamps();
                     VueActuelle = _materielViewModel;
                     TitreVueActuelle = "Matériels";
                     VueActive = "Materiels";
                     break;
                 case "Modeles":
                     _ = _modeleViewModel.Rafraichir();
-                    _modeleViewModel.EffacerErreur();
+                    _modeleViewModel.EffacerErreur();  
+                    _modeleViewModel.EffacerChamps();
                     VueActuelle = _modeleViewModel;
                     TitreVueActuelle = "Modèles";
                     VueActive = "Modeles";
@@ -105,6 +108,7 @@ namespace Stock741.ViewModels
                 case "Lieux":
                     _ = _lieuViewModel.Rafraichir();
                     _lieuViewModel.EffacerErreur();
+                    _lieuViewModel.EffacerChamps();
                     VueActuelle = _lieuViewModel;
                     TitreVueActuelle = "Lieux";
                     VueActive = "Lieux";
@@ -112,6 +116,7 @@ namespace Stock741.ViewModels
                 case "Fiches":
                     _ = _ficheViewModel.Rafraichir();
                     _ficheViewModel.EffacerErreur();
+                    _ficheViewModel.EffacerChamps();
                     VueActuelle = _ficheViewModel;
                     TitreVueActuelle = "Fiches";
                     VueActive = "Fiches";
@@ -119,6 +124,7 @@ namespace Stock741.ViewModels
                 case "Statuts":
                     _ = _statutViewModel.Rafraichir();
                     _statutViewModel.EffacerErreur();
+                    _statutViewModel.EffacerChamps();
                     VueActuelle = _statutViewModel;
                     TitreVueActuelle = "Statuts";
                     VueActive = "Statuts";
@@ -126,6 +132,7 @@ namespace Stock741.ViewModels
                 case "Fournisseurs":
                     _ = _fournisseurViewModel.Rafraichir();
                     _fournisseurViewModel.EffacerErreur();
+                    _fournisseurViewModel.EffacerChamps();  
                     VueActuelle = _fournisseurViewModel;
                     TitreVueActuelle = "Fournisseurs";
                     VueActive = "Fournisseurs";
@@ -133,6 +140,7 @@ namespace Stock741.ViewModels
                 case "Operateurs":
                     _ = _operateurViewModel.Rafraichir();
                     _operateurViewModel.EffacerErreur();
+                    _operateurViewModel.EffacerChamps();
                     VueActuelle = _operateurViewModel;
                     TitreVueActuelle = "Opérateurs";
                     VueActive = "Operateurs";
@@ -140,6 +148,7 @@ namespace Stock741.ViewModels
                 case "Forfaits":
                     _ = _forfaitViewModel.Rafraichir();
                     _forfaitViewModel.EffacerErreur();
+                    _forfaitViewModel.EffacerChamps();
                     VueActuelle = _forfaitViewModel;
                     TitreVueActuelle = "Forfaits";
                     VueActive = "Forfaits";
@@ -147,6 +156,7 @@ namespace Stock741.ViewModels
                 case "Eds":
                     _ = _edsViewModel.Rafraichir();
                     _edsViewModel.EffacerErreur();
+                    _edsViewModel.EffacerChamps();
                     VueActuelle = _edsViewModel;
                     TitreVueActuelle = "EDS";
                     VueActive = "Eds";

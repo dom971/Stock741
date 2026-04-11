@@ -48,7 +48,7 @@ namespace Stock741.Repositories
             }
             catch (DbUpdateConcurrencyException)
             {
-                throw new InvalidOperationException("Cette fiche a été modifiée ou supprimée par un autre utilisateur. Veuillez rafraîchir la vue.");
+                throw new InvalidOperationException("Cette fiche a été modifiée ou supprimée par un autre utilisateur. Veuillez actualiser la vue.");
             }
             catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 2601 ||
                                                 (ex.InnerException as SqlException)?.Number == 2627)
@@ -62,15 +62,18 @@ namespace Stock741.Repositories
             try
             {
                 using var context = _contextFactory.CreateDbContext();
-                var tracked = await context.Fiches.FindAsync(fiche.Id);
-                if (tracked == null)
-                    throw new InvalidOperationException("Cette fiche a été supprimée par un autre utilisateur. Veuillez rafraîchir la vue.");
+                var tracked = new Fiche { Id = fiche.Id, RowVersion = fiche.RowVersion };
+                context.Fiches.Attach(tracked);
                 context.Fiches.Remove(tracked);
                 await context.SaveChangesAsync();
             }
             catch (InvalidOperationException)
             {
                 throw;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new InvalidOperationException("Cette fiche a été modifiée ou supprimée par un autre utilisateur. Veuillez actualiser la vue.");
             }
             catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 547)
             {

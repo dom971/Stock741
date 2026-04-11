@@ -49,7 +49,7 @@ namespace Stock741.Repositories
             }
             catch (DbUpdateConcurrencyException)
             {
-                throw new InvalidOperationException("Ce matériel a été modifié ou supprimé par un autre utilisateur. Veuillez rafraîchir la vue.");
+                throw new InvalidOperationException("Ce matériel a été modifié ou supprimé par un autre utilisateur. Veuillez actualiser la vue.");
             }
             catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 2601 ||
                                                 (ex.InnerException as SqlException)?.Number == 2627)
@@ -63,15 +63,18 @@ namespace Stock741.Repositories
             try
             {
                 using var context = _contextFactory.CreateDbContext();
-                var tracked = await context.Materiels.FindAsync(materiel.Id);
-                if (tracked == null)
-                    throw new InvalidOperationException("Ce matériel a été supprimé par un autre utilisateur. Veuillez rafraîchir la vue.");
+                var tracked = new Materiel { Id = materiel.Id, RowVersion = materiel.RowVersion };
+                context.Materiels.Attach(tracked);
                 context.Materiels.Remove(tracked);
                 await context.SaveChangesAsync();
             }
             catch (InvalidOperationException)
             {
                 throw;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new InvalidOperationException("Ce matériel a été modifié ou supprimé par un autre utilisateur. Veuillez actualiser la vue.");
             }
             catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 547)
             {

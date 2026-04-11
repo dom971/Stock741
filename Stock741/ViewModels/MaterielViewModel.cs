@@ -72,6 +72,7 @@ namespace Stock741.ViewModels
         public ICommand AjouterMaterielCommand { get; }
         public ICommand ModifierMaterielCommand { get; }
         public ICommand SupprimerMaterielCommand { get; }
+        public ICommand ActualiserCommand { get; }
 
         public MaterielViewModel(MaterielRepository repository, FicheRepository ficheRepository)
         {
@@ -83,6 +84,12 @@ namespace Stock741.ViewModels
             AjouterMaterielCommand = new AsyncRelayCommand(AjouterMateriel);
             ModifierMaterielCommand = new AsyncRelayCommand(ModifierMateriel);
             SupprimerMaterielCommand = new AsyncRelayCommand(SupprimerMateriel);
+            ActualiserCommand = new AsyncRelayCommand(async _ =>
+            {
+                await Rafraichir();
+                EffacerChamps();
+                EffacerErreur();
+            });
         }
 
         private void ValidateNom()
@@ -112,9 +119,18 @@ namespace Stock741.ViewModels
             });
         }
 
+        public void EffacerChamps()
+        {
+            MaterielSelectionne = null;
+            NomSelectionne = string.Empty;
+            ActifSelectionne = true;
+            FicheSelectionnee = null;
+        }
+
         public void EffacerErreur()
         {
             ErreurGlobale = string.Empty;
+            ErreurNom = string.Empty;
         }
 
         private async Task AjouterMateriel(object obj)
@@ -143,10 +159,8 @@ namespace Stock741.ViewModels
             {
                 await _repository.Add(materiel);
                 await Rafraichir();
-                NomSelectionne = string.Empty;
-                ActifSelectionne = true;
-                FicheSelectionnee = null;
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
@@ -184,7 +198,8 @@ namespace Stock741.ViewModels
             {
                 await _repository.Update(MaterielSelectionne);
                 await Rafraichir();
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
@@ -204,19 +219,13 @@ namespace Stock741.ViewModels
             {
                 await _repository.Delete(MaterielSelectionne);
                 await Rafraichir();
-                MaterielSelectionne = null;
-                NomSelectionne = string.Empty;
-                ActifSelectionne = true;
-                FicheSelectionnee = null;
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
                 ErreurGlobale = ex.Message;
-                MaterielSelectionne = null;
-                NomSelectionne = string.Empty;
-                ActifSelectionne = true;
-                FicheSelectionnee = null;
+                EffacerChamps();
             }
         }
     }

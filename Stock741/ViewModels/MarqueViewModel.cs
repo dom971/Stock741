@@ -62,6 +62,7 @@ namespace Stock741.ViewModels
         public ICommand AjouterMarqueCommand { get; }
         public ICommand ModifierMarqueCommand { get; }
         public ICommand SupprimerMarqueCommand { get; }
+        public ICommand ActualiserCommand { get; }
 
         public MarqueViewModel(MarqueRepository repository)
         {
@@ -71,6 +72,12 @@ namespace Stock741.ViewModels
             AjouterMarqueCommand = new AsyncRelayCommand(AjouterMarque);
             ModifierMarqueCommand = new AsyncRelayCommand(ModifierMarque);
             SupprimerMarqueCommand = new AsyncRelayCommand(SupprimerMarque);
+            ActualiserCommand = new AsyncRelayCommand(async _ =>
+            {
+                await Rafraichir();
+                EffacerChamps();
+                EffacerErreur();
+            });
         }
 
         private void ValidateNom()
@@ -95,9 +102,17 @@ namespace Stock741.ViewModels
             });
         }
 
+        public void EffacerChamps()
+        {
+            MarqueSelectionnee = null;
+            NomSelectionne = string.Empty;
+            ActifSelectionne = true;
+        }
+
         public void EffacerErreur()
         {
             ErreurGlobale = string.Empty;
+            ErreurNom = string.Empty;
         }
 
         private async Task AjouterMarque(object obj)
@@ -115,9 +130,8 @@ namespace Stock741.ViewModels
             {
                 await _repository.Add(marque);
                 await Rafraichir();
-                NomSelectionne = string.Empty;
-                ActifSelectionne = true;
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
@@ -145,7 +159,8 @@ namespace Stock741.ViewModels
             {
                 await _repository.Update(MarqueSelectionnee);
                 await Rafraichir();
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
@@ -163,17 +178,13 @@ namespace Stock741.ViewModels
             {
                 await _repository.Delete(MarqueSelectionnee);
                 await Rafraichir();
-                MarqueSelectionnee = null;
-                NomSelectionne = string.Empty;
-                ActifSelectionne = true;
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
                 ErreurGlobale = ex.Message;
-                MarqueSelectionnee = null;
-                NomSelectionne = string.Empty;
-                ActifSelectionne = true;
+                EffacerChamps();
             }
         }
     }

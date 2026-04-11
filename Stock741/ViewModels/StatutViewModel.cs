@@ -63,6 +63,7 @@ namespace Stock741.ViewModels
         public ICommand AjouterStatutCommand { get; }
         public ICommand ModifierStatutCommand { get; }
         public ICommand SupprimerStatutCommand { get; }
+        public ICommand ActualiserCommand { get; }
 
         public StatutViewModel(StatutRepository repository)
         {
@@ -72,6 +73,12 @@ namespace Stock741.ViewModels
             AjouterStatutCommand = new AsyncRelayCommand(AjouterStatut);
             ModifierStatutCommand = new AsyncRelayCommand(ModifierStatut);
             SupprimerStatutCommand = new AsyncRelayCommand(SupprimerStatut);
+            ActualiserCommand = new AsyncRelayCommand(async _ =>
+            {
+                await Rafraichir();
+                EffacerChamps();
+                EffacerErreur();
+            });
         }
 
         private void ValidateNom()
@@ -96,9 +103,17 @@ namespace Stock741.ViewModels
             });
         }
 
+        public void EffacerChamps()
+        {
+            StatutSelectionne = null;
+            NomSelectionne = string.Empty;
+            TypeSelectionne = null;
+        }
+
         public void EffacerErreur()
         {
             ErreurGlobale = string.Empty;
+            ErreurNom = string.Empty;
         }
 
         private async Task AjouterStatut(object obj)
@@ -116,19 +131,14 @@ namespace Stock741.ViewModels
                 return;
             }
 
-            var statut = new Statut
-            {
-                Nom = NomSelectionne,
-                Type = TypeSelectionne
-            };
+            var statut = new Statut { Nom = NomSelectionne, Type = TypeSelectionne };
 
             try
             {
                 await _repository.Add(statut);
                 await Rafraichir();
-                NomSelectionne = string.Empty;
-                TypeSelectionne = null;
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
@@ -162,7 +172,8 @@ namespace Stock741.ViewModels
             {
                 await _repository.Update(StatutSelectionne);
                 await Rafraichir();
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
@@ -180,17 +191,13 @@ namespace Stock741.ViewModels
             {
                 await _repository.Delete(StatutSelectionne);
                 await Rafraichir();
-                StatutSelectionne = null;
-                NomSelectionne = string.Empty;
-                TypeSelectionne = null;
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
                 ErreurGlobale = ex.Message;
-                StatutSelectionne = null;
-                NomSelectionne = string.Empty;
-                TypeSelectionne = null;
+                EffacerChamps();
             }
         }
     }

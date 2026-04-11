@@ -62,15 +62,18 @@ namespace Stock741.Repositories
             try
             {
                 using var context = _contextFactory.CreateDbContext();
-                var tracked = await context.Marques.FindAsync(marque.Id);
-                if (tracked == null)
-                    throw new InvalidOperationException("Cette marque a été supprimée par un autre utilisateur. Veuillez rafraîchir la vue.");
+                var tracked = new Marque { Id = marque.Id, RowVersion = marque.RowVersion };
+                context.Marques.Attach(tracked);
                 context.Marques.Remove(tracked);
                 await context.SaveChangesAsync();
             }
             catch (InvalidOperationException)
             {
                 throw;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new InvalidOperationException("Cette marque a été modifiée ou supprimée par un autre utilisateur. Veuillez rafraîchir la vue.");
             }
             catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 547)
             {

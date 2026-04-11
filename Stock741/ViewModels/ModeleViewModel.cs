@@ -121,6 +121,7 @@ namespace Stock741.ViewModels
         public ICommand SupprimerModeleCommand { get; }
         public ICommand ParcourirPhotoCommand { get; }
         public ICommand ReinitialiserFiltreCommand { get; }
+        public ICommand ActualiserCommand { get; }
 
         public ModeleViewModel(ModeleRepository repository,
                                MarqueRepository marqueRepository,
@@ -139,6 +140,12 @@ namespace Stock741.ViewModels
             SupprimerModeleCommand = new AsyncRelayCommand(SupprimerModele);
             ParcourirPhotoCommand = new RelayCommand(ParcourirPhoto);
             ReinitialiserFiltreCommand = new RelayCommand(ReinitialiserFiltre);
+            ActualiserCommand = new AsyncRelayCommand(async _ =>
+            {
+                await Rafraichir();
+                EffacerChamps();
+                EffacerErreur();
+            });
         }
 
         private void ValidateNom()
@@ -225,9 +232,21 @@ namespace Stock741.ViewModels
             });
         }
 
+        public void EffacerChamps()
+        {
+            ModeleSelectionne = null;
+            NomSelectionne = string.Empty;
+            CheminPhotoSelectionne = string.Empty;
+            ActifSelectionne = true;
+            MarqueSelectionnee = null;
+            MaterielSelectionne = null;
+        }
+
         public void EffacerErreur()
         {
             ErreurGlobale = string.Empty;
+            ErreurNom = string.Empty;
+            ErreurChemin = string.Empty;
         }
 
         private async Task AjouterModele(object obj)
@@ -264,12 +283,8 @@ namespace Stock741.ViewModels
             {
                 await _repository.Add(modele);
                 await Rafraichir();
-                NomSelectionne = string.Empty;
-                CheminPhotoSelectionne = string.Empty;
-                ActifSelectionne = true;
-                MarqueSelectionnee = null;
-                MaterielSelectionne = null;
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
@@ -315,7 +330,8 @@ namespace Stock741.ViewModels
             {
                 await _repository.Update(ModeleSelectionne);
                 await Rafraichir();
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
@@ -336,23 +352,13 @@ namespace Stock741.ViewModels
             {
                 await _repository.Delete(ModeleSelectionne);
                 await Rafraichir();
-                ModeleSelectionne = null;
-                NomSelectionne = string.Empty;
-                CheminPhotoSelectionne = string.Empty;
-                ActifSelectionne = true;
-                MarqueSelectionnee = null;
-                MaterielSelectionne = null;
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
                 ErreurGlobale = ex.Message;
-                ModeleSelectionne = null;
-                NomSelectionne = string.Empty;
-                CheminPhotoSelectionne = string.Empty;
-                ActifSelectionne = true;
-                MarqueSelectionnee = null;
-                MaterielSelectionne = null;
+                EffacerChamps();
             }
         }
     }

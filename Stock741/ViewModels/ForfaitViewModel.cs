@@ -72,6 +72,7 @@ namespace Stock741.ViewModels
         public ICommand AjouterForfaitCommand { get; }
         public ICommand ModifierForfaitCommand { get; }
         public ICommand SupprimerForfaitCommand { get; }
+        public ICommand ActualiserCommand { get; }
 
         public ForfaitViewModel(ForfaitRepository repository, OperateurRepository operateurRepository)
         {
@@ -83,6 +84,12 @@ namespace Stock741.ViewModels
             AjouterForfaitCommand = new AsyncRelayCommand(AjouterForfait);
             ModifierForfaitCommand = new AsyncRelayCommand(ModifierForfait);
             SupprimerForfaitCommand = new AsyncRelayCommand(SupprimerForfait);
+            ActualiserCommand = new AsyncRelayCommand(async _ =>
+            {
+                await Rafraichir();
+                EffacerChamps();
+                EffacerErreur();
+            });
         }
 
         private void ValidateNom()
@@ -112,9 +119,18 @@ namespace Stock741.ViewModels
             });
         }
 
+        public void EffacerChamps()
+        {
+            ForfaitSelectionne = null;
+            NomSelectionne = string.Empty;
+            ActifSelectionne = true;
+            OperateurSelectionne = null;
+        }
+
         public void EffacerErreur()
         {
             ErreurGlobale = string.Empty;
+            ErreurNom = string.Empty;
         }
 
         private async Task AjouterForfait(object obj)
@@ -143,10 +159,8 @@ namespace Stock741.ViewModels
             {
                 await _repository.Add(forfait);
                 await Rafraichir();
-                NomSelectionne = string.Empty;
-                ActifSelectionne = true;
-                OperateurSelectionne = null;
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
@@ -184,7 +198,8 @@ namespace Stock741.ViewModels
             {
                 await _repository.Update(ForfaitSelectionne);
                 await Rafraichir();
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
@@ -204,19 +219,13 @@ namespace Stock741.ViewModels
             {
                 await _repository.Delete(ForfaitSelectionne);
                 await Rafraichir();
-                ForfaitSelectionne = null;
-                NomSelectionne = string.Empty;
-                ActifSelectionne = true;
-                OperateurSelectionne = null;
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
                 ErreurGlobale = ex.Message;
-                ForfaitSelectionne = null;
-                NomSelectionne = string.Empty;
-                ActifSelectionne = true;
-                OperateurSelectionne = null;
+                EffacerChamps();
             }
         }
     }

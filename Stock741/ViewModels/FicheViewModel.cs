@@ -52,6 +52,7 @@ namespace Stock741.ViewModels
         public ICommand AjouterFicheCommand { get; }
         public ICommand ModifierFicheCommand { get; }
         public ICommand SupprimerFicheCommand { get; }
+        public ICommand ActualiserCommand { get; }
 
         public FicheViewModel(FicheRepository repository)
         {
@@ -61,6 +62,12 @@ namespace Stock741.ViewModels
             AjouterFicheCommand = new AsyncRelayCommand(AjouterFiche);
             ModifierFicheCommand = new AsyncRelayCommand(ModifierFiche);
             SupprimerFicheCommand = new AsyncRelayCommand(SupprimerFiche);
+            ActualiserCommand = new AsyncRelayCommand(async _ =>
+            {
+                await Rafraichir();
+                EffacerChamps();
+                EffacerErreur();
+            });
         }
 
         private void ValidateNom()
@@ -85,9 +92,16 @@ namespace Stock741.ViewModels
             });
         }
 
+        public void EffacerChamps()
+        {
+            FicheSelectionnee = null;
+            NomSelectionne = string.Empty;
+        }
+
         public void EffacerErreur()
         {
             ErreurGlobale = string.Empty;
+            ErreurNom = string.Empty;
         }
 
         private async Task AjouterFiche(object obj)
@@ -105,8 +119,8 @@ namespace Stock741.ViewModels
             {
                 await _repository.Add(fiche);
                 await Rafraichir();
-                NomSelectionne = string.Empty;
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
@@ -131,7 +145,8 @@ namespace Stock741.ViewModels
             {
                 await _repository.Update(FicheSelectionnee);
                 await Rafraichir();
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
@@ -148,15 +163,13 @@ namespace Stock741.ViewModels
             {
                 await _repository.Delete(FicheSelectionnee);
                 await Rafraichir();
-                FicheSelectionnee = null;
-                NomSelectionne = string.Empty;
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
                 ErreurGlobale = ex.Message;
-                FicheSelectionnee = null;
-                NomSelectionne = string.Empty;
+                EffacerChamps();
             }
         }
     }

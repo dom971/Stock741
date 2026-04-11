@@ -28,31 +28,13 @@ namespace Stock741.Repositories
             try
             {
                 using var context = _contextFactory.CreateDbContext();
-                var connexion = context.Database.GetDbConnection();
-                await connexion.OpenAsync();
-                try
-                {
-                    using var commande = connexion.CreateCommand();
-                    commande.CommandText = "INSERT INTO Fournisseurs (Nom) VALUES (@Nom); SELECT SCOPE_IDENTITY();";
-                    var p1 = commande.CreateParameter();
-                    p1.ParameterName = "@Nom";
-                    p1.Value = fournisseur.Nom;
-                    commande.Parameters.Add(p1);
-                    var id = await commande.ExecuteScalarAsync();
-                    fournisseur.Id = Convert.ToInt32(id);
-                }
-                finally
-                {
-                    await connexion.CloseAsync();
-                }
+                context.Fournisseurs.Add(fournisseur);
+                await context.SaveChangesAsync();
             }
-            catch (SqlException ex) when (ex.Number == 2601 || ex.Number == 2627)
+            catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 2601 ||
+                                                (ex.InnerException as SqlException)?.Number == 2627)
             {
                 throw new InvalidOperationException("Un fournisseur avec ce nom existe déjà.", ex);
-            }
-            catch (SqlException ex)
-            {
-                throw new InvalidOperationException("Erreur lors de l'ajout.", ex);
             }
         }
 
@@ -61,40 +43,17 @@ namespace Stock741.Repositories
             try
             {
                 using var context = _contextFactory.CreateDbContext();
-                var connexion = context.Database.GetDbConnection();
-                await connexion.OpenAsync();
-                try
-                {
-                    using var commande = connexion.CreateCommand();
-                    commande.CommandText = "UPDATE Fournisseurs SET Nom = @Nom WHERE Id = @Id";
-                    var p1 = commande.CreateParameter();
-                    p1.ParameterName = "@Nom";
-                    p1.Value = fournisseur.Nom;
-                    commande.Parameters.Add(p1);
-                    var p2 = commande.CreateParameter();
-                    p2.ParameterName = "@Id";
-                    p2.Value = fournisseur.Id;
-                    commande.Parameters.Add(p2);
-                    var lignesAffectees = Convert.ToInt32(await commande.ExecuteNonQueryAsync());
-                    if (lignesAffectees == 0)
-                        throw new InvalidOperationException("Ce fournisseur a été supprimé par un autre utilisateur. Veuillez rafraîchir la vue.");
-                }
-                finally
-                {
-                    await connexion.CloseAsync();
-                }
+                context.Fournisseurs.Update(fournisseur);
+                await context.SaveChangesAsync();
             }
-            catch (InvalidOperationException)
+            catch (DbUpdateConcurrencyException)
             {
-                throw;
+                throw new InvalidOperationException("Ce fournisseur a été modifié ou supprimé par un autre utilisateur. Veuillez actualiser la vue.");
             }
-            catch (SqlException ex) when (ex.Number == 2601 || ex.Number == 2627)
+            catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 2601 ||
+                                                (ex.InnerException as SqlException)?.Number == 2627)
             {
                 throw new InvalidOperationException("Un fournisseur avec ce nom existe déjà.", ex);
-            }
-            catch (SqlException ex)
-            {
-                throw new InvalidOperationException("Erreur lors de la modification.", ex);
             }
         }
 
@@ -103,36 +62,22 @@ namespace Stock741.Repositories
             try
             {
                 using var context = _contextFactory.CreateDbContext();
-                var connexion = context.Database.GetDbConnection();
-                await connexion.OpenAsync();
-                try
-                {
-                    using var commande = connexion.CreateCommand();
-                    commande.CommandText = "DELETE FROM Fournisseurs WHERE Id = @Id";
-                    var param = commande.CreateParameter();
-                    param.ParameterName = "@Id";
-                    param.Value = fournisseur.Id;
-                    commande.Parameters.Add(param);
-                    var lignesAffectees = await commande.ExecuteNonQueryAsync();
-                    if (lignesAffectees == 0)
-                        throw new InvalidOperationException("Ce fournisseur a été supprimé par un autre utilisateur. Veuillez rafraîchir la vue.");
-                }
-                finally
-                {
-                    await connexion.CloseAsync();
-                }
+                var tracked = new Fournisseur { Id = fournisseur.Id, RowVersion = fournisseur.RowVersion };
+                context.Fournisseurs.Attach(tracked);
+                context.Fournisseurs.Remove(tracked);
+                await context.SaveChangesAsync();
             }
             catch (InvalidOperationException)
             {
                 throw;
             }
-            catch (SqlException ex) when (ex.Number == 547)
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new InvalidOperationException("Ce fournisseur a été modifié ou supprimé par un autre utilisateur. Veuillez actualiser la vue.");
+            }
+            catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 547)
             {
                 throw new InvalidOperationException("Impossible de supprimer : ce fournisseur est utilisé.", ex);
-            }
-            catch (SqlException ex)
-            {
-                throw new InvalidOperationException("Erreur lors de la suppression.", ex);
             }
         }
     }

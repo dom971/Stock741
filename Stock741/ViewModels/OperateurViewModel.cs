@@ -52,6 +52,7 @@ namespace Stock741.ViewModels
         public ICommand AjouterOperateurCommand { get; }
         public ICommand ModifierOperateurCommand { get; }
         public ICommand SupprimerOperateurCommand { get; }
+        public ICommand ActualiserCommand { get; }
 
         public OperateurViewModel(OperateurRepository repository)
         {
@@ -61,6 +62,12 @@ namespace Stock741.ViewModels
             AjouterOperateurCommand = new AsyncRelayCommand(AjouterOperateur);
             ModifierOperateurCommand = new AsyncRelayCommand(ModifierOperateur);
             SupprimerOperateurCommand = new AsyncRelayCommand(SupprimerOperateur);
+            ActualiserCommand = new AsyncRelayCommand(async _ =>
+            {
+                await Rafraichir();
+                EffacerChamps();
+                EffacerErreur();
+            });
         }
 
         private void ValidateNom()
@@ -85,9 +92,16 @@ namespace Stock741.ViewModels
             });
         }
 
+        public void EffacerChamps()
+        {
+            OperateurSelectionne = null;
+            NomSelectionne = string.Empty;
+        }
+
         public void EffacerErreur()
         {
             ErreurGlobale = string.Empty;
+            ErreurNom = string.Empty;
         }
 
         private async Task AjouterOperateur(object obj)
@@ -105,8 +119,8 @@ namespace Stock741.ViewModels
             {
                 await _repository.Add(operateur);
                 await Rafraichir();
-                NomSelectionne = string.Empty;
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
@@ -131,7 +145,8 @@ namespace Stock741.ViewModels
             {
                 await _repository.Update(OperateurSelectionne);
                 await Rafraichir();
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
@@ -148,15 +163,13 @@ namespace Stock741.ViewModels
             {
                 await _repository.Delete(OperateurSelectionne);
                 await Rafraichir();
-                OperateurSelectionne = null;
-                NomSelectionne = string.Empty;
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
                 ErreurGlobale = ex.Message;
-                OperateurSelectionne = null;
-                NomSelectionne = string.Empty;
+                EffacerChamps();
             }
         }
     }

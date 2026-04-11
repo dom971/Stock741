@@ -13,9 +13,10 @@
             <TextBox Width="200"
                      Text="{Binding NomSelectionne, UpdateSourceTrigger=PropertyChanged}"
                      Margin="0,0,10,0"/>
-            <Button Content="Ajouter"   Command="{Binding AjouterLieuCommand}"   Margin="5,0,0,0"/>
-            <Button Content="Modifier"  Command="{Binding ModifierLieuCommand}"  Margin="5,0,0,0"/>
-            <Button Content="Supprimer" Command="{Binding SupprimerLieuCommand}" Margin="5,0,0,0"/>
+            <Button Content="Ajouter"    Command="{Binding AjouterLieuCommand}"   Margin="5,0,0,0"/>
+            <Button Content="Modifier"   Command="{Binding ModifierLieuCommand}"  Margin="5,0,0,0"/>
+            <Button Content="Supprimer"  Command="{Binding SupprimerLieuCommand}" Margin="5,0,0,0"/>
+            <Button Content="Actualiser" Command="{Binding ActualiserCommand}"    Margin="15,0,0,0"/>
         </StackPanel>
 
         <TextBlock Grid.Row="1"

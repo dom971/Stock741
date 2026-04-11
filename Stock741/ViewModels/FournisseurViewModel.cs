@@ -52,6 +52,7 @@ namespace Stock741.ViewModels
         public ICommand AjouterFournisseurCommand { get; }
         public ICommand ModifierFournisseurCommand { get; }
         public ICommand SupprimerFournisseurCommand { get; }
+        public ICommand ActualiserCommand { get; }
 
         public FournisseurViewModel(FournisseurRepository repository)
         {
@@ -61,6 +62,12 @@ namespace Stock741.ViewModels
             AjouterFournisseurCommand = new AsyncRelayCommand(AjouterFournisseur);
             ModifierFournisseurCommand = new AsyncRelayCommand(ModifierFournisseur);
             SupprimerFournisseurCommand = new AsyncRelayCommand(SupprimerFournisseur);
+            ActualiserCommand = new AsyncRelayCommand(async _ =>
+            {
+                await Rafraichir();
+                EffacerChamps();
+                EffacerErreur();
+            });
         }
 
         private void ValidateNom()
@@ -85,9 +92,16 @@ namespace Stock741.ViewModels
             });
         }
 
+        public void EffacerChamps()
+        {
+            FournisseurSelectionne = null;
+            NomSelectionne = string.Empty;
+        }
+
         public void EffacerErreur()
         {
             ErreurGlobale = string.Empty;
+            ErreurNom = string.Empty;
         }
 
         private async Task AjouterFournisseur(object obj)
@@ -105,8 +119,8 @@ namespace Stock741.ViewModels
             {
                 await _repository.Add(fournisseur);
                 await Rafraichir();
-                NomSelectionne = string.Empty;
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
@@ -131,7 +145,8 @@ namespace Stock741.ViewModels
             {
                 await _repository.Update(FournisseurSelectionne);
                 await Rafraichir();
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
@@ -148,15 +163,13 @@ namespace Stock741.ViewModels
             {
                 await _repository.Delete(FournisseurSelectionne);
                 await Rafraichir();
-                FournisseurSelectionne = null;
-                NomSelectionne = string.Empty;
-                ErreurGlobale = string.Empty;
+                EffacerChamps();
+                EffacerErreur();
             }
             catch (InvalidOperationException ex)
             {
                 ErreurGlobale = ex.Message;
-                FournisseurSelectionne = null;
-                NomSelectionne = string.Empty;
+                EffacerChamps();
             }
         }
     }
