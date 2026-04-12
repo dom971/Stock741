@@ -154,6 +154,7 @@ namespace Stock741.ViewModels
                     VueActive = "Forfaits";
                     break;
                 case "Eds":
+                    //_edsViewModel.EffacerChamps();
                     _ = _edsViewModel.Rafraichir();
                     _edsViewModel.EffacerErreur();
                     _edsViewModel.EffacerChamps();
