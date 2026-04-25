@@ -229,6 +229,10 @@ namespace Stock741.ViewModels
 
                 var view = System.Windows.Data.CollectionViewSource.GetDefaultView(Modeles);
                 view.Filter = FiltrerModele;
+
+                // Sélectionner la première ligne
+                ModeleSelectionne = Modeles.FirstOrDefault();
+
             });
         }
 
