@@ -201,7 +201,7 @@
                 <DataGridTextColumn Header="Id"   Binding="{Binding Id}"  Width="Auto"/>
                 <DataGridTextColumn Header="Code" Binding="{Binding Cnx}" Width="Auto"/>
                 <DataGridTextColumn Header="Nom"  Binding="{Binding Nom}" Width="*"/>
-                <DataGridTextColumn Header="Adr1" Binding="{Binding Adr1}" Width="Auto"/>
+                <!--<DataGridTextColumn Header="Adr1" Binding="{Binding Adr1}" Width="Auto"/>-->
                 <!--<DataGridTextColumn Header="Adr2" Binding="{Binding Adr2}" Width="Auto"/>
                 <DataGridTextColumn Header="Adr3" Binding="{Binding Adr3}" Width="Auto"/>
                 <DataGridTextColumn Header="Adr4" Binding="{Binding Adr4}" Width="Auto"/>

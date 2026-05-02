@@ -18,6 +18,7 @@ namespace Stock741.ViewModels
         private readonly OperateurViewModel _operateurViewModel;
         private readonly ForfaitViewModel _forfaitViewModel;
         private readonly EdsViewModel _edsViewModel;
+        private readonly EdsLiaisonViewModel _edsLiaisonViewModel;
 
         private object _vueActuelle;
         public object VueActuelle
@@ -53,7 +54,8 @@ namespace Stock741.ViewModels
                              FournisseurViewModel fournisseurViewModel,
                              OperateurViewModel operateurViewModel,
                              ForfaitViewModel forfaitViewModel,
-                             EdsViewModel edsViewModel)
+                             EdsViewModel edsViewModel,
+                             EdsLiaisonViewModel edsLiaisonViewModel)
         {
             _marqueViewModel = marqueViewModel;
             _materielViewModel = materielViewModel;
@@ -66,6 +68,7 @@ namespace Stock741.ViewModels
             _operateurViewModel = operateurViewModel;
             _forfaitViewModel = forfaitViewModel;
             _edsViewModel = edsViewModel;
+            _edsLiaisonViewModel = edsLiaisonViewModel;
 
             NaviguerVersCommand = new AsyncRelayCommand(NaviguerVers);
             QuitterCommand = new RelayCommand(_ => System.Windows.Application.Current.Shutdown());
@@ -173,6 +176,14 @@ namespace Stock741.ViewModels
                     VueActuelle = _edsViewModel;
                     TitreVueActuelle = "EDS";
                     VueActive = "Eds";
+                    break;
+                case "EdsLiaisons":
+                    _edsLiaisonViewModel.EffacerChamps();
+                    _edsLiaisonViewModel.EffacerErreur();
+                    await _edsLiaisonViewModel.Rafraichir();
+                    VueActuelle = _edsLiaisonViewModel;
+                    TitreVueActuelle = "EDS Liaisons";
+                    VueActive = "EdsLiaisons";
                     break;
                 case "Requetes":
                     VueActuelle = _requeteViewModel;

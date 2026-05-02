@@ -183,6 +183,21 @@
                         </Button.Style>
                     </Button>
 
+                    <Button Content="EDS Liaisons"
+                        Command="{Binding NaviguerVersCommand}"
+                        CommandParameter="EdsLiaisons"
+                        Margin="0,5">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding VueActive}" Value="EdsLiaisons">
+                                        <Setter Property="Background" Value="#008991"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
                     <Button Content="Requêtes"
                             Command="{Binding NaviguerVersCommand}"
                             CommandParameter="Requetes"
@@ -196,7 +211,7 @@
                                 </Style.Triggers>
                             </Style>
                         </Button.Style>
-                    </Button>
+                    </Button>                   
 
                     <Button Content="Quitter"
                             Command="{Binding QuitterCommand}"

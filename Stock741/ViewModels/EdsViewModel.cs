@@ -144,23 +144,7 @@ namespace Stock741.ViewModels
                 _edsSelectionne = value;
                 OnPropertyChanged();
                 if (value != null)
-                {
-                    CnxSelectionne = value.Cnx;
-                    NomSelectionne = value.Nom;
-                    Adr1Selectionne = value.Adr1;
-                    Adr2Selectionne = value.Adr2;
-                    Adr3Selectionne = value.Adr3;
-                    Adr4Selectionne = value.Adr4;
-                    HorLundiSelectionne = value.HorLundi;
-                    HorMardiSelectionne = value.HorMardi;
-                    HorMercrediSelectionne = value.HorMercredi;
-                    HorJeudiSelectionne = value.HorJeudi;
-                    HorVendrediSelectionne = value.HorVendredi;
-                    HorSamediSelectionne = value.HorSamedi;
-                    GeolocalisationSelectionne = value.Geolocalisation;
-                    MailContactSelectionne = value.MailContact;
-                    ActifSelectionne = value.Actif;
-                }
+                    _ = ChargerDetailAsync(value.Id);
             }
         }
 
@@ -248,9 +232,35 @@ namespace Stock741.ViewModels
                 ErreurNom = string.Empty;
         }
 
+        private async Task ChargerDetailAsync(int id)
+        {
+            var eds = await _repository.GetById(id);
+            if (eds == null) return;
+
+            CnxSelectionne = eds.Cnx;
+            NomSelectionne = eds.Nom;
+            Adr1Selectionne = eds.Adr1;
+            Adr2Selectionne = eds.Adr2;
+            Adr3Selectionne = eds.Adr3;
+            Adr4Selectionne = eds.Adr4;
+            HorLundiSelectionne = eds.HorLundi;
+            HorMardiSelectionne = eds.HorMardi;
+            HorMercrediSelectionne = eds.HorMercredi;
+            HorJeudiSelectionne = eds.HorJeudi;
+            HorVendrediSelectionne = eds.HorVendredi;
+            HorSamediSelectionne = eds.HorSamedi;
+            GeolocalisationSelectionne = eds.Geolocalisation;
+            MailContactSelectionne = eds.MailContact;
+            ActifSelectionne = eds.Actif;
+
+            // Mettre à jour le RowVersion pour Update/Delete
+            _edsSelectionne.RowVersion = eds.RowVersion;
+        }
+
         public void EffacerChamps()
         {
-            EdsSelectionne = null;
+            _edsSelectionne = null;
+            OnPropertyChanged(nameof(EdsSelectionne));
             CnxSelectionne = string.Empty;
             NomSelectionne = string.Empty;
             Adr1Selectionne = string.Empty;
@@ -277,12 +287,11 @@ namespace Stock741.ViewModels
 
         private async Task ChargerPage()
         {
-            var liste = await _repository.GetPage(PageActuelle, TaillePage);
+            var liste = await _repository.GetPageLight(PageActuelle, TaillePage);
             App.Current.Dispatcher.Invoke(() =>
             {
-                EdsList.Clear();
-                foreach (var e in liste)
-                    EdsList.Add(e);
+                EdsList = new ObservableCollection<Eds>(liste);
+                OnPropertyChanged(nameof(EdsList));
             });
         }
 
@@ -291,6 +300,14 @@ namespace Stock741.ViewModels
             var count = await _repository.GetCount();
             TotalPages = Math.Max(1, (int)Math.Ceiling((double)count / TaillePage));
             PageActuelle = 1;
+            await ChargerPage();
+        }
+
+        private async Task RafraichirPageCourante()
+        {
+            var count = await _repository.GetCount();
+            TotalPages = Math.Max(1, (int)Math.Ceiling((double)count / TaillePage));
+            // PageActuelle reste inchangée
             await ChargerPage();
         }
 
@@ -382,9 +399,15 @@ namespace Stock741.ViewModels
             try
             {
                 await _repository.Update(EdsSelectionne);
-                await Rafraichir();
+                var idModifie = EdsSelectionne.Id;
+                //await Rafraichir();
+                await RafraichirPageCourante();
                 EffacerChamps();
                 EffacerErreur();
+                // Resélectionner l'enregistrement modifié
+                var eds = EdsList.FirstOrDefault(e => e.Id == idModifie);
+                if (eds != null)
+                    EdsSelectionne = eds;
             }
             catch (InvalidOperationException ex)
             {
