@@ -99,7 +99,8 @@ namespace Stock741.ViewModels
         {
             var liaisons = await _repository.GetAll();
             //var count = liaisons.Count; // point d'arrêt ici (F9 sur cette ligne)
-            var eds = await _edsRepository.GetAll();
+            //var eds = await _edsRepository.GetAll();
+            var eds = await _edsRepository.GetAllLight();
             App.Current.Dispatcher.Invoke(() =>
             {
                 EdsLiaisons.Clear();

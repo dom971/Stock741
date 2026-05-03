@@ -23,6 +23,21 @@ namespace Stock741.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<Eds>> GetAllLight()
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Eds
+                .AsNoTracking()
+                .OrderBy(e => e.Nom)
+                .Select(e => new Eds
+                {
+                    Id = e.Id,
+                    Cnx = e.Cnx,
+                    Nom = e.Nom
+                })
+                .ToListAsync();
+        }
+
         public async Task<List<Eds>> GetPageLight(int page, int taille = 20)
         {
             using var context = _contextFactory.CreateDbContext();

@@ -46,7 +46,6 @@ namespace Stock741.Repositories
                 .ToListAsync();
         }
 
-
         public async Task Add(EdsLiaison edsLiaison)
         {
             try

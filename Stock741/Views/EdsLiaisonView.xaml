@@ -44,8 +44,8 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Id"    Binding="{Binding Id}"       Width="Auto"/>
                 <DataGridTextColumn Header="Cible" Binding="{Binding Cible}"    Width="Auto"/>               
-                <DataGridTextColumn Header="Code"  Binding="{Binding Eds.Cnx}"  Width="*"/>
-                <!--<DataGridTextColumn Header="EDS"   Binding="{Binding Eds.Nom}"  Width="*"/>-->
+                <DataGridTextColumn Header="Code"  Binding="{Binding Eds.Cnx}"  Width="Auto"/>
+                <DataGridTextColumn Header="EDS"   Binding="{Binding Eds.Nom}"  Width="*"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>
