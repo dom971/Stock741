@@ -18,6 +18,7 @@ namespace Stock741.Data
         public DbSet<Forfait> Forfaits { get; set; }
         public DbSet<Eds> Eds { get; set; }
         public DbSet<EdsLiaison> EdsLiaisons { get; set; }
+        public DbSet<Utilisateur> Utilisateurs { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -64,6 +65,10 @@ namespace Stock741.Data
                 .WithMany()
                 .HasForeignKey(el => el.EdsId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Utilisateur>()
+                .HasIndex(u => u.IdWindows)
+                .IsUnique();
 
             base.OnModelCreating(modelBuilder);
         }

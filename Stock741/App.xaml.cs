@@ -73,6 +73,9 @@ namespace Stock741
             services.AddTransient<EdsLiaisonRepository>();
             services.AddTransient<EdsLiaisonViewModel>();
 
+            services.AddTransient<UtilisateurRepository>();
+            services.AddTransient<UtilisateurViewModel>();
+
             services.AddTransient<MainViewModel>();
 
             services.AddTransient<RequeteViewModel>();

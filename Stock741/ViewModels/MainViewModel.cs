@@ -19,6 +19,7 @@ namespace Stock741.ViewModels
         private readonly ForfaitViewModel _forfaitViewModel;
         private readonly EdsViewModel _edsViewModel;
         private readonly EdsLiaisonViewModel _edsLiaisonViewModel;
+        private readonly UtilisateurViewModel _utilisateurViewModel;
 
         private object _vueActuelle;
         public object VueActuelle
@@ -55,7 +56,7 @@ namespace Stock741.ViewModels
                              OperateurViewModel operateurViewModel,
                              ForfaitViewModel forfaitViewModel,
                              EdsViewModel edsViewModel,
-                             EdsLiaisonViewModel edsLiaisonViewModel)
+                             EdsLiaisonViewModel edsLiaisonViewModel, UtilisateurViewModel utilisateurViewModel)
         {
             _marqueViewModel = marqueViewModel;
             _materielViewModel = materielViewModel;
@@ -69,6 +70,7 @@ namespace Stock741.ViewModels
             _forfaitViewModel = forfaitViewModel;
             _edsViewModel = edsViewModel;
             _edsLiaisonViewModel = edsLiaisonViewModel;
+            _utilisateurViewModel = utilisateurViewModel;
 
             NaviguerVersCommand = new AsyncRelayCommand(NaviguerVers);
             QuitterCommand = new RelayCommand(_ => System.Windows.Application.Current.Shutdown());
@@ -184,6 +186,13 @@ namespace Stock741.ViewModels
                     VueActuelle = _edsLiaisonViewModel;
                     TitreVueActuelle = "EDS Liaisons";
                     VueActive = "EdsLiaisons";
+                    break;
+                case "Utilisateurs":
+                    _utilisateurViewModel.EffacerErreur();
+                    await _utilisateurViewModel.Rafraichir();
+                    VueActuelle = _utilisateurViewModel;
+                    TitreVueActuelle = "Utilisateurs";
+                    VueActive = "Utilisateurs";
                     break;
                 case "Requetes":
                     VueActuelle = _requeteViewModel;

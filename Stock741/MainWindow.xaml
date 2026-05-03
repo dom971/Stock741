@@ -198,6 +198,21 @@
                         </Button.Style>
                     </Button>
 
+                    <Button Content="Utilisateurs"
+                        Command="{Binding NaviguerVersCommand}"
+                        CommandParameter="Utilisateurs"
+                        Margin="0,5">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding VueActive}" Value="Utilisateurs">
+                                        <Setter Property="Background" Value="#008991"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
                     <Button Content="Requêtes"
                             Command="{Binding NaviguerVersCommand}"
                             CommandParameter="Requetes"
