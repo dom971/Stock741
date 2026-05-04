@@ -9,6 +9,7 @@
         <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
         <converters:NomFichierToImageConverter x:Key="NomFichierToImageConverter"/>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
 
         <!-- Style boutons menu latéral -->
         <!--<Style x:Key="MenuButtonStyle" TargetType="Button">

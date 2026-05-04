@@ -8,12 +8,17 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Barre de boutons -->
+        <!-- Barre de boutons et recherche -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,5">
             <Button Content="Importer CSV" Command="{Binding ImporterCsvCommand}" Margin="0,0,5,0"/>
             <Button Content="Actualiser"   Command="{Binding ActualiserCommand}"  Margin="5,0,0,0"/>
+            <Label Content="Recherche:" VerticalAlignment="Center" Margin="15,0,5,0"/>
+            <TextBox Width="200"
+                     Text="{Binding FiltreNom, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,5,0"/>
         </StackPanel>
 
         <!-- Barre de progression -->
@@ -24,10 +29,11 @@
                          Value="{Binding Progression}"
                          Height="15"
                          Margin="0,0,0,3"/>
-            <TextBlock Text="{Binding Progression, StringFormat={}{0} / {0}}"
-                       HorizontalAlignment="Center"
-                       FontSize="11"
-                       Foreground="#535353"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock Text="{Binding Progression}" FontSize="11" Foreground="#535353"/>
+                <TextBlock Text=" / " FontSize="11" Foreground="#535353"/>
+                <TextBlock Text="{Binding TotalEnregistrements}" FontSize="11" Foreground="#535353"/>
+            </StackPanel>
         </StackPanel>
 
         <!-- Message succès -->
@@ -50,6 +56,7 @@
         <DataGrid Grid.Row="4"
                   ItemsSource="{Binding Utilisateurs}"
                   AutoGenerateColumns="False"
+                  SelectedItem="{Binding UtilisateurSelectionne}"
                   CanUserAddRows="False"
                   IsReadOnly="True"
                   EnableRowVirtualization="True"
@@ -65,5 +72,74 @@
                 <DataGridCheckBoxColumn Header="Actif"   Binding="{Binding Actif}"       Width="Auto"/>
             </DataGrid.Columns>
         </DataGrid>
+
+        <!-- Panneau détail -->
+        <Border Grid.Row="5"
+                Margin="0,8,0,0"
+                Padding="10"
+                Background="#F9F9F9"
+                BorderBrush="#CCCCCC"
+                BorderThickness="1"
+                Visibility="{Binding Detail, Converter={StaticResource NullToVisibilityConverter}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Colonne 1 -->
+                <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                    <TextBlock Text="Identité" Foreground="#00643E" FontWeight="Bold" FontSize="12" Margin="0,0,0,6"/>
+                    <TextBlock Text="Société" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.Societe}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="ID Utilisateur" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.IdUtilisateur}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="Nom Complet" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.NomComplet}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="Email" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.Email}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="Téléphone Mobile" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.TelephoneMobile}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="Téléphone Pro" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.TelephoneProfessionnel}" FontSize="12" Foreground="#535353"/>
+                </StackPanel>
+
+                <!-- Colonne 2 -->
+                <StackPanel Grid.Column="1" Margin="0,0,20,0">
+                    <TextBlock Text="Localisation" Foreground="#00643E" FontWeight="Bold" FontSize="12" Margin="0,0,0,6"/>
+                    <TextBlock Text="Emplacement" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.Emplacement}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="Département" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.Departement}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="Bureau" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.Bureau}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="Adresse" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.Rue}" FontSize="12" Foreground="#535353"/>
+                    <TextBlock Text="{Binding Detail.CodePostal}" FontSize="12" Foreground="#535353"/>
+                    <TextBlock Text="{Binding Detail.Ville}" FontSize="12" Foreground="#535353"/>
+                    <TextBlock Text="{Binding Detail.CodePays}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="Manager" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.Manager}" FontSize="12" Foreground="#535353"/>
+                </StackPanel>
+
+                <!-- Colonne 3 -->
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="Système" Foreground="#00643E" FontWeight="Bold" FontSize="12" Margin="0,0,0,6"/>
+                    <TextBlock Text="ID Windows" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.IdWindows}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="Fuseau horaire" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.FuseauHoraire}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="Date création" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.DateCreation, StringFormat={}{0:dd/MM/yyyy HH:mm}}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="Créé par" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.CreePar}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="Date MAJ" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.DateMiseAJour, StringFormat={}{0:dd/MM/yyyy HH:mm}}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="Mis à jour par" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.MisAJourPar}" FontSize="12" Foreground="#535353"/>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>

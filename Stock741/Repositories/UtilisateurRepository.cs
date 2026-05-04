@@ -17,6 +17,16 @@ namespace Stock741.Repositories
             _contextFactory = contextFactory;
         }
 
+        //public async Task<List<Utilisateur>> GetAll()
+        //{
+        //    using var context = _contextFactory.CreateDbContext();
+        //    return await context.Utilisateurs
+        //        .AsNoTracking()
+        //        .OrderBy(u => u.Nom)
+        //        .ThenBy(u => u.Prenom)
+        //        .ToListAsync();
+        //}
+
         public async Task<List<Utilisateur>> GetAll()
         {
             using var context = _contextFactory.CreateDbContext();
@@ -24,7 +34,26 @@ namespace Stock741.Repositories
                 .AsNoTracking()
                 .OrderBy(u => u.Nom)
                 .ThenBy(u => u.Prenom)
+                .Select(u => new Utilisateur
+                {
+                    Id = u.Id,
+                    IdWindows = u.IdWindows,
+                    Nom = u.Nom,
+                    Prenom = u.Prenom,
+                    Email = u.Email,
+                    Departement = u.Departement,
+                    Emplacement = u.Emplacement,
+                    Actif = u.Actif
+                })
                 .ToListAsync();
+        }
+
+        public async Task<Utilisateur> GetById(int id)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Utilisateurs
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public async Task<(int inseres, int misAJour)> ImporterCsv(string cheminFichier, IProgress<(int traites, int total)> progress = null)

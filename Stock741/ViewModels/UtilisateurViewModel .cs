@@ -13,6 +13,33 @@ namespace Stock741.ViewModels
 
         public ObservableCollection<Utilisateur> Utilisateurs { get; set; }
 
+        private Utilisateur _utilisateurSelectionne;
+        public Utilisateur UtilisateurSelectionne
+        {
+            get => _utilisateurSelectionne;
+            set
+            {
+                _utilisateurSelectionne = value;
+                OnPropertyChanged();
+                if (value != null)
+                    _ = ChargerDetailAsync(value.Id);
+            }
+        }
+
+        private Utilisateur _detail;
+        public Utilisateur Detail
+        {
+            get => _detail;
+            set { _detail = value; OnPropertyChanged(); }
+        }
+
+        private string _filtreNom = string.Empty;
+        public string FiltreNom
+        {
+            get => _filtreNom;
+            set { _filtreNom = value; OnPropertyChanged(); AppliquerFiltre(); }
+        }
+
         private string _erreurGlobale;
         public string ErreurGlobale
         {
@@ -64,6 +91,23 @@ namespace Stock741.ViewModels
             });
         }
 
+        private void AppliquerFiltre()
+        {
+            var view = System.Windows.Data.CollectionViewSource.GetDefaultView(Utilisateurs);
+            if (view != null)
+                view.Filter = o => o is Utilisateur u &&
+                    (string.IsNullOrWhiteSpace(FiltreNom) ||
+                     (u.Nom?.ToLower().Contains(FiltreNom.ToLower()) ?? false) ||
+                     (u.Prenom?.ToLower().Contains(FiltreNom.ToLower()) ?? false) ||
+                     (u.IdWindows?.ToLower().Contains(FiltreNom.ToLower()) ?? false));
+        }
+
+        private async Task ChargerDetailAsync(int id)
+        {
+            var utilisateur = await _repository.GetById(id);
+            Detail = utilisateur;
+        }
+
         public async Task Rafraichir()
         {
             var liste = await _repository.GetAll();
@@ -72,7 +116,11 @@ namespace Stock741.ViewModels
                 Utilisateurs.Clear();
                 foreach (var u in liste)
                     Utilisateurs.Add(u);
+                AppliquerFiltre();
             });
+            Detail = null;
+            _utilisateurSelectionne = null;
+            OnPropertyChanged(nameof(UtilisateurSelectionne));
         }
 
         public void EffacerErreur()
