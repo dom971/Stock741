@@ -19,6 +19,9 @@ namespace Stock741.Data
         public DbSet<Eds> Eds { get; set; }
         public DbSet<EdsLiaison> EdsLiaisons { get; set; }
         public DbSet<Utilisateur> Utilisateurs { get; set; }
+        public DbSet<Systeme> Systemes { get; set; }
+
+        public DbSet<Stock> Stocks { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -69,6 +72,38 @@ namespace Stock741.Data
             modelBuilder.Entity<Utilisateur>()
                 .HasIndex(u => u.IdWindows)
                 .IsUnique();
+
+            //Stock
+            modelBuilder.Entity<Stock>()
+                .HasOne(s => s.Modele)
+                .WithMany()
+                .HasForeignKey(s => s.ModeleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Stock>()
+                .HasOne(s => s.Fournisseur)
+                .WithMany()
+                .HasForeignKey(s => s.FournisseurId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Stock>()
+                .HasOne(s => s.Statut)
+                .WithMany()
+                .HasForeignKey(s => s.StatutId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Stock>()
+                .HasOne(s => s.Lieu)
+                .WithMany()
+                .HasForeignKey(s => s.LieuId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Stock>()
+                .HasOne(s => s.Systeme)
+                .WithMany()
+                .HasForeignKey(s => s.SystemeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
 
             base.OnModelCreating(modelBuilder);
         }

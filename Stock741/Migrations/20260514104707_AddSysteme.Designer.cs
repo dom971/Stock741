@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Stock741.Data;
 
@@ -11,9 +12,11 @@ using Stock741.Data;
 namespace Stock741.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260514104707_AddSysteme")]
+    partial class AddSysteme
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -411,97 +414,6 @@ namespace Stock741.Migrations
                     b.ToTable("Statuts");
                 });
 
-            modelBuilder.Entity("Stock741.Models.Stock", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Asset")
-                        .IsRequired()
-                        .HasMaxLength(8)
-                        .HasColumnType("nvarchar(8)");
-
-                    b.Property<string>("Colis")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("FournisseurId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("Garantie")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Imei1")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Imei2")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int?>("LieuId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ModeleId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("NumReception")
-                        .IsRequired()
-                        .HasMaxLength(9)
-                        .HasColumnType("nvarchar(9)");
-
-                    b.Property<string>("NumSerie")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("NumSim")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("Qte")
-                        .HasColumnType("int");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.Property<int?>("StatutId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("SystemeId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Asset")
-                        .IsUnique();
-
-                    b.HasIndex("FournisseurId");
-
-                    b.HasIndex("LieuId");
-
-                    b.HasIndex("ModeleId");
-
-                    b.HasIndex("StatutId");
-
-                    b.HasIndex("SystemeId");
-
-                    b.ToTable("Stocks");
-                });
-
             modelBuilder.Entity("Stock741.Models.Systeme", b =>
                 {
                     b.Property<int>("Id")
@@ -710,45 +622,6 @@ namespace Stock741.Migrations
                     b.Navigation("Marque");
 
                     b.Navigation("Materiel");
-                });
-
-            modelBuilder.Entity("Stock741.Models.Stock", b =>
-                {
-                    b.HasOne("Stock741.Models.Fournisseur", "Fournisseur")
-                        .WithMany()
-                        .HasForeignKey("FournisseurId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Stock741.Models.Lieu", "Lieu")
-                        .WithMany()
-                        .HasForeignKey("LieuId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Stock741.Models.Modele", "Modele")
-                        .WithMany()
-                        .HasForeignKey("ModeleId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Stock741.Models.Statut", "Statut")
-                        .WithMany()
-                        .HasForeignKey("StatutId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Stock741.Models.Systeme", "Systeme")
-                        .WithMany()
-                        .HasForeignKey("SystemeId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Fournisseur");
-
-                    b.Navigation("Lieu");
-
-                    b.Navigation("Modele");
-
-                    b.Navigation("Statut");
-
-                    b.Navigation("Systeme");
                 });
 #pragma warning restore 612, 618
         }

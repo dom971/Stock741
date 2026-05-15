@@ -123,6 +123,21 @@
                         </Button.Style>
                     </Button>
 
+                    <Button Content="Systèmes"
+                        Command="{Binding NaviguerVersCommand}"
+                        CommandParameter="Systemes"
+                        Margin="0,5">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding VueActive}" Value="Systemes">
+                                        <Setter Property="Background" Value="#008991"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
                     <Button Content="Fournisseurs"
                             Command="{Binding NaviguerVersCommand}"
                             CommandParameter="Fournisseurs"

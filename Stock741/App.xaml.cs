@@ -76,6 +76,9 @@ namespace Stock741
             services.AddTransient<UtilisateurRepository>();
             services.AddTransient<UtilisateurViewModel>();
 
+            services.AddTransient<SystemeRepository>();
+            services.AddTransient<SystemeViewModel>();
+
             services.AddTransient<MainViewModel>();
 
             services.AddTransient<RequeteViewModel>();

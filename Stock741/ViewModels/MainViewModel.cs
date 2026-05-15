@@ -20,6 +20,7 @@ namespace Stock741.ViewModels
         private readonly EdsViewModel _edsViewModel;
         private readonly EdsLiaisonViewModel _edsLiaisonViewModel;
         private readonly UtilisateurViewModel _utilisateurViewModel;
+        private readonly SystemeViewModel _systemeViewModel;
 
         private object _vueActuelle;
         public object VueActuelle
@@ -56,7 +57,7 @@ namespace Stock741.ViewModels
                              OperateurViewModel operateurViewModel,
                              ForfaitViewModel forfaitViewModel,
                              EdsViewModel edsViewModel,
-                             EdsLiaisonViewModel edsLiaisonViewModel, UtilisateurViewModel utilisateurViewModel)
+                             EdsLiaisonViewModel edsLiaisonViewModel, UtilisateurViewModel utilisateurViewModel, SystemeViewModel systemeViewModel)
         {
             _marqueViewModel = marqueViewModel;
             _materielViewModel = materielViewModel;
@@ -71,6 +72,7 @@ namespace Stock741.ViewModels
             _edsViewModel = edsViewModel;
             _edsLiaisonViewModel = edsLiaisonViewModel;
             _utilisateurViewModel = utilisateurViewModel;
+            _systemeViewModel = systemeViewModel;
 
             NaviguerVersCommand = new AsyncRelayCommand(NaviguerVers);
             QuitterCommand = new RelayCommand(_ => System.Windows.Application.Current.Shutdown());
@@ -146,6 +148,14 @@ namespace Stock741.ViewModels
                     VueActuelle = _statutViewModel;
                     TitreVueActuelle = "Statuts";
                     VueActive = "Statuts";
+                    break;
+                case "Systemes":
+                    _systemeViewModel.EffacerChamps();
+                    _systemeViewModel.EffacerErreur();
+                    await _systemeViewModel.Rafraichir();
+                    VueActuelle = _systemeViewModel;
+                    TitreVueActuelle = "Systèmes";
+                    VueActive = "Systemes";
                     break;
                 case "Fournisseurs":
                     _fournisseurViewModel.EffacerChamps();
