@@ -22,6 +22,8 @@ namespace Stock741.Data
         public DbSet<Systeme> Systemes { get; set; }
 
         public DbSet<Stock> Stocks { get; set; }
+        public DbSet<Affectation> Affectations { get; set; }
+        public DbSet<HistoriqueMouvement> HistoriqueMouvements { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -102,6 +104,74 @@ namespace Stock741.Data
                 .HasOne(s => s.Systeme)
                 .WithMany()
                 .HasForeignKey(s => s.SystemeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Affectation
+            modelBuilder.Entity<Affectation>()
+                .HasOne(a => a.Stock)
+                .WithMany()
+                .HasForeignKey(a => a.StockId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Affectation>()
+                .HasOne(a => a.Utilisateur)
+                .WithMany()
+                .HasForeignKey(a => a.UtilisateurId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Affectation>()
+                .HasOne(a => a.Eds)
+                .WithMany()
+                .HasForeignKey(a => a.EdsId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Affectation>()
+                .HasOne(a => a.Operateur)
+                .WithMany()
+                .HasForeignKey(a => a.OperateurId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Affectation>()
+                .HasOne(a => a.Forfait)
+                .WithMany()
+                .HasForeignKey(a => a.ForfaitId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // HistoriqueMouvement
+            modelBuilder.Entity<HistoriqueMouvement>()
+                .HasOne(h => h.Stock)
+                .WithMany()
+                .HasForeignKey(h => h.StockId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<HistoriqueMouvement>()
+                .HasOne(h => h.Affectation)
+                .WithMany()
+                .HasForeignKey(h => h.AffectationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<HistoriqueMouvement>()
+                .HasOne(h => h.AncienStatut)
+                .WithMany()
+                .HasForeignKey(h => h.AncienStatutId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<HistoriqueMouvement>()
+                .HasOne(h => h.AncienLieu)
+                .WithMany()
+                .HasForeignKey(h => h.AncienLieuId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<HistoriqueMouvement>()
+                .HasOne(h => h.AncienUtilisateur)
+                .WithMany()
+                .HasForeignKey(h => h.AncienUtilisateurId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<HistoriqueMouvement>()
+                .HasOne(h => h.AncienEds)
+                .WithMany()
+                .HasForeignKey(h => h.AncienEdsId)
                 .OnDelete(DeleteBehavior.Restrict);
 
 
