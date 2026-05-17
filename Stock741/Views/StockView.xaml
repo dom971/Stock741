@@ -1,0 +1,239 @@
+﻿<UserControl x:Class="Stock741.Views.StockView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="200"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Boutons -->
+        <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,0,0,5">
+            <Button Content="Ajouter"    Command="{Binding AjouterCommand}"    Margin="0,0,5,0"/>
+            <Button Content="Modifier"   Command="{Binding ModifierCommand}"   Margin="0,0,5,0"/>
+            <Button Content="Supprimer"  Command="{Binding SupprimerCommand}"  Margin="0,0,5,0"/>
+            <Button Content="Actualiser" Command="{Binding ActualiserCommand}" Margin="15,0,0,0"/>
+            <Label Content="Recherche:" VerticalAlignment="Center" Margin="15,0,5,0"/>
+            <TextBox Width="200"
+                     Text="{Binding FiltreNom, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,5,0"/>
+        </StackPanel>
+
+        <!-- Section Réception -->
+        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Background="#E8F5E9" BorderBrush="#00643E" BorderThickness="0,0,0,1" Padding="5,3" Margin="0,0,0,5">
+            <TextBlock Text="Réception" FontWeight="Bold" Foreground="#00643E"/>
+        </Border>
+
+        <Grid Grid.Row="2" Grid.Column="0" Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Ligne 1 -->
+            <Label Grid.Row="0" Grid.Column="0" Content="Asset:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Grid.Row="0" Grid.Column="1"
+                     Text="{Binding AssetSelectionne, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,10,5"
+                     IsEnabled="{Binding PeutModifier}"/>
+
+            <Label Grid.Row="0" Grid.Column="2" Content="Date:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <DatePicker Grid.Row="0" Grid.Column="3"
+                        SelectedDate="{Binding DateSelectionne}"
+                        Margin="0,0,10,5"
+                        IsEnabled="{Binding PeutModifier}"/>
+
+            <Label Grid.Row="0" Grid.Column="4" Content="N° Réception:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Grid.Row="0" Grid.Column="5"
+                     Text="{Binding NumReceptionSelectionne, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,10,5"
+                     IsEnabled="{Binding PeutModifier}"/>
+
+            <Label Grid.Row="0" Grid.Column="6" Content="Statut:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <ComboBox Grid.Row="0" Grid.Column="7"
+                      ItemsSource="{Binding Statuts}"
+                      SelectedItem="{Binding StatutSelectionne}"
+                      DisplayMemberPath="Nom"
+                      Margin="0,0,10,5"/>
+
+            <Label Grid.Row="0" Grid.Column="8" Content="Lieu:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <ComboBox Grid.Row="0" Grid.Column="9"
+                      ItemsSource="{Binding Lieux}"
+                      SelectedItem="{Binding LieuSelectionne}"
+                      DisplayMemberPath="Nom"
+                      Margin="0,0,10,5"
+                      IsEnabled="{Binding PeutModifier}"/>
+
+            <!-- Ligne 2 -->
+            <Label Grid.Row="1" Grid.Column="0" Content="Type:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <ComboBox Grid.Row="1" Grid.Column="1"
+                      ItemsSource="{Binding Fiches}"
+                      SelectedItem="{Binding FicheSelectionnee}"
+                      DisplayMemberPath="Nom"
+                      Margin="0,0,10,5"
+                      IsEnabled="{Binding PeutModifier}"/>
+
+            <Label Grid.Row="1" Grid.Column="2" Content="Marque:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <ComboBox Grid.Row="1" Grid.Column="3"
+                      ItemsSource="{Binding MarquesFiltrees}"
+                      SelectedItem="{Binding MarqueSelectionnee}"
+                      DisplayMemberPath="Nom"
+                      Margin="0,0,10,5"
+                      IsEnabled="{Binding PeutModifier}"/>
+
+            <Label Grid.Row="1" Grid.Column="4" Content="Modèle:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <ComboBox Grid.Row="1" Grid.Column="5"
+                      ItemsSource="{Binding ModelesFiltres}"
+                      SelectedItem="{Binding ModeleSelectionne}"
+                      DisplayMemberPath="Nom"
+                      Margin="0,0,10,5"
+                      IsEnabled="{Binding PeutModifier}"/>
+
+            <Label Grid.Row="1" Grid.Column="6" Content="Fournisseur:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <ComboBox Grid.Row="1" Grid.Column="7"
+                      ItemsSource="{Binding Fournisseurs}"
+                      SelectedItem="{Binding FournisseurSelectionne}"
+                      DisplayMemberPath="Nom"
+                      Margin="0,0,10,5"
+                      IsEnabled="{Binding PeutModifier}"/>
+
+            <Label Grid.Row="1" Grid.Column="8" Content="N° Série:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Grid.Row="1" Grid.Column="9"
+                     Text="{Binding NumSerieSelectionne, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,10,5"
+                     IsEnabled="{Binding PeutModifier}"/>
+
+            <!-- Ligne 3 -->
+            <Label Grid.Row="2" Grid.Column="0" Content="Quantité:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Grid.Row="2" Grid.Column="1"
+                     Text="{Binding QteSelectionne, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,10,5"
+                     IsEnabled="{Binding PeutModifier}"/>
+
+            <Label Grid.Row="2" Grid.Column="2" Content="Garantie:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <DatePicker Grid.Row="2" Grid.Column="3"
+                        SelectedDate="{Binding GarantieSelectionnee}"
+                        Margin="0,0,10,5"
+                        IsEnabled="{Binding PeutModifier}"/>
+
+            <Label Grid.Row="2" Grid.Column="4" Content="Colis:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Grid.Row="2" Grid.Column="5"
+                     Text="{Binding ColisSelectionne, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,10,5"
+                     IsEnabled="{Binding PeutModifier}"/>
+
+            <Label Grid.Row="2" Grid.Column="6" Content="Système:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <ComboBox Grid.Row="2" Grid.Column="7"
+                      ItemsSource="{Binding Systemes}"
+                      SelectedItem="{Binding SystemeSelectionne}"
+                      DisplayMemberPath="Nom"
+                      Margin="0,0,10,5"
+                      IsEnabled="{Binding PeutModifier}"/>
+        </Grid>
+
+        <!-- Photo -->
+        <Image Grid.Row="2" Grid.Column="1"
+               Source="{Binding CheminPhoto, Converter={StaticResource NomFichierToImageConverter}}"
+               Stretch="Uniform"
+               Width="180"
+               Height="150"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Top"
+               Margin="10,0,0,0"/>
+
+        <!-- Section Téléphone -->
+        <Border Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Background="#E8F5E9" BorderBrush="#00643E" BorderThickness="0,0,0,1" Padding="5,3" Margin="0,0,0,5">
+            <TextBlock Text="Téléphone / Dongle 4G" FontWeight="Bold" Foreground="#00643E"/>
+        </Border>
+
+        <Grid Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Column="0" Content="N° SIM:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Grid.Column="1"
+                     Text="{Binding NumSimSelectionne, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,10,0"
+                     IsEnabled="{Binding PeutModifier}"/>
+
+            <Label Grid.Column="2" Content="IMEI1:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Grid.Column="3"
+                     Text="{Binding Imei1Selectionne, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,10,0"
+                     IsEnabled="{Binding PeutModifier}"/>
+
+            <Label Grid.Column="4" Content="IMEI2:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Grid.Column="5"
+                     Text="{Binding Imei2Selectionne, UpdateSourceTrigger=PropertyChanged}"
+                     IsEnabled="{Binding PeutModifier}"/>
+        </Grid>
+
+        <!-- Erreur -->
+        <TextBlock Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
+                   Text="{Binding ErreurGlobale}"
+                   Foreground="Red"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,5"
+                   Visibility="{Binding ErreurGlobale, Converter={StaticResource StringToVisibilityConverter}}"/>
+
+        <!-- Message modification bloquée -->
+        <TextBlock Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"
+                   Text="⚠ Modification limitée — ce matériel a des affectations."
+                   Foreground="Orange"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,5"
+                   Visibility="{Binding PeutModifier, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+        <!-- DataGrid -->
+        <DataGrid Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"
+                  ItemsSource="{Binding Stocks}"
+                  AutoGenerateColumns="False"
+                  SelectedItem="{Binding StockSelectionne}"
+                  CanUserAddRows="False"
+                  IsReadOnly="True"
+                  EnableRowVirtualization="True"
+                  EnableColumnVirtualization="True"
+                  VirtualizingPanel.VirtualizationMode="Recycling">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Id"       Binding="{Binding Id}"           Width="Auto"/>
+                <DataGridTextColumn Header="Asset"    Binding="{Binding Asset}"        Width="Auto"/>
+                <DataGridTextColumn Header="N° Série" Binding="{Binding NumSerie}"     Width="Auto"/>
+                <DataGridTextColumn Header="Modèle"   Binding="{Binding Modele.Nom}"   Width="*"/>
+                <DataGridTextColumn Header="Statut"   Binding="{Binding Statut.Nom}"   Width="Auto"/>
+                <DataGridTextColumn Header="Lieu"     Binding="{Binding Lieu.Nom}"     Width="Auto"/>
+                <DataGridTextColumn Header="Date"     Binding="{Binding Date, StringFormat={}{0:dd/MM/yyyy}}" Width="Auto"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

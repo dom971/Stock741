@@ -83,6 +83,9 @@ namespace Stock741
 
             services.AddTransient<RequeteViewModel>();
 
+            services.AddTransient<StockRepository>();
+            services.AddTransient<StockViewModel>();
+
             ServiceProvider = services.BuildServiceProvider();
 
             var mainWindow = new MainWindow();

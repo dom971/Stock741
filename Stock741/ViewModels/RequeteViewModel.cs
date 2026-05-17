@@ -9,7 +9,7 @@ namespace Stock741.ViewModels
 {
     public class RequeteViewModel : BaseViewModel
     {
-        private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
         private string _requete = string.Empty;
         public string Requete
@@ -42,9 +42,9 @@ namespace Stock741.ViewModels
         public ICommand ExecuterRequeteCommand { get; }
         public ICommand EffacerCommand { get; }
 
-        public RequeteViewModel(AppDbContext context)
+        public RequeteViewModel(IDbContextFactory<AppDbContext> contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
             ExecuterRequeteCommand = new RelayCommand(ExecuterRequete);
             EffacerCommand = new RelayCommand(Effacer);
         }
@@ -81,7 +81,8 @@ namespace Stock741.ViewModels
 
             try
             {
-                var connexion = _context.Database.GetDbConnection();
+                using var context = _contextFactory.CreateDbContext();
+                var connexion = context.Database.GetDbConnection();
                 connexion.Open();
 
                 using var commande = connexion.CreateCommand();

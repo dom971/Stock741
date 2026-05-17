@@ -21,6 +21,7 @@ namespace Stock741.ViewModels
         private readonly EdsLiaisonViewModel _edsLiaisonViewModel;
         private readonly UtilisateurViewModel _utilisateurViewModel;
         private readonly SystemeViewModel _systemeViewModel;
+        private readonly StockViewModel _stockViewModel;
 
         private object _vueActuelle;
         public object VueActuelle
@@ -57,7 +58,7 @@ namespace Stock741.ViewModels
                              OperateurViewModel operateurViewModel,
                              ForfaitViewModel forfaitViewModel,
                              EdsViewModel edsViewModel,
-                             EdsLiaisonViewModel edsLiaisonViewModel, UtilisateurViewModel utilisateurViewModel, SystemeViewModel systemeViewModel)
+                             EdsLiaisonViewModel edsLiaisonViewModel, UtilisateurViewModel utilisateurViewModel, SystemeViewModel systemeViewModel, StockViewModel stockViewModel)
         {
             _marqueViewModel = marqueViewModel;
             _materielViewModel = materielViewModel;
@@ -73,6 +74,7 @@ namespace Stock741.ViewModels
             _edsLiaisonViewModel = edsLiaisonViewModel;
             _utilisateurViewModel = utilisateurViewModel;
             _systemeViewModel = systemeViewModel;
+            _stockViewModel = stockViewModel;
 
             NaviguerVersCommand = new AsyncRelayCommand(NaviguerVers);
             QuitterCommand = new RelayCommand(_ => System.Windows.Application.Current.Shutdown());
@@ -101,6 +103,15 @@ namespace Stock741.ViewModels
         {
             switch (parametre)
             {
+                case "Stock":
+                    _stockViewModel.EffacerChamps();
+                    _stockViewModel.EffacerErreur();
+                    await _stockViewModel.Rafraichir();
+                    VueActuelle = _stockViewModel;
+                    TitreVueActuelle = "Stock";
+                    VueActive = "Stock";
+                    break;
+
                 case "Marques":
                     _marqueViewModel.EffacerChamps();
                     _marqueViewModel.EffacerErreur();

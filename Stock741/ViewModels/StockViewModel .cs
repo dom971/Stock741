@@ -12,6 +12,8 @@ namespace Stock741.ViewModels
     {
         private readonly StockRepository _repository;
         private readonly ModeleRepository _modeleRepository;
+        private readonly MarqueRepository _marqueRepository;
+        private readonly FicheRepository _ficheRepository;
         private readonly StatutRepository _statutRepository;
         private readonly LieuRepository _lieuRepository;
         private readonly FournisseurRepository _fournisseurRepository;
@@ -21,6 +23,10 @@ namespace Stock741.ViewModels
 
         public ObservableCollection<Stock> Stocks { get; set; }
         public ObservableCollection<Modele> Modeles { get; set; }
+        public ObservableCollection<Modele> ModelesFiltres { get; set; }
+        public ObservableCollection<Marque> Marques { get; set; }
+        public ObservableCollection<Marque> MarquesFiltrees { get; set; }
+        public ObservableCollection<Fiche> Fiches { get; set; }
         public ObservableCollection<Statut> Statuts { get; set; }
         public ObservableCollection<Lieu> Lieux { get; set; }
         public ObservableCollection<Fournisseur> Fournisseurs { get; set; }
@@ -38,6 +44,14 @@ namespace Stock741.ViewModels
         {
             get => _peutModifier;
             set { _peutModifier = value; OnPropertyChanged(); }
+        }
+
+        // Photo
+        private string _cheminPhoto;
+        public string CheminPhoto
+        {
+            get => _cheminPhoto;
+            set { _cheminPhoto = value; OnPropertyChanged(); }
         }
 
         // Champs formulaire
@@ -90,11 +104,50 @@ namespace Stock741.ViewModels
             set { _colisSelectionne = value; OnPropertyChanged(); }
         }
 
+        // Filtrage en cascade
+        private Fiche _ficheSelectionnee;
+        public Fiche FicheSelectionnee
+        {
+            get => _ficheSelectionnee;
+            set
+            {
+                _ficheSelectionnee = value;
+                OnPropertyChanged();
+                FiltrerMarques();
+                MarqueSelectionnee = null;
+                ModeleSelectionne = null;
+                CheminPhoto = null;
+            }
+        }
+
+        private Marque _marqueSelectionnee;
+        public Marque MarqueSelectionnee
+        {
+            get => _marqueSelectionnee;
+            set
+            {
+                _marqueSelectionnee = value;
+                OnPropertyChanged();
+                FiltrerModeles();
+                ModeleSelectionne = null;
+                CheminPhoto = null;
+            }
+        }
+
         private Modele _modeleSelectionne;
         public Modele ModeleSelectionne
         {
             get => _modeleSelectionne;
-            set { _modeleSelectionne = value; OnPropertyChanged(); }
+            set
+            {
+                _modeleSelectionne = value;
+                OnPropertyChanged();
+                // Charger la photo
+                if (value != null)
+                    CheminPhoto = value.CheminPhoto;
+                else
+                    CheminPhoto = null;
+            }
         }
 
         private Fournisseur _fournisseurSelectionne;
@@ -160,11 +213,12 @@ namespace Stock741.ViewModels
                 {
                     Detail = null;
                     PeutModifier = true;
+                    CheminPhoto = null;
                 }
             }
         }
 
-        // Filtre
+        // Filtre recherche
         private string _filtreNom = string.Empty;
         public string FiltreNom
         {
@@ -204,6 +258,8 @@ namespace Stock741.ViewModels
 
         public StockViewModel(StockRepository repository,
                               ModeleRepository modeleRepository,
+                              MarqueRepository marqueRepository,
+                              FicheRepository ficheRepository,
                               StatutRepository statutRepository,
                               LieuRepository lieuRepository,
                               FournisseurRepository fournisseurRepository,
@@ -211,6 +267,8 @@ namespace Stock741.ViewModels
         {
             _repository = repository;
             _modeleRepository = modeleRepository;
+            _marqueRepository = marqueRepository;
+            _ficheRepository = ficheRepository;
             _statutRepository = statutRepository;
             _lieuRepository = lieuRepository;
             _fournisseurRepository = fournisseurRepository;
@@ -218,6 +276,10 @@ namespace Stock741.ViewModels
 
             Stocks = new ObservableCollection<Stock>();
             Modeles = new ObservableCollection<Modele>();
+            ModelesFiltres = new ObservableCollection<Modele>();
+            Marques = new ObservableCollection<Marque>();
+            MarquesFiltrees = new ObservableCollection<Marque>();
+            Fiches = new ObservableCollection<Fiche>();
             Statuts = new ObservableCollection<Statut>();
             Lieux = new ObservableCollection<Lieu>();
             Fournisseurs = new ObservableCollection<Fournisseur>();
@@ -232,6 +294,49 @@ namespace Stock741.ViewModels
                 EffacerChamps();
                 EffacerErreur();
             });
+        }
+
+        private void FiltrerMarques()
+        {
+            MarquesFiltrees.Clear();
+            if (FicheSelectionnee == null)
+            {
+                foreach (var m in Marques)
+                    MarquesFiltrees.Add(m);
+                return;
+            }
+
+            var marquesFiltrees = Modeles
+                .Where(m => m.Materiel?.FicheId == FicheSelectionnee.Id)
+                .Select(m => m.Marque)
+                .Where(m => m != null)
+                .DistinctBy(m => m.Id)
+                .OrderBy(m => m.Nom)
+                .ToList();
+
+            foreach (var m in marquesFiltrees)
+                MarquesFiltrees.Add(m);
+        }
+
+        private void FiltrerModeles()
+        {
+            ModelesFiltres.Clear();
+            if (MarqueSelectionnee == null && FicheSelectionnee == null)
+            {
+                foreach (var m in Modeles)
+                    ModelesFiltres.Add(m);
+                return;
+            }
+
+            var modelesFiltres = Modeles
+                .Where(m =>
+                    (FicheSelectionnee == null || m.Materiel?.FicheId == FicheSelectionnee.Id) &&
+                    (MarqueSelectionnee == null || m.MarqueId == MarqueSelectionnee.Id))
+                .OrderBy(m => m.Nom)
+                .ToList();
+
+            foreach (var m in modelesFiltres)
+                ModelesFiltres.Add(m);
         }
 
         private void ValidateAsset()
@@ -276,10 +381,16 @@ namespace Stock741.ViewModels
 
             if (stock != null)
             {
-                // Vérifier si modification possible
                 PeutModifier = !await _repository.HasAffectation(id);
 
-                // Peupler le formulaire
+                // Filtrage en cascade
+                FicheSelectionnee = Fiches.FirstOrDefault(f =>
+                    f.Id == stock.Modele?.Materiel?.FicheId);
+                MarqueSelectionnee = Marques.FirstOrDefault(m =>
+                    m.Id == stock.Modele?.MarqueId);
+                ModeleSelectionne = Modeles.FirstOrDefault(m =>
+                    m.Id == stock.ModeleId);
+
                 AssetSelectionne = stock.Asset;
                 NumSerieSelectionne = stock.NumSerie;
                 DateSelectionne = stock.Date;
@@ -287,7 +398,6 @@ namespace Stock741.ViewModels
                 QteSelectionne = stock.Qte;
                 GarantieSelectionnee = stock.Garantie;
                 ColisSelectionne = stock.Colis;
-                ModeleSelectionne = Modeles.FirstOrDefault(m => m.Id == stock.ModeleId);
                 FournisseurSelectionne = Fournisseurs.FirstOrDefault(f => f.Id == stock.FournisseurId);
                 StatutSelectionne = Statuts.FirstOrDefault(s => s.Id == stock.StatutId);
                 LieuSelectionne = Lieux.FirstOrDefault(l => l.Id == stock.LieuId);
@@ -295,6 +405,7 @@ namespace Stock741.ViewModels
                 NumSimSelectionne = stock.NumSim;
                 Imei1Selectionne = stock.Imei1;
                 Imei2Selectionne = stock.Imei2;
+                CheminPhoto = stock.Modele?.CheminPhoto;
             }
         }
 
@@ -302,6 +413,8 @@ namespace Stock741.ViewModels
         {
             var stocks = await _repository.GetAll();
             var modeles = await _modeleRepository.GetAll();
+            var marques = await _marqueRepository.GetAll();
+            var fiches = await _ficheRepository.GetAll();
             var statuts = await _statutRepository.GetAll();
             var lieux = await _lieuRepository.GetAll();
             var fournisseurs = await _fournisseurRepository.GetAll();
@@ -315,6 +428,12 @@ namespace Stock741.ViewModels
                 Modeles.Clear();
                 foreach (var m in modeles) Modeles.Add(m);
 
+                Marques.Clear();
+                foreach (var m in marques) Marques.Add(m);
+
+                Fiches.Clear();
+                foreach (var f in fiches) Fiches.Add(f);
+
                 Statuts.Clear();
                 foreach (var s in statuts) Statuts.Add(s);
 
@@ -327,6 +446,8 @@ namespace Stock741.ViewModels
                 Systemes.Clear();
                 foreach (var s in systemes) Systemes.Add(s);
 
+                FiltrerMarques();
+                FiltrerModeles();
                 AppliquerFiltre();
             });
         }
@@ -337,6 +458,10 @@ namespace Stock741.ViewModels
             OnPropertyChanged(nameof(StockSelectionne));
             Detail = null;
             PeutModifier = true;
+            CheminPhoto = null;
+            FicheSelectionnee = null;
+            MarqueSelectionnee = null;
+            ModeleSelectionne = null;
             AssetSelectionne = string.Empty;
             NumSerieSelectionne = string.Empty;
             DateSelectionne = DateTime.Now;
@@ -344,7 +469,6 @@ namespace Stock741.ViewModels
             QteSelectionne = 1;
             GarantieSelectionnee = null;
             ColisSelectionne = string.Empty;
-            ModeleSelectionne = null;
             FournisseurSelectionne = null;
             StatutSelectionne = null;
             LieuSelectionne = null;
