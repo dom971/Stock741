@@ -13,20 +13,23 @@ namespace Stock741.ViewModels
         private readonly StockRepository _repository;
         private readonly ModeleRepository _modeleRepository;
         private readonly MarqueRepository _marqueRepository;
-        private readonly FicheRepository _ficheRepository;
+        private readonly MaterielRepository _materielRepository;
         private readonly StatutRepository _statutRepository;
         private readonly LieuRepository _lieuRepository;
         private readonly FournisseurRepository _fournisseurRepository;
         private readonly SystemeRepository _systemeRepository;
 
         private readonly string _effectuePar = Environment.UserName;
+        private const string StatutCreationNom = "Stock";
+        private const string NumReceptionDefaut = "0";
+        private const string ColisDefaut = "0";
 
         public ObservableCollection<Stock> Stocks { get; set; }
         public ObservableCollection<Modele> Modeles { get; set; }
         public ObservableCollection<Modele> ModelesFiltres { get; set; }
         public ObservableCollection<Marque> Marques { get; set; }
         public ObservableCollection<Marque> MarquesFiltrees { get; set; }
-        public ObservableCollection<Fiche> Fiches { get; set; }
+        public ObservableCollection<Materiel> Materiels { get; set; }
         public ObservableCollection<Statut> Statuts { get; set; }
         public ObservableCollection<Lieu> Lieux { get; set; }
         public ObservableCollection<Fournisseur> Fournisseurs { get; set; }
@@ -43,8 +46,21 @@ namespace Stock741.ViewModels
         public bool PeutModifier
         {
             get => _peutModifier;
-            set { _peutModifier = value; OnPropertyChanged(); }
+            set
+            {
+                _peutModifier = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(PeutChoisirStatut));
+                OnPropertyChanged(nameof(PeutSupprimer));
+                OnPropertyChanged(nameof(PeutModifierGarantie));
+                OnPropertyChanged(nameof(AfficherModificationLimitee));
+            }
         }
+
+        public bool PeutChoisirStatut => StockSelectionne != null && PeutModifier;
+        public bool PeutSupprimer => StockSelectionne != null && PeutModifier;
+        public bool PeutModifierGarantie => PeutModifier && SousGarantieSelectionne;
+        public bool AfficherModificationLimitee => StockSelectionne != null && !PeutModifier;
 
         // Photo
         private string _cheminPhoto;
@@ -76,18 +92,18 @@ namespace Stock741.ViewModels
             set { _dateSelectionne = value; OnPropertyChanged(); }
         }
 
-        private string _numReceptionSelectionne;
+        private string _numReceptionSelectionne = NumReceptionDefaut;
         public string NumReceptionSelectionne
         {
             get => _numReceptionSelectionne;
-            set { _numReceptionSelectionne = value; OnPropertyChanged(); }
+            set { _numReceptionSelectionne = value; OnPropertyChanged(); ValidateNumReception(); }
         }
 
         private int _qteSelectionne = 1;
         public int QteSelectionne
         {
             get => _qteSelectionne;
-            set { _qteSelectionne = value; OnPropertyChanged(); }
+            set { _qteSelectionne = value; OnPropertyChanged(); ValidateQte(); }
         }
 
         private DateTime? _garantieSelectionnee;
@@ -97,28 +113,61 @@ namespace Stock741.ViewModels
             set { _garantieSelectionnee = value; OnPropertyChanged(); }
         }
 
-        private string _colisSelectionne;
+        private bool _sousGarantieSelectionne = true;
+        public bool SousGarantieSelectionne
+        {
+            get => _sousGarantieSelectionne;
+            set
+            {
+                _sousGarantieSelectionne = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(PeutModifierGarantie));
+
+                if (!value)
+                    GarantieSelectionnee = null;
+            }
+        }
+
+        private string _colisSelectionne = ColisDefaut;
         public string ColisSelectionne
         {
             get => _colisSelectionne;
-            set { _colisSelectionne = value; OnPropertyChanged(); }
+            set { _colisSelectionne = value; OnPropertyChanged(); ValidateColis(); }
         }
 
         // Filtrage en cascade
-        private Fiche _ficheSelectionnee;
-        public Fiche FicheSelectionnee
+        private Materiel _materielSelectionne;
+        public Materiel MaterielSelectionne
         {
-            get => _ficheSelectionnee;
+            get => _materielSelectionne;
             set
             {
-                _ficheSelectionnee = value;
+                _materielSelectionne = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(AfficherTelephonie));
+                OnPropertyChanged(nameof(AfficherSysteme));
                 FiltrerMarques();
                 MarqueSelectionnee = null;
                 ModeleSelectionne = null;
                 CheminPhoto = null;
+
+                if (!AfficherTelephonie)
+                {
+                    NumSimSelectionne = string.Empty;
+                    Imei1Selectionne = string.Empty;
+                    Imei2Selectionne = string.Empty;
+                }
+
+                if (!AfficherSysteme)
+                    SystemeSelectionne = null;
             }
         }
+
+        public bool AfficherTelephonie =>
+            EstMaterielTelephonie(MaterielSelectionne?.Nom);
+
+        public bool AfficherSysteme =>
+            EstMaterielOrdinateur(MaterielSelectionne?.Nom);
 
         private Marque _marqueSelectionnee;
         public Marque MarqueSelectionnee
@@ -142,11 +191,21 @@ namespace Stock741.ViewModels
             {
                 _modeleSelectionne = value;
                 OnPropertyChanged();
-                // Charger la photo
                 if (value != null)
+                {
+                    if (MarqueSelectionnee?.Id != value.MarqueId)
+                    {
+                        _marqueSelectionnee = MarquesFiltrees.FirstOrDefault(m => m.Id == value.MarqueId) ??
+                                             Marques.FirstOrDefault(m => m.Id == value.MarqueId);
+                        OnPropertyChanged(nameof(MarqueSelectionnee));
+                    }
+
                     CheminPhoto = value.CheminPhoto;
+                }
                 else
+                {
                     CheminPhoto = null;
+                }
             }
         }
 
@@ -207,6 +266,8 @@ namespace Stock741.ViewModels
             {
                 _stockSelectionne = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(PeutChoisirStatut));
+                OnPropertyChanged(nameof(PeutSupprimer));
                 if (value != null)
                     _ = ChargerDetailAsync(value.Id);
                 else
@@ -241,6 +302,41 @@ namespace Stock741.ViewModels
             set { _erreurNumSerie = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasErreur)); }
         }
 
+        private string _erreurNumReception;
+        public string ErreurNumReception
+        {
+            get => _erreurNumReception;
+            set { _erreurNumReception = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasErreur)); }
+        }
+
+        private string _erreurColis;
+        public string ErreurColis
+        {
+            get => _erreurColis;
+            set { _erreurColis = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasErreur)); }
+        }
+
+        private string _erreurQte;
+        public string ErreurQte
+        {
+            get => _erreurQte;
+            set { _erreurQte = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasErreur)); }
+        }
+
+        private string _erreurLieu;
+        public string ErreurLieu
+        {
+            get => _erreurLieu;
+            set { _erreurLieu = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasErreur)); }
+        }
+
+        private string _erreurFournisseur;
+        public string ErreurFournisseur
+        {
+            get => _erreurFournisseur;
+            set { _erreurFournisseur = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasErreur)); }
+        }
+
         private string _erreurGlobale;
         public string ErreurGlobale
         {
@@ -249,17 +345,23 @@ namespace Stock741.ViewModels
         }
 
         public bool HasErreur => !string.IsNullOrWhiteSpace(ErreurAsset) ||
-                                  !string.IsNullOrWhiteSpace(ErreurNumSerie);
+                                  !string.IsNullOrWhiteSpace(ErreurNumSerie) ||
+                                  !string.IsNullOrWhiteSpace(ErreurNumReception) ||
+                                  !string.IsNullOrWhiteSpace(ErreurColis) ||
+                                  !string.IsNullOrWhiteSpace(ErreurQte) ||
+                                  !string.IsNullOrWhiteSpace(ErreurLieu) ||
+                                  !string.IsNullOrWhiteSpace(ErreurFournisseur);
 
         public ICommand AjouterCommand { get; }
         public ICommand ModifierCommand { get; }
         public ICommand SupprimerCommand { get; }
         public ICommand ActualiserCommand { get; }
+        public ICommand NouveauCommand { get; }
 
         public StockViewModel(StockRepository repository,
                               ModeleRepository modeleRepository,
                               MarqueRepository marqueRepository,
-                              FicheRepository ficheRepository,
+                              MaterielRepository materielRepository,
                               StatutRepository statutRepository,
                               LieuRepository lieuRepository,
                               FournisseurRepository fournisseurRepository,
@@ -268,7 +370,7 @@ namespace Stock741.ViewModels
             _repository = repository;
             _modeleRepository = modeleRepository;
             _marqueRepository = marqueRepository;
-            _ficheRepository = ficheRepository;
+            _materielRepository = materielRepository;
             _statutRepository = statutRepository;
             _lieuRepository = lieuRepository;
             _fournisseurRepository = fournisseurRepository;
@@ -279,7 +381,7 @@ namespace Stock741.ViewModels
             ModelesFiltres = new ObservableCollection<Modele>();
             Marques = new ObservableCollection<Marque>();
             MarquesFiltrees = new ObservableCollection<Marque>();
-            Fiches = new ObservableCollection<Fiche>();
+            Materiels = new ObservableCollection<Materiel>();
             Statuts = new ObservableCollection<Statut>();
             Lieux = new ObservableCollection<Lieu>();
             Fournisseurs = new ObservableCollection<Fournisseur>();
@@ -288,6 +390,11 @@ namespace Stock741.ViewModels
             AjouterCommand = new AsyncRelayCommand(Ajouter);
             ModifierCommand = new AsyncRelayCommand(Modifier);
             SupprimerCommand = new AsyncRelayCommand(Supprimer);
+            NouveauCommand = new RelayCommand(_ =>
+            {
+                EffacerChamps();
+                EffacerErreur();
+            });
             ActualiserCommand = new AsyncRelayCommand(async _ =>
             {
                 await Rafraichir();
@@ -299,7 +406,7 @@ namespace Stock741.ViewModels
         private void FiltrerMarques()
         {
             MarquesFiltrees.Clear();
-            if (FicheSelectionnee == null)
+            if (MaterielSelectionne == null)
             {
                 foreach (var m in Marques)
                     MarquesFiltrees.Add(m);
@@ -307,7 +414,7 @@ namespace Stock741.ViewModels
             }
 
             var marquesFiltrees = Modeles
-                .Where(m => m.Materiel?.FicheId == FicheSelectionnee.Id)
+                .Where(m => m.MaterielId == MaterielSelectionne.Id)
                 .Select(m => m.Marque)
                 .Where(m => m != null)
                 .DistinctBy(m => m.Id)
@@ -321,7 +428,7 @@ namespace Stock741.ViewModels
         private void FiltrerModeles()
         {
             ModelesFiltres.Clear();
-            if (MarqueSelectionnee == null && FicheSelectionnee == null)
+            if (MarqueSelectionnee == null && MaterielSelectionne == null)
             {
                 foreach (var m in Modeles)
                     ModelesFiltres.Add(m);
@@ -330,13 +437,38 @@ namespace Stock741.ViewModels
 
             var modelesFiltres = Modeles
                 .Where(m =>
-                    (FicheSelectionnee == null || m.Materiel?.FicheId == FicheSelectionnee.Id) &&
+                    (MaterielSelectionne == null || m.MaterielId == MaterielSelectionne.Id) &&
                     (MarqueSelectionnee == null || m.MarqueId == MarqueSelectionnee.Id))
                 .OrderBy(m => m.Nom)
                 .ToList();
 
             foreach (var m in modelesFiltres)
                 ModelesFiltres.Add(m);
+        }
+
+        private static bool EstMaterielTelephonie(string nomMateriel)
+        {
+            if (string.IsNullOrWhiteSpace(nomMateriel))
+                return false;
+
+            return nomMateriel.Contains("smartphone", StringComparison.OrdinalIgnoreCase) ||
+                   nomMateriel.Contains("dongle", StringComparison.OrdinalIgnoreCase) ||
+                   nomMateriel.Contains("téléphone satellite", StringComparison.OrdinalIgnoreCase) ||
+                   nomMateriel.Contains("telephone satellite", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool EstMaterielOrdinateur(string nomMateriel)
+        {
+            if (string.IsNullOrWhiteSpace(nomMateriel))
+                return false;
+
+            return nomMateriel.Contains("ordinateur", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private Statut GetStatutCreation()
+        {
+            return Statuts.FirstOrDefault(s =>
+                string.Equals(s.Nom, StatutCreationNom, StringComparison.OrdinalIgnoreCase));
         }
 
         private void ValidateAsset()
@@ -363,6 +495,52 @@ namespace Stock741.ViewModels
                 ErreurNumSerie = string.Empty;
         }
 
+        private void ValidateNumReception()
+        {
+            ErreurNumReception = EstEntierNaturelOuVide(NumReceptionSelectionne)
+                ? string.Empty
+                : "N° réception doit être un entier naturel";
+        }
+
+        private void ValidateColis()
+        {
+            ErreurColis = EstEntierNaturelOuVide(ColisSelectionne)
+                ? string.Empty
+                : "Colis doit être un entier naturel";
+        }
+
+        private void ValidateQte()
+        {
+            ErreurQte = QteSelectionne > 0
+                ? string.Empty
+                : "Quantité doit être supérieure à 0";
+        }
+
+        private void ValidateLieu()
+        {
+            ErreurLieu = LieuSelectionne == null
+                ? "Veuillez sélectionner un lieu"
+                : string.Empty;
+        }
+
+        private void ValidateFournisseur()
+        {
+            ErreurFournisseur = FournisseurSelectionne == null
+                ? "Veuillez sélectionner un fournisseur"
+                : string.Empty;
+        }
+
+        private static bool EstEntierNaturelOuVide(string valeur)
+        {
+            return string.IsNullOrWhiteSpace(valeur) ||
+                   int.TryParse(valeur, out var nombre) && nombre >= 0;
+        }
+
+        private static string NormaliserEntierNaturel(string valeur)
+        {
+            return string.IsNullOrWhiteSpace(valeur) ? "0" : valeur.Trim();
+        }
+
         private void AppliquerFiltre()
         {
             var view = System.Windows.Data.CollectionViewSource.GetDefaultView(Stocks);
@@ -384,9 +562,10 @@ namespace Stock741.ViewModels
                 PeutModifier = !await _repository.HasAffectation(id);
 
                 // Filtrage en cascade
-                FicheSelectionnee = Fiches.FirstOrDefault(f =>
-                    f.Id == stock.Modele?.Materiel?.FicheId);
-                MarqueSelectionnee = Marques.FirstOrDefault(m =>
+                MaterielSelectionne = Materiels.FirstOrDefault(m =>
+                    m.Id == stock.Modele?.MaterielId);
+                MarqueSelectionnee = MarquesFiltrees.FirstOrDefault(m =>
+                    m.Id == stock.Modele?.MarqueId) ?? Marques.FirstOrDefault(m =>
                     m.Id == stock.Modele?.MarqueId);
                 ModeleSelectionne = Modeles.FirstOrDefault(m =>
                     m.Id == stock.ModeleId);
@@ -396,12 +575,15 @@ namespace Stock741.ViewModels
                 DateSelectionne = stock.Date;
                 NumReceptionSelectionne = stock.NumReception;
                 QteSelectionne = stock.Qte;
+                SousGarantieSelectionne = stock.SousGarantie;
                 GarantieSelectionnee = stock.Garantie;
                 ColisSelectionne = stock.Colis;
                 FournisseurSelectionne = Fournisseurs.FirstOrDefault(f => f.Id == stock.FournisseurId);
                 StatutSelectionne = Statuts.FirstOrDefault(s => s.Id == stock.StatutId);
                 LieuSelectionne = Lieux.FirstOrDefault(l => l.Id == stock.LieuId);
-                SystemeSelectionne = Systemes.FirstOrDefault(s => s.Id == stock.SystemeId);
+                SystemeSelectionne = AfficherSysteme
+                    ? Systemes.FirstOrDefault(s => s.Id == stock.SystemeId)
+                    : null;
                 NumSimSelectionne = stock.NumSim;
                 Imei1Selectionne = stock.Imei1;
                 Imei2Selectionne = stock.Imei2;
@@ -414,7 +596,7 @@ namespace Stock741.ViewModels
             var stocks = await _repository.GetAll();
             var modeles = await _modeleRepository.GetAll();
             var marques = await _marqueRepository.GetAll();
-            var fiches = await _ficheRepository.GetAll();
+            var materiels = await _materielRepository.GetAll();
             var statuts = await _statutRepository.GetAll();
             var lieux = await _lieuRepository.GetAll();
             var fournisseurs = await _fournisseurRepository.GetAll();
@@ -431,8 +613,8 @@ namespace Stock741.ViewModels
                 Marques.Clear();
                 foreach (var m in marques) Marques.Add(m);
 
-                Fiches.Clear();
-                foreach (var f in fiches) Fiches.Add(f);
+                Materiels.Clear();
+                foreach (var m in materiels) Materiels.Add(m);
 
                 Statuts.Clear();
                 foreach (var s in statuts) Statuts.Add(s);
@@ -448,6 +630,8 @@ namespace Stock741.ViewModels
 
                 FiltrerMarques();
                 FiltrerModeles();
+                if (StockSelectionne == null)
+                    StatutSelectionne = GetStatutCreation();
                 AppliquerFiltre();
             });
         }
@@ -456,21 +640,24 @@ namespace Stock741.ViewModels
         {
             _stockSelectionne = null;
             OnPropertyChanged(nameof(StockSelectionne));
+            OnPropertyChanged(nameof(PeutChoisirStatut));
+            OnPropertyChanged(nameof(PeutSupprimer));
             Detail = null;
             PeutModifier = true;
             CheminPhoto = null;
-            FicheSelectionnee = null;
+            MaterielSelectionne = null;
             MarqueSelectionnee = null;
             ModeleSelectionne = null;
             AssetSelectionne = string.Empty;
             NumSerieSelectionne = string.Empty;
             DateSelectionne = DateTime.Now;
-            NumReceptionSelectionne = string.Empty;
+            NumReceptionSelectionne = NumReceptionDefaut;
             QteSelectionne = 1;
+            SousGarantieSelectionne = true;
             GarantieSelectionnee = null;
-            ColisSelectionne = string.Empty;
+            ColisSelectionne = ColisDefaut;
             FournisseurSelectionne = null;
-            StatutSelectionne = null;
+            StatutSelectionne = GetStatutCreation();
             LieuSelectionne = null;
             SystemeSelectionne = null;
             NumSimSelectionne = string.Empty;
@@ -483,15 +670,25 @@ namespace Stock741.ViewModels
             ErreurGlobale = string.Empty;
             ErreurAsset = string.Empty;
             ErreurNumSerie = string.Empty;
+            ErreurNumReception = string.Empty;
+            ErreurColis = string.Empty;
+            ErreurQte = string.Empty;
+            ErreurLieu = string.Empty;
+            ErreurFournisseur = string.Empty;
         }
 
         private async Task Ajouter(object obj)
         {
             ValidateNumSerie();
             ValidateAsset();
+            ValidateNumReception();
+            ValidateColis();
+            ValidateQte();
+            ValidateLieu();
+            ValidateFournisseur();
             if (HasErreur)
             {
-                ErreurGlobale = string.Join(" ", new[] { ErreurAsset, ErreurNumSerie }
+                ErreurGlobale = string.Join(" ", new[] { ErreurAsset, ErreurNumSerie, ErreurNumReception, ErreurColis, ErreurQte, ErreurLieu, ErreurFournisseur }
                     .Where(e => !string.IsNullOrWhiteSpace(e)));
                 return;
             }
@@ -502,20 +699,34 @@ namespace Stock741.ViewModels
                 return;
             }
 
+            var statutCreation = GetStatutCreation();
+            if (statutCreation == null)
+            {
+                ErreurGlobale = "Le statut Stock est introuvable.";
+                return;
+            }
+
+            if (AfficherSysteme && SystemeSelectionne == null)
+            {
+                ErreurGlobale = "Veuillez sélectionner un système.";
+                return;
+            }
+
             var stock = new Stock
             {
                 Asset = AssetSelectionne,
                 NumSerie = NumSerieSelectionne,
                 Date = DateSelectionne,
-                NumReception = NumReceptionSelectionne,
+                NumReception = NormaliserEntierNaturel(NumReceptionSelectionne),
                 Qte = QteSelectionne,
-                Garantie = GarantieSelectionnee,
-                Colis = ColisSelectionne,
+                SousGarantie = SousGarantieSelectionne,
+                Garantie = SousGarantieSelectionne ? GarantieSelectionnee : null,
+                Colis = NormaliserEntierNaturel(ColisSelectionne),
                 ModeleId = ModeleSelectionne.Id,
                 FournisseurId = FournisseurSelectionne?.Id,
-                StatutId = StatutSelectionne?.Id,
+                StatutId = statutCreation.Id,
                 LieuId = LieuSelectionne?.Id,
-                SystemeId = SystemeSelectionne?.Id,
+                SystemeId = AfficherSysteme ? SystemeSelectionne?.Id : null,
                 NumSim = NumSimSelectionne,
                 Imei1 = Imei1Selectionne,
                 Imei2 = Imei2Selectionne
@@ -545,9 +756,14 @@ namespace Stock741.ViewModels
 
             ValidateNumSerie();
             ValidateAsset();
+            ValidateNumReception();
+            ValidateColis();
+            ValidateQte();
+            ValidateLieu();
+            ValidateFournisseur();
             if (HasErreur)
             {
-                ErreurGlobale = string.Join(" ", new[] { ErreurAsset, ErreurNumSerie }
+                ErreurGlobale = string.Join(" ", new[] { ErreurAsset, ErreurNumSerie, ErreurNumReception, ErreurColis, ErreurQte, ErreurLieu, ErreurFournisseur }
                     .Where(e => !string.IsNullOrWhiteSpace(e)));
                 return;
             }
@@ -558,25 +774,37 @@ namespace Stock741.ViewModels
                 return;
             }
 
-            StockSelectionne.Asset = AssetSelectionne;
-            StockSelectionne.NumSerie = NumSerieSelectionne;
-            StockSelectionne.Date = DateSelectionne;
-            StockSelectionne.NumReception = NumReceptionSelectionne;
-            StockSelectionne.Qte = QteSelectionne;
-            StockSelectionne.Garantie = GarantieSelectionnee;
-            StockSelectionne.Colis = ColisSelectionne;
-            StockSelectionne.ModeleId = ModeleSelectionne.Id;
-            StockSelectionne.FournisseurId = FournisseurSelectionne?.Id;
-            StockSelectionne.StatutId = StatutSelectionne?.Id;
-            StockSelectionne.LieuId = LieuSelectionne?.Id;
-            StockSelectionne.SystemeId = SystemeSelectionne?.Id;
-            StockSelectionne.NumSim = NumSimSelectionne;
-            StockSelectionne.Imei1 = Imei1Selectionne;
-            StockSelectionne.Imei2 = Imei2Selectionne;
+            if (AfficherSysteme && SystemeSelectionne == null)
+            {
+                ErreurGlobale = "Veuillez sélectionner un système.";
+                return;
+            }
+
+            var stock = new Stock
+            {
+                Id = StockSelectionne.Id,
+                RowVersion = Detail?.RowVersion ?? StockSelectionne.RowVersion,
+                Asset = AssetSelectionne,
+                NumSerie = NumSerieSelectionne,
+                Date = DateSelectionne,
+                NumReception = NormaliserEntierNaturel(NumReceptionSelectionne),
+                Qte = QteSelectionne,
+                SousGarantie = SousGarantieSelectionne,
+                Garantie = SousGarantieSelectionne ? GarantieSelectionnee : null,
+                Colis = NormaliserEntierNaturel(ColisSelectionne),
+                ModeleId = ModeleSelectionne.Id,
+                FournisseurId = FournisseurSelectionne?.Id,
+                StatutId = StatutSelectionne?.Id,
+                LieuId = LieuSelectionne?.Id,
+                SystemeId = AfficherSysteme ? SystemeSelectionne?.Id : null,
+                NumSim = NumSimSelectionne,
+                Imei1 = Imei1Selectionne,
+                Imei2 = Imei2Selectionne
+            };
 
             try
             {
-                await _repository.Update(StockSelectionne, _effectuePar);
+                await _repository.Update(stock, _effectuePar);
                 await Rafraichir();
                 EffacerChamps();
                 EffacerErreur();

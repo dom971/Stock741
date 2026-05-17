@@ -1,0 +1,122 @@
+<UserControl x:Class="Stock741.Views.HistoriqueMouvementView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,5">
+            <Button Content="Actualiser" Command="{Binding ActualiserCommand}" Margin="0,0,15,0"/>
+            <Label Content="Recherche:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox Width="260"
+                     Text="{Binding Filtre, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,5,0"/>
+        </StackPanel>
+
+        <TextBlock Grid.Row="1"
+                   Text="{Binding ErreurGlobale}"
+                   Foreground="Red"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,5"
+                   Visibility="{Binding ErreurGlobale, Converter={StaticResource StringToVisibilityConverter}}"/>
+
+        <DataGrid Grid.Row="2"
+                  ItemsSource="{Binding Historiques}"
+                  SelectedItem="{Binding HistoriqueSelectionne}"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  IsReadOnly="True"
+                  EnableRowVirtualization="True"
+                  EnableColumnVirtualization="True"
+                  VirtualizingPanel.VirtualizationMode="Recycling">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Date" Binding="{Binding DateMouvement, StringFormat={}{0:dd/MM/yyyy HH:mm}}" Width="130"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding TypeMouvement}" Width="110"/>
+                <DataGridTextColumn Header="Asset" Binding="{Binding Stock.Asset}" Width="90"/>
+                <DataGridTextColumn Header="Mat&#233;riel" Binding="{Binding Stock.Modele.Materiel.Nom}" Width="110"/>
+                <DataGridTextColumn Header="Marque" Binding="{Binding Stock.Modele.Marque.Nom}" Width="110"/>
+                <DataGridTextColumn Header="Mod&#232;le" Binding="{Binding Stock.Modele.Nom}" Width="*"/>
+                <DataGridTextColumn Header="N&#176; S&#233;rie" Binding="{Binding Stock.NumSerie}" Width="130"/>
+                <DataGridTextColumn Header="Effectu&#233; par" Binding="{Binding EffectuePar}" Width="120"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <Border Grid.Row="3"
+                Margin="0,8,0,0"
+                Padding="10"
+                Background="#F9F9F9"
+                BorderBrush="#CCCCCC"
+                BorderThickness="1"
+                Visibility="{Binding Detail, Converter={StaticResource NullToVisibilityConverter}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                    <TextBlock Text="Mouvement" Foreground="#00643E" FontWeight="Bold" FontSize="12" Margin="0,0,0,6"/>
+                    <TextBlock Text="Date" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.DateMouvement, StringFormat={}{0:dd/MM/yyyy HH:mm}}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="Type" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.TypeMouvement}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="Effectu&#233; par" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.EffectuePar}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="Commentaire" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.Commentaire}" FontSize="12" Foreground="#535353" TextWrapping="Wrap"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Margin="0,0,20,0">
+                    <TextBlock Text="Mat&#233;riel" Foreground="#00643E" FontWeight="Bold" FontSize="12" Margin="0,0,0,6"/>
+                    <TextBlock Text="Asset" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.Stock.Asset}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="N&#176; S&#233;rie" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.Stock.NumSerie}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="Mat&#233;riel / Marque / Mod&#232;le" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock FontSize="12" Foreground="#535353" Margin="0,0,0,4">
+                        <Run Text="{Binding Detail.Stock.Modele.Materiel.Nom}"/>
+                        <Run Text=" - "/>
+                        <Run Text="{Binding Detail.Stock.Modele.Marque.Nom}"/>
+                        <Run Text=" - "/>
+                        <Run Text="{Binding Detail.Stock.Modele.Nom}"/>
+                    </TextBlock>
+                    <TextBlock Text="Affectation li&#233;e" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.AffectationId}" FontSize="12" Foreground="#535353"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="Ancien / Nouveau" Foreground="#00643E" FontWeight="Bold" FontSize="12" Margin="0,0,0,6"/>
+                    <TextBlock Text="Statut" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock FontSize="12" Foreground="#535353" Margin="0,0,0,4">
+                        <Run Text="{Binding Detail.AncienStatut.Nom}"/>
+                        <Run Text=" -> "/>
+                        <Run Text="{Binding Detail.NouveauStatut.Nom}"/>
+                    </TextBlock>
+                    <TextBlock Text="Lieu" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock FontSize="12" Foreground="#535353" Margin="0,0,0,4">
+                        <Run Text="{Binding Detail.AncienLieu.Nom}"/>
+                        <Run Text=" -> "/>
+                        <Run Text="{Binding Detail.NouveauLieu.Nom}"/>
+                    </TextBlock>
+                    <TextBlock Text="Utilisateur" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.AncienUtilisateur.NomComplet}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="EDS" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.AncienEds.Nom}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="PC / R&#233;seau" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock FontSize="12" Foreground="#535353">
+                        <Run Text="{Binding Detail.AncienNomPC}"/>
+                        <Run Text=" "/>
+                        <Run Text="{Binding Detail.AncienAdresseIP}"/>
+                    </TextBlock>
+                    <TextBlock Text="{Binding Detail.AncienMasqueIP}" FontSize="12" Foreground="#535353"/>
+                    <TextBlock Text="{Binding Detail.AnciennePasserelle}" FontSize="12" Foreground="#535353"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

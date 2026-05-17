@@ -19,25 +19,53 @@ namespace Stock741.Repositories
             using var context = _contextFactory.CreateDbContext();
             return await context.Stocks
                 .AsNoTracking()
-                .Include(s => s.Modele)
-                    .ThenInclude(m => m.Materiel)
-                        .ThenInclude(m => m.Fiche)
-                .Include(s => s.Statut)
-                .Include(s => s.Lieu)
                 .OrderBy(s => s.Date)
                 .Select(s => new Stock
                 {
                     Id = s.Id,
                     Asset = s.Asset,
-                    NumSerie = s.NumSerie,
                     Date = s.Date,
-                    NumReception = s.NumReception,
+                    NumSerie = s.NumSerie,
                     StatutId = s.StatutId,
-                    Statut = s.Statut,
+                    Statut = s.Statut == null ? null : new Statut
+                    {
+                        Id = s.Statut.Id,
+                        Nom = s.Statut.Nom,
+                        Type = s.Statut.Type
+                    },
                     LieuId = s.LieuId,
-                    Lieu = s.Lieu,
+                    Lieu = s.Lieu == null ? null : new Lieu
+                    {
+                        Id = s.Lieu.Id,
+                        Nom = s.Lieu.Nom
+                    },
                     ModeleId = s.ModeleId,
-                    Modele = s.Modele,
+                    Modele = new Modele
+                    {
+                        Id = s.Modele.Id,
+                        Nom = s.Modele.Nom,
+                        CheminPhoto = s.Modele.CheminPhoto,
+                        MaterielId = s.Modele.MaterielId,
+                        Materiel = new Materiel
+                        {
+                            Id = s.Modele.Materiel.Id,
+                            Nom = s.Modele.Materiel.Nom
+                        },
+                        MarqueId = s.Modele.MarqueId,
+                        Marque = new Marque
+                        {
+                            Id = s.Modele.Marque.Id,
+                            Nom = s.Modele.Marque.Nom
+                        }
+                    },
+                    FournisseurId = s.FournisseurId,
+                    Fournisseur = s.Fournisseur == null ? null : new Fournisseur
+                    {
+                        Id = s.Fournisseur.Id,
+                        Nom = s.Fournisseur.Nom
+                    },
+                    SousGarantie = s.SousGarantie,
+                    Garantie = s.Garantie,
                     RowVersion = s.RowVersion
                 })
                 .ToListAsync();
@@ -80,6 +108,8 @@ namespace Stock741.Repositories
                 {
                     StockId = stock.Id,
                     TypeMouvement = "Réception",
+                    NouveauStatutId = stock.StatutId,
+                    NouveauLieuId = stock.LieuId,
                     DateMouvement = DateTime.Now,
                     EffectuePar = effectuePar,
                     Commentaire = "Réception du matériel"
@@ -105,7 +135,33 @@ namespace Stock741.Repositories
                     .AsNoTracking()
                     .FirstOrDefaultAsync(s => s.Id == stock.Id);
 
-                context.Stocks.Update(stock);
+                var tracked = await context.Stocks
+                    .FirstOrDefaultAsync(s => s.Id == stock.Id);
+
+                if (tracked == null)
+                    throw new DbUpdateConcurrencyException();
+
+                context.Entry(tracked)
+                    .Property(s => s.RowVersion)
+                    .OriginalValue = stock.RowVersion;
+
+                tracked.Asset = stock.Asset;
+                tracked.Date = stock.Date;
+                tracked.NumReception = stock.NumReception;
+                tracked.StatutId = stock.StatutId;
+                tracked.LieuId = stock.LieuId;
+                tracked.Colis = stock.Colis;
+                tracked.ModeleId = stock.ModeleId;
+                tracked.FournisseurId = stock.FournisseurId;
+                tracked.NumSerie = stock.NumSerie;
+                tracked.Qte = stock.Qte;
+                tracked.SousGarantie = stock.SousGarantie;
+                tracked.Garantie = stock.Garantie;
+                tracked.SystemeId = stock.SystemeId;
+                tracked.NumSim = stock.NumSim;
+                tracked.Imei1 = stock.Imei1;
+                tracked.Imei2 = stock.Imei2;
+
                 await context.SaveChangesAsync();
 
                 // Historique si statut ou lieu a changé
@@ -117,6 +173,8 @@ namespace Stock741.Repositories
                         TypeMouvement = "Modification",
                         AncienStatutId = ancien?.StatutId,
                         AncienLieuId = ancien?.LieuId,
+                        NouveauStatutId = stock.StatutId,
+                        NouveauLieuId = stock.LieuId,
                         DateMouvement = DateTime.Now,
                         EffectuePar = effectuePar
                     };
@@ -147,6 +205,12 @@ namespace Stock741.Repositories
 
                 if (aUneAffectation)
                     throw new InvalidOperationException("Impossible de supprimer : ce matériel a des affectations.");
+
+                var historiques = await context.HistoriqueMouvements
+                    .Where(h => h.StockId == stock.Id)
+                    .ToListAsync();
+
+                context.HistoriqueMouvements.RemoveRange(historiques);
 
                 var tracked = new Stock { Id = stock.Id, RowVersion = stock.RowVersion };
                 context.Stocks.Attach(tracked);

@@ -106,6 +106,18 @@ namespace Stock741.Data
                 .HasForeignKey(s => s.SystemeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Stock>()
+                .Property(s => s.SousGarantie)
+                .HasDefaultValue(true);
+
+            modelBuilder.Entity<Stock>()
+                .Property(s => s.Colis)
+                .HasDefaultValue("0");
+
+            modelBuilder.Entity<Stock>()
+                .Property(s => s.NumReception)
+                .HasDefaultValue("0");
+
             // Affectation
             modelBuilder.Entity<Affectation>()
                 .HasOne(a => a.Stock)
@@ -160,6 +172,18 @@ namespace Stock741.Data
                 .HasOne(h => h.AncienLieu)
                 .WithMany()
                 .HasForeignKey(h => h.AncienLieuId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<HistoriqueMouvement>()
+                .HasOne(h => h.NouveauStatut)
+                .WithMany()
+                .HasForeignKey(h => h.NouveauStatutId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<HistoriqueMouvement>()
+                .HasOne(h => h.NouveauLieu)
+                .WithMany()
+                .HasForeignKey(h => h.NouveauLieuId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<HistoriqueMouvement>()

@@ -86,6 +86,9 @@ namespace Stock741
             services.AddTransient<StockRepository>();
             services.AddTransient<StockViewModel>();
 
+            services.AddTransient<HistoriqueMouvementRepository>();
+            services.AddTransient<HistoriqueMouvementViewModel>();
+
             ServiceProvider = services.BuildServiceProvider();
 
             var mainWindow = new MainWindow();

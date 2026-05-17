@@ -22,6 +22,7 @@ namespace Stock741.ViewModels
         private readonly UtilisateurViewModel _utilisateurViewModel;
         private readonly SystemeViewModel _systemeViewModel;
         private readonly StockViewModel _stockViewModel;
+        private readonly HistoriqueMouvementViewModel _historiqueMouvementViewModel;
 
         private object _vueActuelle;
         public object VueActuelle
@@ -37,7 +38,7 @@ namespace Stock741.ViewModels
             set { _titreVueActuelle = value; OnPropertyChanged(); }
         }
 
-        private string _vueActive = "Marques";
+        private string _vueActive = "Stock";
         public string VueActive
         {
             get => _vueActive;
@@ -58,7 +59,7 @@ namespace Stock741.ViewModels
                              OperateurViewModel operateurViewModel,
                              ForfaitViewModel forfaitViewModel,
                              EdsViewModel edsViewModel,
-                             EdsLiaisonViewModel edsLiaisonViewModel, UtilisateurViewModel utilisateurViewModel, SystemeViewModel systemeViewModel, StockViewModel stockViewModel)
+                             EdsLiaisonViewModel edsLiaisonViewModel, UtilisateurViewModel utilisateurViewModel, SystemeViewModel systemeViewModel, StockViewModel stockViewModel, HistoriqueMouvementViewModel historiqueMouvementViewModel)
         {
             _marqueViewModel = marqueViewModel;
             _materielViewModel = materielViewModel;
@@ -75,15 +76,16 @@ namespace Stock741.ViewModels
             _utilisateurViewModel = utilisateurViewModel;
             _systemeViewModel = systemeViewModel;
             _stockViewModel = stockViewModel;
+            _historiqueMouvementViewModel = historiqueMouvementViewModel;
 
             NaviguerVersCommand = new AsyncRelayCommand(NaviguerVers);
             QuitterCommand = new RelayCommand(_ => System.Windows.Application.Current.Shutdown());
 
             // Vue par défaut
-            VueActuelle = _marqueViewModel;
-            TitreVueActuelle = "Marques";
-            VueActive = "Marques";
-            _ = _marqueViewModel.Rafraichir();
+            VueActuelle = _stockViewModel;
+            TitreVueActuelle = "Stock";
+            VueActive = "Stock";
+            _ = _stockViewModel.Rafraichir();
 
 
             // Warm-up SQL Server — pré-charge Eds en arrière-plan
@@ -110,6 +112,14 @@ namespace Stock741.ViewModels
                     VueActuelle = _stockViewModel;
                     TitreVueActuelle = "Stock";
                     VueActive = "Stock";
+                    break;
+
+                case "HistoriqueMouvements":
+                    _historiqueMouvementViewModel.EffacerErreur();
+                    await _historiqueMouvementViewModel.Rafraichir();
+                    VueActuelle = _historiqueMouvementViewModel;
+                    TitreVueActuelle = "Historique mouvements";
+                    VueActive = "HistoriqueMouvements";
                     break;
 
                 case "Marques":

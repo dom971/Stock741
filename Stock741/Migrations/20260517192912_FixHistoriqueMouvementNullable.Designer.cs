@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Stock741.Data;
 
@@ -11,9 +12,11 @@ using Stock741.Data;
 namespace Stock741.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260517192912_FixHistoriqueMouvementNullable")]
+    partial class FixHistoriqueMouvementNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -374,12 +377,6 @@ namespace Stock741.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int?>("NouveauLieuId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("NouveauStatutId")
-                        .HasColumnType("int");
-
                     b.Property<int>("StockId")
                         .HasColumnType("int");
 
@@ -398,10 +395,6 @@ namespace Stock741.Migrations
                     b.HasIndex("AncienStatutId");
 
                     b.HasIndex("AncienUtilisateurId");
-
-                    b.HasIndex("NouveauLieuId");
-
-                    b.HasIndex("NouveauStatutId");
 
                     b.HasIndex("StockId");
 
@@ -609,14 +602,14 @@ namespace Stock741.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Asset")
+                        .IsRequired()
                         .HasMaxLength(8)
                         .HasColumnType("nvarchar(8)");
 
                     b.Property<string>("Colis")
-                        .ValueGeneratedOnAdd()
+                        .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasDefaultValue("0");
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
@@ -628,10 +621,12 @@ namespace Stock741.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Imei1")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Imei2")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -642,10 +637,9 @@ namespace Stock741.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("NumReception")
-                        .ValueGeneratedOnAdd()
+                        .IsRequired()
                         .HasMaxLength(9)
-                        .HasColumnType("nvarchar(9)")
-                        .HasDefaultValue("0");
+                        .HasColumnType("nvarchar(9)");
 
                     b.Property<string>("NumSerie")
                         .IsRequired()
@@ -653,6 +647,7 @@ namespace Stock741.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("NumSim")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -665,11 +660,6 @@ namespace Stock741.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<bool>("SousGarantie")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
                     b.Property<int?>("StatutId")
                         .HasColumnType("int");
 
@@ -679,8 +669,7 @@ namespace Stock741.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Asset")
-                        .IsUnique()
-                        .HasFilter("[Asset] IS NOT NULL");
+                        .IsUnique();
 
                     b.HasIndex("FournisseurId");
 
@@ -941,16 +930,6 @@ namespace Stock741.Migrations
                         .HasForeignKey("AncienUtilisateurId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Stock741.Models.Lieu", "NouveauLieu")
-                        .WithMany()
-                        .HasForeignKey("NouveauLieuId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Stock741.Models.Statut", "NouveauStatut")
-                        .WithMany()
-                        .HasForeignKey("NouveauStatutId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Stock741.Models.Stock", "Stock")
                         .WithMany()
                         .HasForeignKey("StockId")
@@ -966,10 +945,6 @@ namespace Stock741.Migrations
                     b.Navigation("AncienStatut");
 
                     b.Navigation("AncienUtilisateur");
-
-                    b.Navigation("NouveauLieu");
-
-                    b.Navigation("NouveauStatut");
 
                     b.Navigation("Stock");
                 });

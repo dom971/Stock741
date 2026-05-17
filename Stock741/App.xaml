@@ -185,6 +185,9 @@
         <DataTemplate DataType="{x:Type viewmodels:StockViewModel}">
             <views:StockView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type viewmodels:HistoriqueMouvementViewModel}">
+            <views:HistoriqueMouvementView/>
+        </DataTemplate>
 
     </Application.Resources>
 </Application>
