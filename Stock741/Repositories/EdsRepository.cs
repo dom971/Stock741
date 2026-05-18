@@ -38,6 +38,30 @@ namespace Stock741.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<Eds>> RechercherLight(string recherche, int limite = 50)
+        {
+            if (string.IsNullOrWhiteSpace(recherche) || recherche.Trim().Length < 2)
+                return new List<Eds>();
+
+            var filtre = recherche.Trim().ToLower();
+
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Eds
+                .AsNoTracking()
+                .Where(e =>
+                    e.Cnx.ToLower().Contains(filtre) ||
+                    e.Nom.ToLower().Contains(filtre))
+                .OrderBy(e => e.Nom)
+                .Take(limite)
+                .Select(e => new Eds
+                {
+                    Id = e.Id,
+                    Cnx = e.Cnx,
+                    Nom = e.Nom
+                })
+                .ToListAsync();
+        }
+
         public async Task<List<Eds>> GetPageLight(int page, int taille = 20)
         {
             using var context = _contextFactory.CreateDbContext();

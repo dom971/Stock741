@@ -48,6 +48,38 @@ namespace Stock741.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<Utilisateur>> RechercherPourAffectation(string recherche, int limite = 50)
+        {
+            if (string.IsNullOrWhiteSpace(recherche) || recherche.Trim().Length < 2)
+                return new List<Utilisateur>();
+
+            var filtre = recherche.Trim().ToLower();
+
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Utilisateurs
+                .AsNoTracking()
+                .Where(u =>
+                    u.Nom.ToLower().Contains(filtre) ||
+                    u.Prenom.ToLower().Contains(filtre) ||
+                    u.IdWindows.ToLower().Contains(filtre))
+                .OrderBy(u => u.Nom)
+                .ThenBy(u => u.Prenom)
+                .Take(limite)
+                .Select(u => new Utilisateur
+                {
+                    Id = u.Id,
+                    IdWindows = u.IdWindows,
+                    Nom = u.Nom,
+                    Prenom = u.Prenom,
+                    NomComplet = u.NomComplet,
+                    Email = u.Email,
+                    Departement = u.Departement,
+                    Emplacement = u.Emplacement,
+                    Actif = u.Actif
+                })
+                .ToListAsync();
+        }
+
         public async Task<Utilisateur> GetById(int id)
         {
             using var context = _contextFactory.CreateDbContext();

@@ -46,6 +46,35 @@ namespace Stock741.Repositories
                 .ToListAsync();
         }
 
+        public async Task<Eds?> GetEdsParService(string service)
+        {
+            if (string.IsNullOrWhiteSpace(service))
+                return null;
+
+            var serviceNormalise = service.Trim();
+
+            using var context = _contextFactory.CreateDbContext();
+            var liaisons = await context.EdsLiaisons
+                .AsNoTracking()
+                .Include(l => l.Eds)
+                .Select(l => new EdsLiaison
+                {
+                    Cible = l.Cible,
+                    Eds = new Eds
+                    {
+                        Id = l.Eds.Id,
+                        Cnx = l.Eds.Cnx,
+                        Nom = l.Eds.Nom
+                    }
+                })
+                .ToListAsync();
+
+            var liaison = liaisons.FirstOrDefault(l =>
+                string.Equals(l.Cible?.Trim(), serviceNormalise, StringComparison.OrdinalIgnoreCase));
+
+            return liaison?.Eds;
+        }
+
         public async Task Add(EdsLiaison edsLiaison)
         {
             try

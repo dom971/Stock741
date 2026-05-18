@@ -49,6 +49,22 @@
                     </Button>
 
 
+                    <Button Content="Affectations"
+                        Command="{Binding NaviguerVersCommand}"
+                        CommandParameter="Affectations"
+                        Margin="0,5">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding VueActive}" Value="Affectations">
+                                        <Setter Property="Background" Value="#008991"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+
                     <Button Content="Historique"
                         Command="{Binding NaviguerVersCommand}"
                         CommandParameter="HistoriqueMouvements"

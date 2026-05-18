@@ -22,6 +22,7 @@ namespace Stock741.ViewModels
         private readonly UtilisateurViewModel _utilisateurViewModel;
         private readonly SystemeViewModel _systemeViewModel;
         private readonly StockViewModel _stockViewModel;
+        private readonly AffectationViewModel _affectationViewModel;
         private readonly HistoriqueMouvementViewModel _historiqueMouvementViewModel;
 
         private object _vueActuelle;
@@ -59,7 +60,7 @@ namespace Stock741.ViewModels
                              OperateurViewModel operateurViewModel,
                              ForfaitViewModel forfaitViewModel,
                              EdsViewModel edsViewModel,
-                             EdsLiaisonViewModel edsLiaisonViewModel, UtilisateurViewModel utilisateurViewModel, SystemeViewModel systemeViewModel, StockViewModel stockViewModel, HistoriqueMouvementViewModel historiqueMouvementViewModel)
+                             EdsLiaisonViewModel edsLiaisonViewModel, UtilisateurViewModel utilisateurViewModel, SystemeViewModel systemeViewModel, StockViewModel stockViewModel, AffectationViewModel affectationViewModel, HistoriqueMouvementViewModel historiqueMouvementViewModel)
         {
             _marqueViewModel = marqueViewModel;
             _materielViewModel = materielViewModel;
@@ -76,6 +77,7 @@ namespace Stock741.ViewModels
             _utilisateurViewModel = utilisateurViewModel;
             _systemeViewModel = systemeViewModel;
             _stockViewModel = stockViewModel;
+            _affectationViewModel = affectationViewModel;
             _historiqueMouvementViewModel = historiqueMouvementViewModel;
 
             NaviguerVersCommand = new AsyncRelayCommand(NaviguerVers);
@@ -120,6 +122,14 @@ namespace Stock741.ViewModels
                     VueActuelle = _historiqueMouvementViewModel;
                     TitreVueActuelle = "Historique mouvements";
                     VueActive = "HistoriqueMouvements";
+                    break;
+
+                case "Affectations":
+                    _affectationViewModel.EffacerChamps();
+                    await _affectationViewModel.Rafraichir();
+                    VueActuelle = _affectationViewModel;
+                    TitreVueActuelle = "Affectations";
+                    VueActive = "Affectations";
                     break;
 
                 case "Marques":

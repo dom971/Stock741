@@ -138,6 +138,12 @@ namespace Stock741.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Affectation>()
+                .HasOne(a => a.EdsAutomatique)
+                .WithMany()
+                .HasForeignKey(a => a.EdsAutomatiqueId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Affectation>()
                 .HasOne(a => a.Operateur)
                 .WithMany()
                 .HasForeignKey(a => a.OperateurId)
