@@ -139,6 +139,13 @@
                             SelectedDate="{Binding DatePret}"
                             Margin="0,2,15,2"/>
 
+                <Label Grid.Row="0" Grid.Column="4" Content="Statut:"/>
+                <ComboBox Grid.Row="0" Grid.Column="5"
+                          ItemsSource="{Binding StatutsAffectation}"
+                          SelectedItem="{Binding StatutAffectationSelectionne}"
+                          DisplayMemberPath="Nom"
+                          Margin="0,2,0,2"/>
+
                 <Label Grid.Row="1" Grid.Column="0" Content="Recherche utilisateur:"/>
                 <TextBox Grid.Row="1" Grid.Column="1"
                          Grid.ColumnSpan="3"

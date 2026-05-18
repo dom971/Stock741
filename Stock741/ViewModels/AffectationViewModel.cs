@@ -15,6 +15,7 @@ namespace Stock741.ViewModels
         private readonly EdsLiaisonRepository _edsLiaisonRepository;
         private readonly OperateurRepository _operateurRepository;
         private readonly ForfaitRepository _forfaitRepository;
+        private readonly StatutRepository _statutRepository;
 
         public ObservableCollection<Affectation> Affectations { get; } = new();
         public ObservableCollection<Stock> StocksDisponibles { get; } = new();
@@ -22,6 +23,7 @@ namespace Stock741.ViewModels
         public ObservableCollection<Eds> EdsListe { get; } = new();
         public ObservableCollection<Operateur> Operateurs { get; } = new();
         public ObservableCollection<Forfait> Forfaits { get; } = new();
+        public ObservableCollection<Statut> StatutsAffectation { get; } = new();
 
         private Affectation? _affectationSelectionnee;
         public Affectation? AffectationSelectionnee
@@ -60,6 +62,19 @@ namespace Stock741.ViewModels
                 OnPropertyChanged(nameof(AfficherPoste));
                 OnPropertyChanged(nameof(AfficherTelephonie));
                 OnPropertyChanged(nameof(AfficherReseau));
+                SelectionnerStatutParDefaut();
+            }
+        }
+
+        private Statut? _statutAffectationSelectionne;
+        public Statut? StatutAffectationSelectionne
+        {
+            get => _statutAffectationSelectionne;
+            set
+            {
+                _statutAffectationSelectionne = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(DatePretObligatoire));
             }
         }
 
@@ -305,6 +320,7 @@ namespace Stock741.ViewModels
         public bool PeutAjouter => !EstModification;
         public bool PeutModifier => AffectationSelectionnee != null;
         public bool PeutChoisirMateriel => !EstModification;
+        public bool DatePretObligatoire => EstStatutSelectionne("pret");
 
         public ICommand AjouterCommand { get; }
         public ICommand ModifierCommand { get; }
@@ -318,7 +334,8 @@ namespace Stock741.ViewModels
             EdsRepository edsRepository,
             EdsLiaisonRepository edsLiaisonRepository,
             OperateurRepository operateurRepository,
-            ForfaitRepository forfaitRepository)
+            ForfaitRepository forfaitRepository,
+            StatutRepository statutRepository)
         {
             _affectationRepository = affectationRepository;
             _utilisateurRepository = utilisateurRepository;
@@ -326,6 +343,7 @@ namespace Stock741.ViewModels
             _edsLiaisonRepository = edsLiaisonRepository;
             _operateurRepository = operateurRepository;
             _forfaitRepository = forfaitRepository;
+            _statutRepository = statutRepository;
 
             AjouterCommand = new AsyncRelayCommand(Ajouter);
             ModifierCommand = new AsyncRelayCommand(Modifier, _ => PeutModifier);
@@ -344,6 +362,10 @@ namespace Stock741.ViewModels
             var stocks = await _affectationRepository.GetStocksDisponibles();
             var operateurs = await _operateurRepository.GetAll();
             var forfaits = await _forfaitRepository.GetAll();
+            var statuts = await _statutRepository.GetAll();
+            var statutsAffectation = statuts
+                .Where(s => string.Equals(s.Type, "Affectation", StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
             App.Current.Dispatcher.Invoke(() =>
             {
@@ -353,6 +375,7 @@ namespace Stock741.ViewModels
                 EdsListe.Clear();
                 Remplacer(Operateurs, operateurs);
                 Remplacer(Forfaits, forfaits);
+                Remplacer(StatutsAffectation, statutsAffectation);
                 AppliquerFiltreAffectations();
                 AppliquerFiltreStocksDisponibles();
                 FiltrerForfaits();
@@ -375,6 +398,7 @@ namespace Stock741.ViewModels
             EdsAutomatiqueSelectionne = null;
             OperateurSelectionne = null;
             ForfaitSelectionne = null;
+            StatutAffectationSelectionne = null;
             FiltreMateriel = string.Empty;
             FiltreUtilisateur = string.Empty;
             FiltreEds = string.Empty;
@@ -432,6 +456,9 @@ namespace Stock741.ViewModels
                     return;
                 }
 
+                if (!ValiderStatutAffectation())
+                    return;
+
                 var affectation = new Affectation
                 {
                     StockId = StockSelectionne.Id,
@@ -455,7 +482,7 @@ namespace Stock741.ViewModels
                     Actif = true
                 };
 
-                await _affectationRepository.Ajouter(affectation, Environment.UserName);
+                await _affectationRepository.Ajouter(affectation, StatutAffectationSelectionne!.Id, Environment.UserName);
                 await Rafraichir();
                 EffacerChamps();
                 MessageSucces = "Affectation enregistrée.";
@@ -481,6 +508,9 @@ namespace Stock741.ViewModels
                     return;
                 }
 
+                if (!ValiderStatutAffectation())
+                    return;
+
                 var affectation = new Affectation
                 {
                     Id = AffectationSelectionnee.Id,
@@ -505,7 +535,7 @@ namespace Stock741.ViewModels
                     Commentaire = Commentaire?.Trim() ?? string.Empty
                 };
 
-                await _affectationRepository.Modifier(affectation, Environment.UserName);
+                await _affectationRepository.Modifier(affectation, StatutAffectationSelectionne!.Id, Environment.UserName);
                 await Rafraichir();
                 EffacerChamps();
                 MessageSucces = "Affectation modifiée.";
@@ -702,6 +732,7 @@ namespace Stock741.ViewModels
             OnPropertyChanged(nameof(FiltreMateriel));
             AppliquerFiltreStocksDisponibles();
             StockSelectionne = StocksDisponibles.FirstOrDefault(s => s.Id == affectation.StockId);
+            StatutAffectationSelectionne = StatutsAffectation.FirstOrDefault(s => s.Id == affectation.Stock?.StatutId);
 
             _utilisateurSelectionne = Utilisateurs.FirstOrDefault(u => u.Id == affectation.UtilisateurId);
             OnPropertyChanged(nameof(UtilisateurSelectionne));
@@ -744,6 +775,64 @@ namespace Stock741.ViewModels
             OnPropertyChanged(nameof(PeutRetourner));
             OnPropertyChanged(nameof(PeutChoisirMateriel));
             CommandManager.InvalidateRequerySuggested();
+        }
+
+        private bool ValiderStatutAffectation()
+        {
+            if (StatutAffectationSelectionne == null)
+            {
+                ErreurGlobale = "Le statut d'affectation est obligatoire.";
+                return false;
+            }
+
+            if (DatePretObligatoire && DatePret == null)
+            {
+                ErreurGlobale = "La date de pret est obligatoire pour le statut Pret.";
+                return false;
+            }
+
+            return true;
+        }
+
+        private void SelectionnerStatutParDefaut()
+        {
+            if (EstModification || StockSelectionne == null || StatutsAffectation.Count == 0)
+                return;
+
+            var nomStatut = EstOrdinateurPortable() ? "personnalise" : "installe";
+            StatutAffectationSelectionne = StatutsAffectation.FirstOrDefault(s => MemeNomStatut(s.Nom, nomStatut));
+        }
+
+        private bool EstOrdinateurPortable()
+        {
+            var materiel = StockSelectionne?.Modele?.Materiel?.Nom;
+            if (string.IsNullOrWhiteSpace(materiel))
+                return false;
+
+            return materiel.Contains("ordinateur", StringComparison.OrdinalIgnoreCase)
+                && materiel.Contains("portable", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool EstStatutSelectionne(string nom)
+        {
+            return StatutAffectationSelectionne != null && MemeNomStatut(StatutAffectationSelectionne.Nom, nom);
+        }
+
+        private static bool MemeNomStatut(string? valeur, string attendu)
+        {
+            return string.Equals(SansAccents(valeur), attendu, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string SansAccents(string? valeur)
+        {
+            if (string.IsNullOrWhiteSpace(valeur))
+                return string.Empty;
+
+            var normalise = valeur.Normalize(System.Text.NormalizationForm.FormD);
+            return new string(normalise
+                .Where(c => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark)
+                .ToArray())
+                .Normalize(System.Text.NormalizationForm.FormC);
         }
     }
 }

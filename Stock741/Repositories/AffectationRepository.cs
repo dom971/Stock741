@@ -77,7 +77,7 @@ namespace Stock741.Repositories
                 .ToListAsync();
         }
 
-        public async Task Ajouter(Affectation affectation, string effectuePar)
+        public async Task Ajouter(Affectation affectation, int statutAffectationId, string effectuePar)
         {
             using var context = _contextFactory.CreateDbContext();
 
@@ -93,19 +93,18 @@ namespace Stock741.Repositories
 
             var ancienStatutId = stock.StatutId;
             var ancienLieuId = stock.LieuId;
-            var statutAffecte = await context.Statuts
-                .Where(s => s.Nom.ToLower().Contains("affect"))
-                .OrderBy(s => s.Nom)
-                .FirstOrDefaultAsync();
+            var statutAffectation = await context.Statuts
+                .FirstOrDefaultAsync(s => s.Id == statutAffectationId && s.Type == "Affectation");
+
+            if (statutAffectation == null)
+                throw new InvalidOperationException("Le statut selectionne n'est pas un statut d'affectation.");
 
             affectation.DateFin = null;
             affectation.Actif = true;
             NormaliserTextes(affectation);
 
             context.Affectations.Add(affectation);
-
-            if (statutAffecte != null)
-                stock.StatutId = statutAffecte.Id;
+            stock.StatutId = statutAffectation.Id;
 
             await context.SaveChangesAsync();
 
@@ -126,7 +125,7 @@ namespace Stock741.Repositories
             await context.SaveChangesAsync();
         }
 
-        public async Task Modifier(Affectation affectation, string effectuePar)
+        public async Task Modifier(Affectation affectation, int statutAffectationId, string effectuePar)
         {
             try
             {
@@ -141,6 +140,19 @@ namespace Stock741.Repositories
                 context.Entry(tracked)
                     .Property(a => a.RowVersion)
                     .OriginalValue = affectation.RowVersion;
+
+                var stock = await context.Stocks.FirstOrDefaultAsync(s => s.Id == tracked.StockId);
+                if (stock == null)
+                    throw new InvalidOperationException("Le materiel affecte n'existe plus.");
+
+                var statutAffectation = await context.Statuts
+                    .FirstOrDefaultAsync(s => s.Id == statutAffectationId && s.Type == "Affectation");
+
+                if (statutAffectation == null)
+                    throw new InvalidOperationException("Le statut selectionne n'est pas un statut d'affectation.");
+
+                var ancienStatutId = stock.StatutId;
+                var ancienLieuId = stock.LieuId;
 
                 tracked.UtilisateurId = affectation.UtilisateurId;
                 tracked.EdsId = affectation.EdsId;
@@ -161,12 +173,17 @@ namespace Stock741.Repositories
                 tracked.Commentaire = affectation.Commentaire;
 
                 NormaliserTextes(tracked);
+                stock.StatutId = statutAffectation.Id;
 
                 context.HistoriqueMouvements.Add(new HistoriqueMouvement
                 {
                     StockId = tracked.StockId,
                     AffectationId = tracked.Id,
                     TypeMouvement = "Modification",
+                    AncienStatutId = ancienStatutId,
+                    AncienLieuId = ancienLieuId,
+                    NouveauStatutId = stock.StatutId,
+                    NouveauLieuId = stock.LieuId,
                     DateMouvement = DateTime.Now,
                     EffectuePar = effectuePar,
                     Commentaire = "Modification de l'affectation"
