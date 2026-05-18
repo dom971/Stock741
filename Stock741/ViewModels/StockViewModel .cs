@@ -62,6 +62,13 @@ namespace Stock741.ViewModels
         public bool PeutModifierGarantie => PeutModifier && SousGarantieSelectionne;
         public bool AfficherModificationLimitee => StockSelectionne != null && !PeutModifier;
 
+        private string _warningAffectation;
+        public string WarningAffectation
+        {
+            get => _warningAffectation;
+            set { _warningAffectation = value; OnPropertyChanged(); }
+        }
+
         // Photo
         private string _cheminPhoto;
         public string CheminPhoto
@@ -275,6 +282,7 @@ namespace Stock741.ViewModels
                     Detail = null;
                     PeutModifier = true;
                     CheminPhoto = null;
+                    WarningAffectation = string.Empty;
                 }
             }
         }
@@ -284,7 +292,12 @@ namespace Stock741.ViewModels
         public string FiltreNom
         {
             get => _filtreNom;
-            set { _filtreNom = value; OnPropertyChanged(); AppliquerFiltre(); }
+            set
+            {
+                _filtreNom = value;
+                OnPropertyChanged();
+                _ = RechercherStockAsync();
+            }
         }
 
         // Erreurs
@@ -541,15 +554,20 @@ namespace Stock741.ViewModels
             return string.IsNullOrWhiteSpace(valeur) ? "0" : valeur.Trim();
         }
 
-        private void AppliquerFiltre()
+        private async Task RechercherStockAsync()
         {
-            var view = System.Windows.Data.CollectionViewSource.GetDefaultView(Stocks);
-            if (view != null)
-                view.Filter = o => o is Stock s &&
-                    (string.IsNullOrWhiteSpace(FiltreNom) ||
-                     (s.Asset?.ToLower().Contains(FiltreNom.ToLower()) ?? false) ||
-                     (s.NumSerie?.ToLower().Contains(FiltreNom.ToLower()) ?? false) ||
-                     (s.Modele?.Nom?.ToLower().Contains(FiltreNom.ToLower()) ?? false));
+            var recherche = FiltreNom;
+            var stocks = await _repository.Rechercher(recherche);
+
+            if (!string.Equals(recherche, FiltreNom, StringComparison.Ordinal))
+                return;
+
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                Stocks.Clear();
+                foreach (var stock in stocks)
+                    Stocks.Add(stock);
+            });
         }
 
         private async Task ChargerDetailAsync(int id)
@@ -560,6 +578,7 @@ namespace Stock741.ViewModels
             if (stock != null)
             {
                 PeutModifier = !await _repository.HasAffectation(id);
+                await ChargerWarningAffectationAsync(id, !PeutModifier);
 
                 // Filtrage en cascade
                 MaterielSelectionne = Materiels.FirstOrDefault(m =>
@@ -632,7 +651,6 @@ namespace Stock741.ViewModels
                 FiltrerModeles();
                 if (StockSelectionne == null)
                     StatutSelectionne = GetStatutCreation();
-                AppliquerFiltre();
             });
         }
 
@@ -644,6 +662,7 @@ namespace Stock741.ViewModels
             OnPropertyChanged(nameof(PeutSupprimer));
             Detail = null;
             PeutModifier = true;
+            WarningAffectation = string.Empty;
             CheminPhoto = null;
             MaterielSelectionne = null;
             MarqueSelectionnee = null;
@@ -675,6 +694,30 @@ namespace Stock741.ViewModels
             ErreurQte = string.Empty;
             ErreurLieu = string.Empty;
             ErreurFournisseur = string.Empty;
+        }
+
+        private async Task ChargerWarningAffectationAsync(int stockId, bool aUnHistorique)
+        {
+            var affectation = await _repository.GetAffectationActive(stockId);
+            if (affectation == null)
+            {
+                WarningAffectation = aUnHistorique
+                    ? "Matériel déjà affecté par le passé."
+                    : string.Empty;
+                return;
+            }
+
+            var utilisateur = affectation.Utilisateur?.NomComplet;
+            if (string.IsNullOrWhiteSpace(utilisateur))
+                utilisateur = $"{affectation.Utilisateur?.Nom} {affectation.Utilisateur?.Prenom}".Trim();
+
+            var eds = affectation.Eds == null
+                ? string.Empty
+                : $" - EDS : {affectation.Eds.Cnx}";
+
+            WarningAffectation = string.IsNullOrWhiteSpace(utilisateur)
+                ? $"Matériel actuellement affecté{eds}"
+                : $"Matériel actuellement affecté à : {utilisateur}{eds}";
         }
 
         private async Task Ajouter(object obj)

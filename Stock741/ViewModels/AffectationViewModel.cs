@@ -32,6 +32,10 @@ namespace Stock741.ViewModels
                 _affectationSelectionnee = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(PeutRetourner));
+                OnPropertyChanged(nameof(PeutModifier));
+                OnPropertyChanged(nameof(EstModification));
+                OnPropertyChanged(nameof(PeutAjouter));
+                OnPropertyChanged(nameof(PeutChoisirMateriel));
                 CommandManager.InvalidateRequerySuggested();
                 if (value != null)
                     _ = ChargerDetailAsync(value.Id);
@@ -297,8 +301,13 @@ namespace Stock741.ViewModels
                 return message;
             }
         }
+        public bool EstModification => AffectationSelectionnee != null;
+        public bool PeutAjouter => !EstModification;
+        public bool PeutModifier => AffectationSelectionnee != null;
+        public bool PeutChoisirMateriel => !EstModification;
 
         public ICommand AjouterCommand { get; }
+        public ICommand ModifierCommand { get; }
         public ICommand RetournerCommand { get; }
         public ICommand NouveauCommand { get; }
         public ICommand ActualiserCommand { get; }
@@ -319,6 +328,7 @@ namespace Stock741.ViewModels
             _forfaitRepository = forfaitRepository;
 
             AjouterCommand = new AsyncRelayCommand(Ajouter);
+            ModifierCommand = new AsyncRelayCommand(Modifier, _ => PeutModifier);
             RetournerCommand = new AsyncRelayCommand(Retourner, _ => PeutRetourner);
             NouveauCommand = new RelayCommand(_ => EffacerChamps());
             ActualiserCommand = new AsyncRelayCommand(async _ =>
@@ -350,10 +360,15 @@ namespace Stock741.ViewModels
 
             Detail = null;
             AffectationSelectionnee = null;
+            OnPropertyChanged(nameof(EstModification));
+            OnPropertyChanged(nameof(PeutChoisirMateriel));
         }
 
         public void EffacerChamps()
         {
+            _affectationSelectionnee = null;
+            OnPropertyChanged(nameof(AffectationSelectionnee));
+            Detail = null;
             StockSelectionne = null;
             UtilisateurSelectionne = null;
             EdsSelectionne = null;
@@ -375,6 +390,12 @@ namespace Stock741.ViewModels
             NumTelMobile = string.Empty;
             Motif = string.Empty;
             Commentaire = string.Empty;
+            OnPropertyChanged(nameof(EstModification));
+            OnPropertyChanged(nameof(PeutAjouter));
+            OnPropertyChanged(nameof(PeutModifier));
+            OnPropertyChanged(nameof(PeutRetourner));
+            OnPropertyChanged(nameof(PeutChoisirMateriel));
+            CommandManager.InvalidateRequerySuggested();
             EffacerErreur();
         }
 
@@ -386,7 +407,11 @@ namespace Stock741.ViewModels
 
         private async Task ChargerDetailAsync(int id)
         {
-            Detail = await _affectationRepository.GetById(id);
+            var detail = await _affectationRepository.GetById(id);
+            Detail = detail;
+
+            if (detail != null)
+                ChargerFormulaireDepuisAffectation(detail);
         }
 
         private async Task Ajouter(object? parameter)
@@ -434,6 +459,56 @@ namespace Stock741.ViewModels
                 await Rafraichir();
                 EffacerChamps();
                 MessageSucces = "Affectation enregistrée.";
+            }
+            catch (Exception ex)
+            {
+                ErreurGlobale = ex.Message;
+            }
+        }
+
+        private async Task Modifier(object? parameter)
+        {
+            try
+            {
+                EffacerErreur();
+
+                if (AffectationSelectionnee == null)
+                    return;
+
+                if (UtilisateurSelectionne == null)
+                {
+                    ErreurGlobale = "L'utilisateur est obligatoire.";
+                    return;
+                }
+
+                var affectation = new Affectation
+                {
+                    Id = AffectationSelectionnee.Id,
+                    StockId = AffectationSelectionnee.StockId,
+                    RowVersion = AffectationSelectionnee.RowVersion,
+                    UtilisateurId = UtilisateurSelectionne.Id,
+                    EdsId = EdsSelectionne?.Id,
+                    EdsAutomatiqueId = EdsAutomatiqueSelectionne?.Id,
+                    OperateurId = OperateurSelectionne?.Id,
+                    ForfaitId = ForfaitSelectionne?.Id,
+                    DateDebut = DateDebut.Date,
+                    DatePret = DatePret,
+                    NomAppareil = NomAppareil?.Trim() ?? string.Empty,
+                    AdresseIP = AdresseIP?.Trim() ?? string.Empty,
+                    MasqueIP = MasqueIP?.Trim() ?? string.Empty,
+                    PasserelleIP = PasserelleIP?.Trim() ?? string.Empty,
+                    NomPC = NomPC?.Trim() ?? string.Empty,
+                    EdsPC = EdsPC?.Trim() ?? string.Empty,
+                    AncienPC = AncienPC?.Trim() ?? string.Empty,
+                    NumTelMobile = NumTelMobile?.Trim() ?? string.Empty,
+                    Motif = Motif?.Trim() ?? string.Empty,
+                    Commentaire = Commentaire?.Trim() ?? string.Empty
+                };
+
+                await _affectationRepository.Modifier(affectation, Environment.UserName);
+                await Rafraichir();
+                EffacerChamps();
+                MessageSucces = "Affectation modifiée.";
             }
             catch (Exception ex)
             {
@@ -607,6 +682,68 @@ namespace Stock741.ViewModels
             cible.Clear();
             foreach (var valeur in valeurs)
                 cible.Add(valeur);
+        }
+
+        private void ChargerFormulaireDepuisAffectation(Affectation affectation)
+        {
+            if (affectation.Stock != null && !StocksDisponibles.Any(s => s.Id == affectation.Stock.Id))
+                StocksDisponibles.Add(affectation.Stock);
+
+            if (affectation.Utilisateur != null && !Utilisateurs.Any(u => u.Id == affectation.Utilisateur.Id))
+                Utilisateurs.Add(affectation.Utilisateur);
+
+            if (affectation.Eds != null && !EdsListe.Any(e => e.Id == affectation.Eds.Id))
+                EdsListe.Add(affectation.Eds);
+
+            if (affectation.EdsAutomatique != null && !EdsListe.Any(e => e.Id == affectation.EdsAutomatique.Id))
+                EdsListe.Add(affectation.EdsAutomatique);
+
+            _filtreMateriel = string.Empty;
+            OnPropertyChanged(nameof(FiltreMateriel));
+            AppliquerFiltreStocksDisponibles();
+            StockSelectionne = StocksDisponibles.FirstOrDefault(s => s.Id == affectation.StockId);
+
+            _utilisateurSelectionne = Utilisateurs.FirstOrDefault(u => u.Id == affectation.UtilisateurId);
+            OnPropertyChanged(nameof(UtilisateurSelectionne));
+
+            EdsAutomatiqueSelectionne = affectation.EdsAutomatiqueId == null
+                ? null
+                : EdsListe.FirstOrDefault(e => e.Id == affectation.EdsAutomatiqueId);
+
+            EdsSelectionne = affectation.EdsId == null
+                ? null
+                : EdsListe.FirstOrDefault(e => e.Id == affectation.EdsId);
+
+            OperateurSelectionne = affectation.OperateurId == null
+                ? null
+                : Operateurs.FirstOrDefault(o => o.Id == affectation.OperateurId);
+
+            ForfaitSelectionne = affectation.ForfaitId == null
+                ? null
+                : Forfaits.FirstOrDefault(f => f.Id == affectation.ForfaitId);
+
+            DateDebut = affectation.DateDebut;
+            DatePret = affectation.DatePret;
+            NomAppareil = affectation.NomAppareil;
+            AdresseIP = affectation.AdresseIP;
+            MasqueIP = affectation.MasqueIP;
+            PasserelleIP = affectation.PasserelleIP;
+            NomPC = affectation.NomPC;
+            EdsPC = affectation.EdsPC;
+            AncienPC = affectation.AncienPC;
+            NumTelMobile = affectation.NumTelMobile;
+            Motif = affectation.Motif;
+            Commentaire = affectation.Commentaire;
+            _filtreUtilisateur = string.Empty;
+            _filtreEds = string.Empty;
+            OnPropertyChanged(nameof(FiltreUtilisateur));
+            OnPropertyChanged(nameof(FiltreEds));
+            OnPropertyChanged(nameof(EstModification));
+            OnPropertyChanged(nameof(PeutAjouter));
+            OnPropertyChanged(nameof(PeutModifier));
+            OnPropertyChanged(nameof(PeutRetourner));
+            OnPropertyChanged(nameof(PeutChoisirMateriel));
+            CommandManager.InvalidateRequerySuggested();
         }
     }
 }

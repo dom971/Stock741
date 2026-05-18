@@ -16,6 +16,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -33,6 +34,11 @@
             <TextBox Width="200"
                      Text="{Binding FiltreNom, UpdateSourceTrigger=PropertyChanged}"
                      Margin="0,0,5,0"/>
+            <TextBlock Text="2 caractères minimum, affichage limité aux 200 lignes les plus récentes."
+                       Foreground="#777777"
+                       FontSize="11"
+                       VerticalAlignment="Center"
+                       Margin="8,0,0,0"/>
         </StackPanel>
 
         <!-- Section Réception -->
@@ -40,7 +46,19 @@
             <TextBlock Text="Réception" FontWeight="Bold" Foreground="#00643E"/>
         </Border>
 
-        <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,8">
+        <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                Background="#FFF4E5"
+                BorderBrush="#C65A00"
+                BorderThickness="1"
+                Padding="8"
+                Margin="0,0,0,8"
+                Visibility="{Binding WarningAffectation, Converter={StaticResource StringToVisibilityConverter}}">
+            <TextBlock Text="{Binding WarningAffectation}"
+                       Foreground="#A84400"
+                       FontWeight="SemiBold"/>
+        </Border>
+
+        <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="240"/>
@@ -200,7 +218,7 @@
         </Grid>
 
         <!-- Section Téléphone -->
-        <Border Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+        <Border Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
                 Background="#E8F5E9"
                 BorderBrush="#00643E"
                 BorderThickness="0,0,0,1"
@@ -210,7 +228,7 @@
             <TextBlock Text="Téléphone / Dongle 4G" FontWeight="Bold" Foreground="#00643E"/>
         </Border>
 
-        <Grid Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
+        <Grid Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"
               Margin="0,0,0,8"
               Visibility="{Binding AfficherTelephonie, Converter={StaticResource BoolToVisibilityConverter}}">
             <Grid.ColumnDefinitions>
@@ -242,7 +260,7 @@
         </Grid>
 
         <!-- Erreur -->
-        <TextBlock Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"
+        <TextBlock Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"
                    Text="{Binding ErreurGlobale}"
                    Foreground="Red"
                    FontWeight="SemiBold"
@@ -250,7 +268,7 @@
                    Visibility="{Binding ErreurGlobale, Converter={StaticResource StringToVisibilityConverter}}"/>
 
         <!-- Message modification bloquée -->
-        <TextBlock Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"
+        <TextBlock Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2"
                    Text="⚠ Modification limitée — ce matériel a des affectations."
                    Foreground="Orange"
                    FontWeight="SemiBold"
@@ -258,16 +276,19 @@
                    Visibility="{Binding AfficherModificationLimitee, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
         <!-- DataGrid -->
-        <DataGrid Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2"
+        <DataGrid Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2"
                   ItemsSource="{Binding Stocks}"
                   AutoGenerateColumns="False"
                   SelectedItem="{Binding StockSelectionne}"
+                  SelectionMode="Single"
+                  SelectionUnit="FullRow"
                   CanUserAddRows="False"
                   IsReadOnly="True"
                   EnableRowVirtualization="True"
                   EnableColumnVirtualization="True"
                   VirtualizingPanel.VirtualizationMode="Recycling">
             <DataGrid.Columns>
+                <DataGridTextColumn Header="Affectation"  Binding="{Binding EtatAffectation}"                           Width="90"/>
                 <DataGridTextColumn Header="Asset"        Binding="{Binding Asset}"                                      Width="90"/>
                 <DataGridTextColumn Header="Date"         Binding="{Binding Date, StringFormat={}{0:dd/MM/yyyy}}"       Width="90"/>
                 <DataGridTextColumn Header="Matériel"     Binding="{Binding Modele.Materiel.Nom}"                       Width="120"/>

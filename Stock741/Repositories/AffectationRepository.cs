@@ -126,6 +126,60 @@ namespace Stock741.Repositories
             await context.SaveChangesAsync();
         }
 
+        public async Task Modifier(Affectation affectation, string effectuePar)
+        {
+            try
+            {
+                using var context = _contextFactory.CreateDbContext();
+
+                var tracked = await context.Affectations
+                    .FirstOrDefaultAsync(a => a.Id == affectation.Id);
+
+                if (tracked == null)
+                    throw new DbUpdateConcurrencyException();
+
+                context.Entry(tracked)
+                    .Property(a => a.RowVersion)
+                    .OriginalValue = affectation.RowVersion;
+
+                tracked.UtilisateurId = affectation.UtilisateurId;
+                tracked.EdsId = affectation.EdsId;
+                tracked.EdsAutomatiqueId = affectation.EdsAutomatiqueId;
+                tracked.OperateurId = affectation.OperateurId;
+                tracked.ForfaitId = affectation.ForfaitId;
+                tracked.DateDebut = affectation.DateDebut;
+                tracked.DatePret = affectation.DatePret;
+                tracked.NomAppareil = affectation.NomAppareil;
+                tracked.AdresseIP = affectation.AdresseIP;
+                tracked.MasqueIP = affectation.MasqueIP;
+                tracked.PasserelleIP = affectation.PasserelleIP;
+                tracked.NomPC = affectation.NomPC;
+                tracked.EdsPC = affectation.EdsPC;
+                tracked.AncienPC = affectation.AncienPC;
+                tracked.NumTelMobile = affectation.NumTelMobile;
+                tracked.Motif = affectation.Motif;
+                tracked.Commentaire = affectation.Commentaire;
+
+                NormaliserTextes(tracked);
+
+                context.HistoriqueMouvements.Add(new HistoriqueMouvement
+                {
+                    StockId = tracked.StockId,
+                    AffectationId = tracked.Id,
+                    TypeMouvement = "Modification",
+                    DateMouvement = DateTime.Now,
+                    EffectuePar = effectuePar,
+                    Commentaire = "Modification de l'affectation"
+                });
+
+                await context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new InvalidOperationException("Cette affectation a été modifiée ou supprimée par un autre utilisateur. Veuillez actualiser la vue.");
+            }
+        }
+
         public async Task Retourner(int affectationId, string effectuePar)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -186,6 +240,10 @@ namespace Stock741.Repositories
                 .Include(a => a.Stock)
                     .ThenInclude(s => s.Modele)
                         .ThenInclude(m => m.Materiel)
+                .Include(a => a.Stock)
+                    .ThenInclude(s => s.Statut)
+                .Include(a => a.Stock)
+                    .ThenInclude(s => s.Lieu)
                 .Include(a => a.Utilisateur)
                 .Include(a => a.Eds)
                 .Include(a => a.EdsAutomatique)

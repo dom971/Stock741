@@ -68,5 +68,17 @@ namespace Stock741.Models
 
         [Timestamp]
         public byte[] RowVersion { get; set; }
+
+        [NotMapped]
+        public bool AffectationActive { get; set; }
+
+        [NotMapped]
+        public bool ADejaEteAffecte { get; set; }
+
+        [NotMapped]
+        public string EtatAffectation =>
+            AffectationActive ? "Actif" :
+            ADejaEteAffecte ? "Historique" :
+            string.Empty;
     }
 }

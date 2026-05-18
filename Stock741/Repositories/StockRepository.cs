@@ -17,9 +17,41 @@ namespace Stock741.Repositories
         public async Task<List<Stock>> GetAll()
         {
             using var context = _contextFactory.CreateDbContext();
-            return await context.Stocks
+            return await ConstruireRequeteStock(context.Stocks.AsNoTracking(), context)
+                .OrderByDescending(s => s.Date)
+                .Take(200)
+                .ToListAsync();
+        }
+
+        public async Task<List<Stock>> Rechercher(string recherche, int limite = 200)
+        {
+            if (string.IsNullOrWhiteSpace(recherche) || recherche.Trim().Length < 2)
+                return await GetAll();
+
+            var filtre = recherche.Trim().ToLower();
+
+            using var context = _contextFactory.CreateDbContext();
+            var requete = context.Stocks
                 .AsNoTracking()
-                .OrderBy(s => s.Date)
+                .Where(s =>
+                    (s.Asset != null && s.Asset.ToLower().Contains(filtre)) ||
+                    s.NumSerie.ToLower().Contains(filtre) ||
+                    s.Modele.Nom.ToLower().Contains(filtre) ||
+                    s.Modele.Materiel.Nom.ToLower().Contains(filtre) ||
+                    s.Modele.Marque.Nom.ToLower().Contains(filtre) ||
+                    (s.Fournisseur != null && s.Fournisseur.Nom.ToLower().Contains(filtre)) ||
+                    (s.Lieu != null && s.Lieu.Nom.ToLower().Contains(filtre)));
+
+            return await ConstruireRequeteStock(requete, context)
+                .OrderByDescending(s => s.Date)
+                .Take(limite)
+                .ToListAsync();
+        }
+
+        private static IQueryable<Stock> ConstruireRequeteStock(IQueryable<Stock> requete, AppDbContext context)
+        {
+            return requete
+                .AsNoTracking()
                 .Select(s => new Stock
                 {
                     Id = s.Id,
@@ -66,9 +98,10 @@ namespace Stock741.Repositories
                     },
                     SousGarantie = s.SousGarantie,
                     Garantie = s.Garantie,
+                    AffectationActive = context.Affectations.Any(a => a.StockId == s.Id && a.Actif),
+                    ADejaEteAffecte = context.Affectations.Any(a => a.StockId == s.Id),
                     RowVersion = s.RowVersion
-                })
-                .ToListAsync();
+                });
         }
 
         public async Task<Stock> GetById(int id)
@@ -93,6 +126,25 @@ namespace Stock741.Repositories
             using var context = _contextFactory.CreateDbContext();
             return await context.Affectations
                 .AnyAsync(a => a.StockId == stockId);
+        }
+
+        public async Task<bool> HasAffectationHistorique(int stockId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Affectations
+                .AnyAsync(a => a.StockId == stockId);
+        }
+
+        public async Task<Affectation?> GetAffectationActive(int stockId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Affectations
+                .AsNoTracking()
+                .Include(a => a.Utilisateur)
+                .Include(a => a.Eds)
+                .Where(a => a.StockId == stockId && a.Actif)
+                .OrderByDescending(a => a.DateDebut)
+                .FirstOrDefaultAsync();
         }
 
         public async Task Add(Stock stock, string effectuePar)
