@@ -573,6 +573,10 @@ namespace Stock741.ViewModels
         private async Task ChargerDetailAsync(int id)
         {
             var stock = await _repository.GetById(id);
+
+            if (StockSelectionne?.Id != id)
+                return;
+
             Detail = stock;
 
             if (stock != null)

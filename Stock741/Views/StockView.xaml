@@ -9,14 +9,14 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="36"/>
+            <RowDefinition Height="178"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="0"/>
+            <RowDefinition Height="24"/>
+            <RowDefinition Height="24"/>
+            <RowDefinition Height="0"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -50,12 +50,13 @@
                 Background="#FFF4E5"
                 BorderBrush="#C65A00"
                 BorderThickness="1"
-                Padding="8"
-                Margin="0,0,0,8"
+                Padding="8,4"
+                Margin="0,0,0,4"
                 Visibility="{Binding WarningAffectation, Converter={StaticResource StringToVisibilityConverter}}">
             <TextBlock Text="{Binding WarningAffectation}"
                        Foreground="#A84400"
-                       FontWeight="SemiBold"/>
+                       FontWeight="SemiBold"
+                       TextTrimming="CharacterEllipsis"/>
         </Border>
 
         <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,8">
@@ -208,12 +209,19 @@
 
             <StackPanel Grid.Column="1" Margin="15,0,0,0">
                 <Label Content="Photo:" Margin="0,0,0,4"/>
-                <Image Source="{Binding CheminPhoto, Converter={StaticResource NomFichierToImageConverter}}"
-                       Stretch="Uniform"
-                       Width="220"
-                       Height="160"
-                       HorizontalAlignment="Left"
-                       VerticalAlignment="Top"/>
+                <Border Width="220"
+                        Height="140"
+                        BorderBrush="#DDDDDD"
+                        BorderThickness="1"
+                        Background="White"
+                        ClipToBounds="True">
+                    <Image Source="{Binding CheminPhoto, Converter={StaticResource NomFichierToImageConverter}}"
+                           Stretch="Uniform"
+                           MaxWidth="210"
+                           MaxHeight="130"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+                </Border>
             </StackPanel>
         </Grid>
 
@@ -276,7 +284,7 @@
                    Visibility="{Binding AfficherModificationLimitee, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
         <!-- DataGrid -->
-        <DataGrid Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2"
+        <DataGrid Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="2"
                   ItemsSource="{Binding Stocks}"
                   AutoGenerateColumns="False"
                   SelectedItem="{Binding StockSelectionne}"
@@ -285,8 +293,7 @@
                   CanUserAddRows="False"
                   IsReadOnly="True"
                   EnableRowVirtualization="True"
-                  EnableColumnVirtualization="True"
-                  VirtualizingPanel.VirtualizationMode="Recycling">
+                  EnableColumnVirtualization="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Affectation"  Binding="{Binding EtatAffectation}"                           Width="90"/>
                 <DataGridTextColumn Header="Asset"        Binding="{Binding Asset}"                                      Width="90"/>
