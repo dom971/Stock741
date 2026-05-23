@@ -100,6 +100,7 @@ namespace Stock741.Repositories
                 throw new InvalidOperationException("Le statut selectionne n'est pas un statut d'affectation.");
 
             affectation.DateFin = null;
+            affectation.DateMouvement = affectation.DateDebut.Date;
             affectation.Actif = true;
             NormaliserTextes(affectation);
 
@@ -117,7 +118,7 @@ namespace Stock741.Repositories
                 AncienLieuId = ancienLieuId,
                 NouveauStatutId = stock.StatutId,
                 NouveauLieuId = stock.LieuId,
-                DateMouvement = DateTime.Now,
+                DateMouvement = affectation.DateMouvement ?? DateTime.Now,
                 EffectuePar = effectuePar,
                 Commentaire = affectation.Commentaire
             });
@@ -161,6 +162,7 @@ namespace Stock741.Repositories
                 tracked.ForfaitId = affectation.ForfaitId;
                 tracked.DateDebut = affectation.DateDebut;
                 tracked.DatePret = affectation.DatePret;
+                tracked.DateMouvement = DateTime.Now;
                 tracked.NomAppareil = affectation.NomAppareil;
                 tracked.AdresseIP = affectation.AdresseIP;
                 tracked.MasqueIP = affectation.MasqueIP;
@@ -184,7 +186,7 @@ namespace Stock741.Repositories
                     AncienLieuId = ancienLieuId,
                     NouveauStatutId = stock.StatutId,
                     NouveauLieuId = stock.LieuId,
-                    DateMouvement = DateTime.Now,
+                    DateMouvement = tracked.DateMouvement ?? DateTime.Now,
                     EffectuePar = effectuePar,
                     Commentaire = "Modification de l'affectation"
                 });
@@ -197,7 +199,13 @@ namespace Stock741.Repositories
             }
         }
 
-        public async Task Retourner(int affectationId, string effectuePar)
+        public async Task Retourner(
+            int affectationId,
+            DateTime dateMouvement,
+            int statutRetourId,
+            string motifRetour,
+            string commentaireRetour,
+            string effectuePar)
         {
             using var context = _contextFactory.CreateDbContext();
 
@@ -213,15 +221,23 @@ namespace Stock741.Repositories
 
             var ancienStatutId = affectation.Stock?.StatutId;
             var ancienLieuId = affectation.Stock?.LieuId;
-            var statutStock = await context.Statuts
-                .Where(s => s.Nom.ToLower() == "stock")
-                .FirstOrDefaultAsync();
+            var statutRetour = await context.Statuts
+                .FirstOrDefaultAsync(s => s.Id == statutRetourId && s.Type == "Retour");
+
+            if (statutRetour == null)
+                throw new InvalidOperationException("Le statut selectionne n'est pas un statut de retour.");
 
             affectation.Actif = false;
-            affectation.DateFin = DateTime.Now;
+            affectation.DateMouvement = dateMouvement.Date;
 
-            if (affectation.Stock != null && statutStock != null)
-                affectation.Stock.StatutId = statutStock.Id;
+            if (affectation.Stock != null)
+                affectation.Stock.StatutId = statutRetour.Id;
+
+            var commentaireHistorique = "Retour du materiel";
+            if (!string.IsNullOrWhiteSpace(motifRetour))
+                commentaireHistorique += $" - Motif : {motifRetour.Trim()}";
+            if (!string.IsNullOrWhiteSpace(commentaireRetour))
+                commentaireHistorique += $" - Commentaire : {commentaireRetour.Trim()}";
 
             context.HistoriqueMouvements.Add(new HistoriqueMouvement
             {
@@ -239,9 +255,9 @@ namespace Stock741.Repositories
                 AncienAdresseIP = affectation.AdresseIP,
                 AncienMasqueIP = affectation.MasqueIP,
                 AnciennePasserelle = affectation.PasserelleIP,
-                DateMouvement = DateTime.Now,
+                DateMouvement = dateMouvement.Date,
                 EffectuePar = effectuePar,
-                Commentaire = "Retour du matériel"
+                Commentaire = commentaireHistorique
             });
 
             await context.SaveChangesAsync();

@@ -16,6 +16,7 @@ namespace Stock741.ViewModels
         private readonly OperateurRepository _operateurRepository;
         private readonly ForfaitRepository _forfaitRepository;
         private readonly StatutRepository _statutRepository;
+        private readonly List<Statut> _tousStatutsAffectation = new();
 
         public ObservableCollection<Affectation> Affectations { get; } = new();
         public ObservableCollection<Stock> StocksDisponibles { get; } = new();
@@ -24,6 +25,7 @@ namespace Stock741.ViewModels
         public ObservableCollection<Operateur> Operateurs { get; } = new();
         public ObservableCollection<Forfait> Forfaits { get; } = new();
         public ObservableCollection<Statut> StatutsAffectation { get; } = new();
+        public ObservableCollection<Statut> StatutsRetour { get; } = new();
 
         private Affectation? _affectationSelectionnee;
         public Affectation? AffectationSelectionnee
@@ -38,6 +40,7 @@ namespace Stock741.ViewModels
                 OnPropertyChanged(nameof(EstModification));
                 OnPropertyChanged(nameof(PeutAjouter));
                 OnPropertyChanged(nameof(PeutChoisirMateriel));
+                ActualiserStatutsAffectationDisponibles();
                 CommandManager.InvalidateRequerySuggested();
                 if (value != null)
                     _ = ChargerDetailAsync(value.Id);
@@ -144,6 +147,20 @@ namespace Stock741.ViewModels
             set { _datePret = value; OnPropertyChanged(); }
         }
 
+        private DateTime? _dateMouvement = DateTime.Today;
+        public DateTime? DateMouvement
+        {
+            get => _dateMouvement;
+            set { _dateMouvement = value; OnPropertyChanged(); }
+        }
+
+        private Statut? _statutRetourSelectionne;
+        public Statut? StatutRetourSelectionne
+        {
+            get => _statutRetourSelectionne;
+            set { _statutRetourSelectionne = value; OnPropertyChanged(); }
+        }
+
         private string _nomAppareil = string.Empty;
         public string NomAppareil
         {
@@ -214,11 +231,32 @@ namespace Stock741.ViewModels
             set { _commentaire = value; OnPropertyChanged(); }
         }
 
+        private string _motifRetour = string.Empty;
+        public string MotifRetour
+        {
+            get => _motifRetour;
+            set { _motifRetour = value; OnPropertyChanged(); }
+        }
+
+        private string _commentaireRetour = string.Empty;
+        public string CommentaireRetour
+        {
+            get => _commentaireRetour;
+            set { _commentaireRetour = value; OnPropertyChanged(); }
+        }
+
         private string _filtre = string.Empty;
         public string Filtre
         {
             get => _filtre;
             set { _filtre = value; OnPropertyChanged(); AppliquerFiltreAffectations(); }
+        }
+
+        private bool _afficherHistorique;
+        public bool AfficherHistorique
+        {
+            get => _afficherHistorique;
+            set { _afficherHistorique = value; OnPropertyChanged(); AppliquerFiltreAffectations(); }
         }
 
         private string _filtreMateriel = string.Empty;
@@ -351,8 +389,11 @@ namespace Stock741.ViewModels
             NouveauCommand = new RelayCommand(_ => EffacerChamps());
             ActualiserCommand = new AsyncRelayCommand(async _ =>
             {
-                await Rafraichir();
-                EffacerErreur();
+                await RunBusyAsync(async () =>
+                {
+                    await Rafraichir();
+                    EffacerErreur();
+                });
             });
         }
 
@@ -366,16 +407,23 @@ namespace Stock741.ViewModels
             var statutsAffectation = statuts
                 .Where(s => string.Equals(s.Type, "Affectation", StringComparison.OrdinalIgnoreCase))
                 .ToList();
+            var statutsRetour = statuts
+                .Where(s => string.Equals(s.Type, "Retour", StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
             App.Current.Dispatcher.Invoke(() =>
             {
+                _tousStatutsAffectation.Clear();
+                _tousStatutsAffectation.AddRange(statutsAffectation);
                 Remplacer(Affectations, affectations);
                 Remplacer(StocksDisponibles, stocks);
                 Utilisateurs.Clear();
                 EdsListe.Clear();
                 Remplacer(Operateurs, operateurs);
                 Remplacer(Forfaits, forfaits);
-                Remplacer(StatutsAffectation, statutsAffectation);
+                ActualiserStatutsAffectationDisponibles();
+                Remplacer(StatutsRetour, statutsRetour);
+                StatutRetourSelectionne = GetStatutRetourDefaut();
                 AppliquerFiltreAffectations();
                 AppliquerFiltreStocksDisponibles();
                 FiltrerForfaits();
@@ -391,6 +439,7 @@ namespace Stock741.ViewModels
         {
             _affectationSelectionnee = null;
             OnPropertyChanged(nameof(AffectationSelectionnee));
+            ActualiserStatutsAffectationDisponibles();
             Detail = null;
             StockSelectionne = null;
             UtilisateurSelectionne = null;
@@ -404,6 +453,8 @@ namespace Stock741.ViewModels
             FiltreEds = string.Empty;
             DateDebut = DateTime.Today;
             DatePret = null;
+            DateMouvement = DateTime.Today;
+            StatutRetourSelectionne = GetStatutRetourDefaut();
             NomAppareil = string.Empty;
             AdresseIP = string.Empty;
             MasqueIP = string.Empty;
@@ -414,6 +465,8 @@ namespace Stock741.ViewModels
             NumTelMobile = string.Empty;
             Motif = string.Empty;
             Commentaire = string.Empty;
+            MotifRetour = string.Empty;
+            CommentaireRetour = string.Empty;
             OnPropertyChanged(nameof(EstModification));
             OnPropertyChanged(nameof(PeutAjouter));
             OnPropertyChanged(nameof(PeutModifier));
@@ -482,9 +535,12 @@ namespace Stock741.ViewModels
                     Actif = true
                 };
 
-                await _affectationRepository.Ajouter(affectation, StatutAffectationSelectionne!.Id, Environment.UserName);
-                await Rafraichir();
-                EffacerChamps();
+                await RunBusyAsync(async () =>
+                {
+                    await _affectationRepository.Ajouter(affectation, StatutAffectationSelectionne!.Id, Environment.UserName);
+                    await Rafraichir();
+                    EffacerChamps();
+                });
                 MessageSucces = "Affectation enregistrée.";
             }
             catch (Exception ex)
@@ -535,9 +591,12 @@ namespace Stock741.ViewModels
                     Commentaire = Commentaire?.Trim() ?? string.Empty
                 };
 
-                await _affectationRepository.Modifier(affectation, StatutAffectationSelectionne!.Id, Environment.UserName);
-                await Rafraichir();
-                EffacerChamps();
+                await RunBusyAsync(async () =>
+                {
+                    await _affectationRepository.Modifier(affectation, StatutAffectationSelectionne!.Id, Environment.UserName);
+                    await Rafraichir();
+                    EffacerChamps();
+                });
                 MessageSucces = "Affectation modifiée.";
             }
             catch (Exception ex)
@@ -555,8 +614,20 @@ namespace Stock741.ViewModels
                 if (AffectationSelectionnee == null)
                     return;
 
-                await _affectationRepository.Retourner(AffectationSelectionnee.Id, Environment.UserName);
-                await Rafraichir();
+                if (!ValiderRetour())
+                    return;
+
+                await RunBusyAsync(async () =>
+                {
+                    await _affectationRepository.Retourner(
+                        AffectationSelectionnee.Id,
+                        DateMouvement!.Value.Date,
+                        StatutRetourSelectionne!.Id,
+                        MotifRetour?.Trim() ?? string.Empty,
+                        CommentaireRetour?.Trim() ?? string.Empty,
+                        Environment.UserName);
+                    await Rafraichir();
+                });
                 MessageSucces = "Retour enregistré.";
             }
             catch (Exception ex)
@@ -574,6 +645,9 @@ namespace Stock741.ViewModels
             view.Filter = o =>
             {
                 if (o is not Affectation a)
+                    return false;
+
+                if (!AfficherHistorique && !a.Actif)
                     return false;
 
                 if (string.IsNullOrWhiteSpace(Filtre))
@@ -765,6 +839,10 @@ namespace Stock741.ViewModels
             NumTelMobile = affectation.NumTelMobile;
             Motif = affectation.Motif;
             Commentaire = affectation.Commentaire;
+            DateMouvement = DateTime.Today;
+            StatutRetourSelectionne = GetStatutRetourDefaut();
+            MotifRetour = string.Empty;
+            CommentaireRetour = string.Empty;
             _filtreUtilisateur = string.Empty;
             _filtreEds = string.Empty;
             OnPropertyChanged(nameof(FiltreUtilisateur));
@@ -775,6 +853,44 @@ namespace Stock741.ViewModels
             OnPropertyChanged(nameof(PeutRetourner));
             OnPropertyChanged(nameof(PeutChoisirMateriel));
             CommandManager.InvalidateRequerySuggested();
+        }
+
+        private bool ValiderRetour()
+        {
+            if (DateMouvement == null)
+            {
+                ErreurGlobale = "La date de mouvement est obligatoire.";
+                return false;
+            }
+
+            if (StatutRetourSelectionne == null)
+            {
+                ErreurGlobale = "Le statut de retour est obligatoire.";
+                return false;
+            }
+
+            return true;
+        }
+
+        private Statut? GetStatutRetourDefaut()
+        {
+            return StatutsRetour.FirstOrDefault(s => MemeNomStatut(s.Nom, "stock"));
+        }
+
+        private void ActualiserStatutsAffectationDisponibles()
+        {
+            var statuts = EstModification
+                ? _tousStatutsAffectation
+                : _tousStatutsAffectation.Where(EstStatutCreationAffectation).ToList();
+
+            var statutSelectionneId = StatutAffectationSelectionne?.Id;
+            Remplacer(StatutsAffectation, statuts);
+
+            StatutAffectationSelectionne = statutSelectionneId == null
+                ? null
+                : StatutsAffectation.FirstOrDefault(s => s.Id == statutSelectionneId);
+
+            SelectionnerStatutParDefaut();
         }
 
         private bool ValiderStatutAffectation()
@@ -816,6 +932,14 @@ namespace Stock741.ViewModels
         private bool EstStatutSelectionne(string nom)
         {
             return StatutAffectationSelectionne != null && MemeNomStatut(StatutAffectationSelectionne.Nom, nom);
+        }
+
+        private static bool EstStatutCreationAffectation(Statut statut)
+        {
+            return MemeNomStatut(statut.Nom, "installe")
+                || MemeNomStatut(statut.Nom, "personnalise")
+                || MemeNomStatut(statut.Nom, "pret")
+                || MemeNomStatut(statut.Nom, "tiers");
         }
 
         private static bool MemeNomStatut(string? valeur, string attendu)

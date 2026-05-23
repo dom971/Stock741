@@ -1,7 +1,9 @@
 <UserControl x:Class="Stock741.Views.AffectationView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid Margin="10">
+    <Grid Margin="10"
+          Cursor="{Binding IsBusy, Converter={StaticResource BoolToCursorConverter}}"
+          ForceCursor="{Binding IsBusy}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -13,15 +15,22 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,5">
-            <Button Content="Affecter" Command="{Binding AjouterCommand}" IsEnabled="{Binding PeutAjouter}" Margin="0,0,5,0"/>
+            <Button Content="Affecter"
+                    Command="{Binding AjouterCommand}"
+                    IsEnabled="{Binding PeutAjouter}"
+                    Visibility="{Binding PeutAjouter, Converter={StaticResource BoolToVisibilityConverter}}"
+                    Margin="0,0,5,0"/>
             <Button Content="Modifier" Command="{Binding ModifierCommand}" Margin="5,0,0,0"/>
-            <Button Content="Retour" Command="{Binding RetournerCommand}" Margin="5,0,0,0"/>
             <Button Content="Nouveau" Command="{Binding NouveauCommand}" Margin="15,0,0,0"/>
             <Button Content="Actualiser" Command="{Binding ActualiserCommand}" Margin="5,0,0,0"/>
             <Label Content="Recherche affectations:" VerticalAlignment="Center" Margin="15,0,5,0"/>
             <TextBox Width="220"
                      Text="{Binding Filtre, UpdateSourceTrigger=PropertyChanged}"
                      Margin="0,0,5,0"/>
+            <CheckBox Content="Voir historique"
+                      IsChecked="{Binding AfficherHistorique}"
+                      VerticalAlignment="Center"
+                      Margin="10,0,0,0"/>
         </StackPanel>
 
         <StackPanel Grid.Row="1">
@@ -377,6 +386,59 @@
                          Text="{Binding Commentaire, UpdateSourceTrigger=PropertyChanged}"
                          Margin="0,2,0,2"/>
             </Grid>
+
+            <StackPanel Margin="0,4,0,8"
+                        Visibility="{Binding PeutRetourner, Converter={StaticResource BoolToVisibilityConverter}}">
+                <Border BorderBrush="#9AC6A8"
+                        BorderThickness="0,1,0,1"
+                        Background="#EAF5EE"
+                        Margin="0,0,0,6"
+                        Padding="6">
+                    <TextBlock Text="Retour en stock" Foreground="#00643E" FontWeight="Bold"/>
+                </Border>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="160"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="180"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Label Grid.Column="0" Content="Date mouvement:"/>
+                    <DatePicker Grid.Column="1"
+                                SelectedDate="{Binding DateMouvement}"
+                                Margin="0,2,15,2"/>
+
+                    <Label Grid.Column="2" Content="Statut retour:"/>
+                    <ComboBox Grid.Column="3"
+                              ItemsSource="{Binding StatutsRetour}"
+                              SelectedItem="{Binding StatutRetourSelectionne}"
+                              DisplayMemberPath="Nom"
+                              Margin="0,2,15,2"/>
+
+                    <Label Grid.Column="4" Content="Motif:"/>
+                    <TextBox Grid.Column="5"
+                             Text="{Binding MotifRetour, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,2,15,2"/>
+
+                    <Label Grid.Column="6" Content="Commentaire:"/>
+                    <TextBox Grid.Column="7"
+                             Text="{Binding CommentaireRetour, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,2,15,2"/>
+
+                    <Button Grid.Column="8"
+                            Content="Valider retour"
+                            Command="{Binding RetournerCommand}"
+                            IsEnabled="{Binding PeutRetourner}"
+                            Margin="0,2,0,2"/>
+                </Grid>
+            </StackPanel>
         </StackPanel>
 
         <TextBlock Grid.Row="5"
@@ -460,6 +522,8 @@
                         <TextBlock Text=" -> " FontSize="12" Foreground="#535353"/>
                         <TextBlock Text="{Binding Detail.DateFin, StringFormat={}{0:dd/MM/yyyy}}" FontSize="12" Foreground="#535353"/>
                     </StackPanel>
+                    <TextBlock Text="Dernier mouvement" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.DateMouvement, StringFormat={}{0:dd/MM/yyyy}}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
                     <TextBlock Text="T&#233;l&#233;phonie" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
                     <TextBlock Text="{Binding Detail.NumTelMobile}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
                     <TextBlock Text="R&#233;seau" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>

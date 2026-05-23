@@ -58,7 +58,8 @@ namespace Stock741.ViewModels
         }
 
         public bool PeutChoisirStatut => StockSelectionne != null && PeutModifier;
-        public bool PeutSupprimer => StockSelectionne != null && PeutModifier;
+        private bool _peutSupprimerSelection = true;
+        public bool PeutSupprimer => StockSelectionne != null && _peutSupprimerSelection;
         public bool PeutModifierGarantie => PeutModifier && SousGarantieSelectionne;
         public bool AfficherModificationLimitee => StockSelectionne != null && !PeutModifier;
 
@@ -281,6 +282,8 @@ namespace Stock741.ViewModels
                 {
                     Detail = null;
                     PeutModifier = true;
+                    _peutSupprimerSelection = true;
+                    OnPropertyChanged(nameof(PeutSupprimer));
                     CheminPhoto = null;
                     WarningAffectation = string.Empty;
                 }
@@ -410,9 +413,12 @@ namespace Stock741.ViewModels
             });
             ActualiserCommand = new AsyncRelayCommand(async _ =>
             {
-                await Rafraichir();
-                EffacerChamps();
-                EffacerErreur();
+                await RunBusyAsync(async () =>
+                {
+                    await Rafraichir();
+                    EffacerChamps();
+                    EffacerErreur();
+                });
             });
         }
 
@@ -581,8 +587,12 @@ namespace Stock741.ViewModels
 
             if (stock != null)
             {
-                PeutModifier = !await _repository.HasAffectation(id);
-                await ChargerWarningAffectationAsync(id, !PeutModifier);
+                var affectationActive = await _repository.GetAffectationActive(id);
+                var aDejaEteAffecte = await _repository.HasAffectation(id);
+                PeutModifier = affectationActive == null;
+                _peutSupprimerSelection = !aDejaEteAffecte;
+                OnPropertyChanged(nameof(PeutSupprimer));
+                await ChargerWarningAffectationAsync(id);
 
                 // Filtrage en cascade
                 MaterielSelectionne = Materiels.FirstOrDefault(m =>
@@ -621,6 +631,9 @@ namespace Stock741.ViewModels
             var marques = await _marqueRepository.GetAll();
             var materiels = await _materielRepository.GetAll();
             var statuts = await _statutRepository.GetAll();
+            var statutsRetour = statuts
+                .Where(s => string.Equals(s.Type, "Retour", StringComparison.OrdinalIgnoreCase))
+                .ToList();
             var lieux = await _lieuRepository.GetAll();
             var fournisseurs = await _fournisseurRepository.GetAll();
             var systemes = await _systemeRepository.GetAll();
@@ -640,7 +653,7 @@ namespace Stock741.ViewModels
                 foreach (var m in materiels) Materiels.Add(m);
 
                 Statuts.Clear();
-                foreach (var s in statuts) Statuts.Add(s);
+                foreach (var s in statutsRetour) Statuts.Add(s);
 
                 Lieux.Clear();
                 foreach (var l in lieux) Lieux.Add(l);
@@ -666,6 +679,8 @@ namespace Stock741.ViewModels
             OnPropertyChanged(nameof(PeutSupprimer));
             Detail = null;
             PeutModifier = true;
+            _peutSupprimerSelection = true;
+            OnPropertyChanged(nameof(PeutSupprimer));
             WarningAffectation = string.Empty;
             CheminPhoto = null;
             MaterielSelectionne = null;
@@ -700,14 +715,12 @@ namespace Stock741.ViewModels
             ErreurFournisseur = string.Empty;
         }
 
-        private async Task ChargerWarningAffectationAsync(int stockId, bool aUnHistorique)
+        private async Task ChargerWarningAffectationAsync(int stockId)
         {
             var affectation = await _repository.GetAffectationActive(stockId);
             if (affectation == null)
             {
-                WarningAffectation = aUnHistorique
-                    ? "Matériel déjà affecté par le passé."
-                    : string.Empty;
+                WarningAffectation = string.Empty;
                 return;
             }
 
@@ -781,10 +794,13 @@ namespace Stock741.ViewModels
 
             try
             {
-                await _repository.Add(stock, _effectuePar);
-                await Rafraichir();
-                EffacerChamps();
-                EffacerErreur();
+                await RunBusyAsync(async () =>
+                {
+                    await _repository.Add(stock, _effectuePar);
+                    await Rafraichir();
+                    EffacerChamps();
+                    EffacerErreur();
+                });
             }
             catch (InvalidOperationException ex)
             {
@@ -851,10 +867,13 @@ namespace Stock741.ViewModels
 
             try
             {
-                await _repository.Update(stock, _effectuePar);
-                await Rafraichir();
-                EffacerChamps();
-                EffacerErreur();
+                await RunBusyAsync(async () =>
+                {
+                    await _repository.Update(stock, _effectuePar);
+                    await Rafraichir();
+                    EffacerChamps();
+                    EffacerErreur();
+                });
             }
             catch (InvalidOperationException ex)
             {
@@ -868,10 +887,13 @@ namespace Stock741.ViewModels
 
             try
             {
-                await _repository.Delete(StockSelectionne);
-                await Rafraichir();
-                EffacerChamps();
-                EffacerErreur();
+                await RunBusyAsync(async () =>
+                {
+                    await _repository.Delete(StockSelectionne);
+                    await Rafraichir();
+                    EffacerChamps();
+                    EffacerErreur();
+                });
             }
             catch (InvalidOperationException ex)
             {

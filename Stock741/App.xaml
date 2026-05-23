@@ -10,6 +10,7 @@
         <converters:NomFichierToImageConverter x:Key="NomFichierToImageConverter"/>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <converters:BoolToCursorConverter x:Key="BoolToCursorConverter"/>
 
         <!-- Style boutons menu latéral -->
         <!--<Style x:Key="MenuButtonStyle" TargetType="Button">

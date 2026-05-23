@@ -1,7 +1,9 @@
 ﻿<UserControl x:Class="Stock741.Views.StockView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid Margin="10">
+    <Grid Margin="10"
+          Cursor="{Binding IsBusy, Converter={StaticResource BoolToCursorConverter}}"
+          ForceCursor="{Binding IsBusy}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="200"/>

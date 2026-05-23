@@ -76,9 +76,6 @@ namespace Stock741.Models
         public bool ADejaEteAffecte { get; set; }
 
         [NotMapped]
-        public string EtatAffectation =>
-            AffectationActive ? "Actif" :
-            ADejaEteAffecte ? "Historique" :
-            string.Empty;
+        public string EtatAffectation => AffectationActive ? "Actif" : string.Empty;
     }
 }

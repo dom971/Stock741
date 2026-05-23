@@ -38,6 +38,7 @@ namespace Stock741.Models
         public DateTime DateDebut { get; set; } = DateTime.Now;
         public DateTime? DatePret { get; set; }
         public DateTime? DateFin { get; set; }
+        public DateTime? DateMouvement { get; set; }
 
         // PC
         [MaxLength(100)]
