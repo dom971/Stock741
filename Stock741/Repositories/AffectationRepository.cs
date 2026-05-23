@@ -99,8 +99,7 @@ namespace Stock741.Repositories
             if (statutAffectation == null)
                 throw new InvalidOperationException("Le statut selectionne n'est pas un statut d'affectation.");
 
-            affectation.DateFin = null;
-            affectation.DateMouvement = affectation.DateDebut.Date;
+            affectation.DateMouvement = DateTime.Now;
             affectation.Actif = true;
             NormaliserTextes(affectation);
 
@@ -118,7 +117,11 @@ namespace Stock741.Repositories
                 AncienLieuId = ancienLieuId,
                 NouveauStatutId = stock.StatutId,
                 NouveauLieuId = stock.LieuId,
+                NouveauUtilisateurId = affectation.UtilisateurId,
+                NouveauEdsId = affectation.EdsId,
                 DateMouvement = affectation.DateMouvement ?? DateTime.Now,
+                DateDebutAffectation = affectation.DateDebut,
+                DateFinAffectation = affectation.DateFin,
                 EffectuePar = effectuePar,
                 Commentaire = affectation.Commentaire
             });
@@ -154,6 +157,8 @@ namespace Stock741.Repositories
 
                 var ancienStatutId = stock.StatutId;
                 var ancienLieuId = stock.LieuId;
+                var ancienUtilisateurId = tracked.UtilisateurId;
+                var ancienEdsId = tracked.EdsId;
 
                 tracked.UtilisateurId = affectation.UtilisateurId;
                 tracked.EdsId = affectation.EdsId;
@@ -161,7 +166,7 @@ namespace Stock741.Repositories
                 tracked.OperateurId = affectation.OperateurId;
                 tracked.ForfaitId = affectation.ForfaitId;
                 tracked.DateDebut = affectation.DateDebut;
-                tracked.DatePret = affectation.DatePret;
+                tracked.DateFin = affectation.DateFin;
                 tracked.DateMouvement = DateTime.Now;
                 tracked.NomAppareil = affectation.NomAppareil;
                 tracked.AdresseIP = affectation.AdresseIP;
@@ -186,7 +191,13 @@ namespace Stock741.Repositories
                     AncienLieuId = ancienLieuId,
                     NouveauStatutId = stock.StatutId,
                     NouveauLieuId = stock.LieuId,
+                    AncienUtilisateurId = ancienUtilisateurId,
+                    AncienEdsId = ancienEdsId,
+                    NouveauUtilisateurId = tracked.UtilisateurId,
+                    NouveauEdsId = tracked.EdsId,
                     DateMouvement = tracked.DateMouvement ?? DateTime.Now,
+                    DateDebutAffectation = tracked.DateDebut,
+                    DateFinAffectation = tracked.DateFin,
                     EffectuePar = effectuePar,
                     Commentaire = "Modification de l'affectation"
                 });
@@ -228,7 +239,7 @@ namespace Stock741.Repositories
                 throw new InvalidOperationException("Le statut selectionne n'est pas un statut de retour.");
 
             affectation.Actif = false;
-            affectation.DateMouvement = dateMouvement.Date;
+            affectation.DateMouvement = DateTime.Now;
 
             if (affectation.Stock != null)
                 affectation.Stock.StatutId = statutRetour.Id;
@@ -255,7 +266,9 @@ namespace Stock741.Repositories
                 AncienAdresseIP = affectation.AdresseIP,
                 AncienMasqueIP = affectation.MasqueIP,
                 AnciennePasserelle = affectation.PasserelleIP,
-                DateMouvement = dateMouvement.Date,
+                DateMouvement = affectation.DateMouvement ?? DateTime.Now,
+                DateDebutAffectation = affectation.DateDebut,
+                DateFinAffectation = affectation.DateFin,
                 EffectuePar = effectuePar,
                 Commentaire = commentaireHistorique
             });

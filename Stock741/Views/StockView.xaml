@@ -25,8 +25,19 @@
         <!-- Boutons -->
         <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,0,0,5">
             <Button Content="Nouveau"    Command="{Binding NouveauCommand}"    Margin="0,0,5,0"/>
-            <Button Content="Ajouter"    Command="{Binding AjouterCommand}"    Margin="0,0,5,0"/>
-            <Button Content="Modifier"   Command="{Binding ModifierCommand}"   Margin="0,0,5,0"/>
+            <Button Content="Ajouter"
+                    Command="{Binding AjouterCommand}"
+                    Visibility="{Binding PeutAjouter, Converter={StaticResource BoolToVisibilityConverter}}"
+                    Margin="0,0,5,0"/>
+            <Button Content="Modifier"
+                    Command="{Binding ModifierCommand}"
+                    Visibility="{Binding AfficherModifier, Converter={StaticResource BoolToVisibilityConverter}}"
+                    Margin="0,0,5,0"/>
+            <Button Content="{Binding LibelleAffecter}"
+                    Command="{Binding DataContext.AffecterStockSelectionneCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                    CommandParameter="{Binding StockSelectionne}"
+                    Visibility="{Binding PeutAffecter, Converter={StaticResource BoolToVisibilityConverter}}"
+                    Margin="0,0,5,0"/>
             <Button Content="Supprimer"
                     Command="{Binding SupprimerCommand}"
                     IsEnabled="{Binding PeutSupprimer}"
@@ -96,6 +107,7 @@
             <Label Grid.Row="0" Grid.Column="0" Content="Asset:" VerticalAlignment="Center" Margin="0,0,5,0"/>
             <TextBox Grid.Row="0" Grid.Column="1"
                      Text="{Binding AssetSelectionne, UpdateSourceTrigger=PropertyChanged}"
+                     MaxLength="8"
                      Margin="0,0,10,5"
                      IsEnabled="{Binding PeutModifier}"/>
 
@@ -290,6 +302,7 @@
                   ItemsSource="{Binding Stocks}"
                   AutoGenerateColumns="False"
                   SelectedItem="{Binding StockSelectionne}"
+                  SelectionChanged="StocksDataGrid_SelectionChanged"
                   SelectionMode="Single"
                   SelectionUnit="FullRow"
                   CanUserAddRows="False"

@@ -1,6 +1,7 @@
 ﻿
 using System.Windows.Input;
 using Stock741.Commands;
+using Stock741.Models;
 using Stock741.ViewModels;
 
 namespace Stock741.ViewModels
@@ -29,7 +30,19 @@ namespace Stock741.ViewModels
         public object VueActuelle
         {
             get => _vueActuelle;
-            set { _vueActuelle = value; OnPropertyChanged(); }
+            set
+            {
+                if (_vueActuelle is BaseViewModel ancienViewModel)
+                    ancienViewModel.PropertyChanged -= VueActuelle_PropertyChanged;
+
+                _vueActuelle = value;
+
+                if (_vueActuelle is BaseViewModel nouveauViewModel)
+                    nouveauViewModel.PropertyChanged += VueActuelle_PropertyChanged;
+
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsCurrentViewBusy));
+            }
         }
 
         private string _titreVueActuelle;
@@ -46,7 +59,17 @@ namespace Stock741.ViewModels
             set { _vueActive = value; OnPropertyChanged(); }
         }
 
+        public bool IsCurrentViewBusy => VueActuelle is BaseViewModel viewModel && viewModel.IsBusy;
+
+        private void VueActuelle_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(BaseViewModel.IsBusy))
+                OnPropertyChanged(nameof(IsCurrentViewBusy));
+        }
+
         public ICommand NaviguerVersCommand { get; }
+        public ICommand AffecterStockSelectionneCommand { get; }
+        public ICommand VoirStockDepuisAffectationCommand { get; }
         public ICommand QuitterCommand { get; }
 
         public MainViewModel(MarqueViewModel marqueViewModel,
@@ -81,6 +104,8 @@ namespace Stock741.ViewModels
             _historiqueMouvementViewModel = historiqueMouvementViewModel;
 
             NaviguerVersCommand = new AsyncRelayCommand(NaviguerVers);
+            AffecterStockSelectionneCommand = new AsyncRelayCommand(AffecterStockSelectionne);
+            VoirStockDepuisAffectationCommand = new AsyncRelayCommand(VoirStockDepuisAffectation);
             QuitterCommand = new RelayCommand(_ => System.Windows.Application.Current.Shutdown());
 
             // Vue par défaut
@@ -245,6 +270,36 @@ namespace Stock741.ViewModels
                     TitreVueActuelle = "Marques";
                     break;
             }
+        }
+
+        private async Task AffecterStockSelectionne(object parametre)
+        {
+            if (parametre is not Stock stock)
+                return;
+
+            _affectationViewModel.EffacerChamps();
+            await _affectationViewModel.Rafraichir();
+            await _affectationViewModel.SelectionnerDepuisStockAsync(stock.Id);
+
+            VueActuelle = _affectationViewModel;
+            TitreVueActuelle = "Affectations";
+            VueActive = "Affectations";
+        }
+
+        private async Task VoirStockDepuisAffectation(object parametre)
+        {
+            var stockId = _affectationViewModel.GetStockCourantId();
+            if (stockId == null)
+                return;
+
+            _stockViewModel.EffacerChamps();
+            _stockViewModel.EffacerErreur();
+            await _stockViewModel.Rafraichir();
+            await _stockViewModel.SelectionnerStockAsync(stockId.Value);
+
+            VueActuelle = _stockViewModel;
+            TitreVueActuelle = "Stock";
+            VueActive = "Stock";
         }
     }
 }

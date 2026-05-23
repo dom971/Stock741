@@ -36,7 +36,6 @@ namespace Stock741.Models
 
         // Dates
         public DateTime DateDebut { get; set; } = DateTime.Now;
-        public DateTime? DatePret { get; set; }
         public DateTime? DateFin { get; set; }
         public DateTime? DateMouvement { get; set; }
 

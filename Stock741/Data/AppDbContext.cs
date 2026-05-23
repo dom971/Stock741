@@ -204,6 +204,17 @@ namespace Stock741.Data
                 .HasForeignKey(h => h.AncienEdsId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<HistoriqueMouvement>()
+                .HasOne(h => h.NouveauUtilisateur)
+                .WithMany()
+                .HasForeignKey(h => h.NouveauUtilisateurId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<HistoriqueMouvement>()
+                .HasOne(h => h.NouveauEds)
+                .WithMany()
+                .HasForeignKey(h => h.NouveauEdsId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             base.OnModelCreating(modelBuilder);
         }

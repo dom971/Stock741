@@ -115,6 +115,9 @@ namespace Stock741.ViewModels
                        Contient(h.AncienUtilisateur?.Nom, filtre) ||
                        Contient(h.AncienUtilisateur?.Prenom, filtre) ||
                        Contient(h.AncienEds?.Nom, filtre) ||
+                       Contient(h.NouveauUtilisateur?.Nom, filtre) ||
+                       Contient(h.NouveauUtilisateur?.Prenom, filtre) ||
+                       Contient(h.NouveauEds?.Nom, filtre) ||
                        Contient(h.EffectuePar, filtre) ||
                        Contient(h.Commentaire, filtre);
             };

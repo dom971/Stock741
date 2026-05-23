@@ -36,6 +36,8 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Date" Binding="{Binding DateMouvement, StringFormat={}{0:dd/MM/yyyy HH:mm}}" Width="130"/>
                 <DataGridTextColumn Header="Type" Binding="{Binding TypeMouvement}" Width="110"/>
+                <DataGridTextColumn Header="D&#233;but" Binding="{Binding DateDebutAffectation, StringFormat={}{0:dd/MM/yyyy}}" Width="90"/>
+                <DataGridTextColumn Header="Fin" Binding="{Binding DateFinAffectation, StringFormat={}{0:dd/MM/yyyy}}" Width="90"/>
                 <DataGridTextColumn Header="Asset" Binding="{Binding Stock.Asset}" Width="90"/>
                 <DataGridTextColumn Header="Mat&#233;riel" Binding="{Binding Stock.Modele.Materiel.Nom}" Width="110"/>
                 <DataGridTextColumn Header="Marque" Binding="{Binding Stock.Modele.Marque.Nom}" Width="110"/>
@@ -65,6 +67,12 @@
                     <TextBlock Text="{Binding Detail.DateMouvement, StringFormat={}{0:dd/MM/yyyy HH:mm}}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
                     <TextBlock Text="Type" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
                     <TextBlock Text="{Binding Detail.TypeMouvement}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="P&#233;riode affectation" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock FontSize="12" Foreground="#535353" Margin="0,0,0,4">
+                        <Run Text="{Binding Detail.DateDebutAffectation, StringFormat={}{0:dd/MM/yyyy}}"/>
+                        <Run Text=" -> "/>
+                        <Run Text="{Binding Detail.DateFinAffectation, StringFormat={}{0:dd/MM/yyyy}}"/>
+                    </TextBlock>
                     <TextBlock Text="Effectu&#233; par" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
                     <TextBlock Text="{Binding Detail.EffectuePar}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
                     <TextBlock Text="Commentaire" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
@@ -104,9 +112,17 @@
                         <Run Text="{Binding Detail.NouveauLieu.Nom}"/>
                     </TextBlock>
                     <TextBlock Text="Utilisateur" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
-                    <TextBlock Text="{Binding Detail.AncienUtilisateur.NomComplet}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock FontSize="12" Foreground="#535353" Margin="0,0,0,4">
+                        <Run Text="{Binding Detail.AncienUtilisateur.NomComplet}"/>
+                        <Run Text=" -> "/>
+                        <Run Text="{Binding Detail.NouveauUtilisateur.NomComplet}"/>
+                    </TextBlock>
                     <TextBlock Text="EDS" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
-                    <TextBlock Text="{Binding Detail.AncienEds.Nom}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock FontSize="12" Foreground="#535353" Margin="0,0,0,4">
+                        <Run Text="{Binding Detail.AncienEds.Nom}"/>
+                        <Run Text=" -> "/>
+                        <Run Text="{Binding Detail.NouveauEds.Nom}"/>
+                    </TextBlock>
                     <TextBlock Text="PC / R&#233;seau" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
                     <TextBlock FontSize="12" Foreground="#535353">
                         <Run Text="{Binding Detail.AncienNomPC}"/>

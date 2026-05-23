@@ -54,12 +54,17 @@ namespace Stock741.ViewModels
                 OnPropertyChanged(nameof(PeutSupprimer));
                 OnPropertyChanged(nameof(PeutModifierGarantie));
                 OnPropertyChanged(nameof(AfficherModificationLimitee));
+                OnPropertyChanged(nameof(AfficherModifier));
             }
         }
 
         public bool PeutChoisirStatut => StockSelectionne != null && PeutModifier;
         private bool _peutSupprimerSelection = true;
         public bool PeutSupprimer => StockSelectionne != null && _peutSupprimerSelection;
+        public bool PeutAjouter => StockSelectionne == null;
+        public bool AfficherModifier => StockSelectionne != null && PeutModifier;
+        public bool PeutAffecter => StockSelectionne != null;
+        public string LibelleAffecter => StockSelectionne?.AffectationActive == true ? "Voir affectation" : "Affecter";
         public bool PeutModifierGarantie => PeutModifier && SousGarantieSelectionne;
         public bool AfficherModificationLimitee => StockSelectionne != null && !PeutModifier;
 
@@ -83,7 +88,12 @@ namespace Stock741.ViewModels
         public string AssetSelectionne
         {
             get => _assetSelectionne;
-            set { _assetSelectionne = value; OnPropertyChanged(); ValidateAsset(); }
+            set
+            {
+                _assetSelectionne = value?.ToUpperInvariant();
+                OnPropertyChanged();
+                ValidateAsset();
+            }
         }
 
         private string _numSerieSelectionne;
@@ -276,6 +286,10 @@ namespace Stock741.ViewModels
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(PeutChoisirStatut));
                 OnPropertyChanged(nameof(PeutSupprimer));
+                OnPropertyChanged(nameof(PeutAjouter));
+                OnPropertyChanged(nameof(AfficherModifier));
+                OnPropertyChanged(nameof(PeutAffecter));
+                OnPropertyChanged(nameof(LibelleAffecter));
                 if (value != null)
                     _ = ChargerDetailAsync(value.Id);
                 else
@@ -589,6 +603,8 @@ namespace Stock741.ViewModels
             {
                 var affectationActive = await _repository.GetAffectationActive(id);
                 var aDejaEteAffecte = await _repository.HasAffectation(id);
+                StockSelectionne.AffectationActive = affectationActive != null;
+                OnPropertyChanged(nameof(LibelleAffecter));
                 PeutModifier = affectationActive == null;
                 _peutSupprimerSelection = !aDejaEteAffecte;
                 OnPropertyChanged(nameof(PeutSupprimer));
@@ -671,12 +687,28 @@ namespace Stock741.ViewModels
             });
         }
 
+        public async Task SelectionnerStockAsync(int stockId)
+        {
+            if (!Stocks.Any(s => s.Id == stockId))
+            {
+                var stock = await _repository.GetById(stockId);
+                if (stock != null)
+                    Stocks.Add(stock);
+            }
+
+            StockSelectionne = Stocks.FirstOrDefault(s => s.Id == stockId);
+        }
+
         public void EffacerChamps()
         {
             _stockSelectionne = null;
             OnPropertyChanged(nameof(StockSelectionne));
             OnPropertyChanged(nameof(PeutChoisirStatut));
             OnPropertyChanged(nameof(PeutSupprimer));
+            OnPropertyChanged(nameof(PeutAjouter));
+            OnPropertyChanged(nameof(AfficherModifier));
+            OnPropertyChanged(nameof(PeutAffecter));
+            OnPropertyChanged(nameof(LibelleAffecter));
             Detail = null;
             PeutModifier = true;
             _peutSupprimerSelection = true;
@@ -774,7 +806,7 @@ namespace Stock741.ViewModels
 
             var stock = new Stock
             {
-                Asset = AssetSelectionne,
+                Asset = AssetSelectionne?.Trim().ToUpperInvariant(),
                 NumSerie = NumSerieSelectionne,
                 Date = DateSelectionne,
                 NumReception = NormaliserEntierNaturel(NumReceptionSelectionne),
@@ -847,7 +879,7 @@ namespace Stock741.ViewModels
             {
                 Id = StockSelectionne.Id,
                 RowVersion = Detail?.RowVersion ?? StockSelectionne.RowVersion,
-                Asset = AssetSelectionne,
+                Asset = AssetSelectionne?.Trim().ToUpperInvariant(),
                 NumSerie = NumSerieSelectionne,
                 Date = DateSelectionne,
                 NumReception = NormaliserEntierNaturel(NumReceptionSelectionne),

@@ -4,7 +4,9 @@
         Title="Stock741"
         Icon="stock741.ico"
         WindowState="Maximized"
-        WindowStyle="SingleBorderWindow">
+        WindowStyle="SingleBorderWindow"
+        Cursor="{Binding IsCurrentViewBusy, Converter={StaticResource BoolToCursorConverter}}"
+        ForceCursor="{Binding IsCurrentViewBusy}">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="180"/>

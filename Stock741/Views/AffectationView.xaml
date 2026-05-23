@@ -20,7 +20,14 @@
                     IsEnabled="{Binding PeutAjouter}"
                     Visibility="{Binding PeutAjouter, Converter={StaticResource BoolToVisibilityConverter}}"
                     Margin="0,0,5,0"/>
-            <Button Content="Modifier" Command="{Binding ModifierCommand}" Margin="5,0,0,0"/>
+            <Button Content="Modifier"
+                    Command="{Binding ModifierCommand}"
+                    Visibility="{Binding AfficherModifier, Converter={StaticResource BoolToVisibilityConverter}}"
+                    Margin="5,0,0,0"/>
+            <Button Content="Voir dans stock"
+                    Command="{Binding DataContext.VoirStockDepuisAffectationCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                    Visibility="{Binding PeutVoirStock, Converter={StaticResource BoolToVisibilityConverter}}"
+                    Margin="5,0,0,0"/>
             <Button Content="Nouveau" Command="{Binding NouveauCommand}" Margin="15,0,0,0"/>
             <Button Content="Actualiser" Command="{Binding ActualiserCommand}" Margin="5,0,0,0"/>
             <Label Content="Recherche affectations:" VerticalAlignment="Center" Margin="15,0,5,0"/>
@@ -46,8 +53,6 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="260"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
                 <Label Grid.Column="0" Content="Recherche mat&#233;riel:"/>
@@ -136,16 +141,19 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Label Grid.Row="0" Grid.Column="0" Content="Date affectation:"/>
+                <Label Grid.Row="0" Grid.Column="0" Content="Date d&#233;but:"/>
                 <DatePicker Grid.Row="0" Grid.Column="1"
                             SelectedDate="{Binding DateDebut}"
                             Margin="0,2,15,2"/>
 
-                <Label Grid.Row="0" Grid.Column="2" Content="Date de pr&#234;t:"/>
+                <Label Grid.Row="0" Grid.Column="2" Content="Date fin:"/>
                 <DatePicker Grid.Row="0" Grid.Column="3"
-                            SelectedDate="{Binding DatePret}"
+                            SelectedDate="{Binding DateFin}"
+                            IsEnabled="{Binding DateFinObligatoire}"
                             Margin="0,2,15,2"/>
 
                 <Label Grid.Row="0" Grid.Column="4" Content="Statut:"/>
@@ -168,7 +176,7 @@
 
                 <TextBlock Grid.Row="2"
                            Grid.Column="1"
-                           Grid.ColumnSpan="5"
+                           Grid.ColumnSpan="7"
                            Text="Saisir au moins 2 caractères pour lancer la recherche utilisateur ou EDS."
                            Foreground="#777777"
                            FontSize="11"
@@ -215,7 +223,7 @@
 
                 <TextBlock Grid.Row="4"
                            Grid.Column="1"
-                           Grid.ColumnSpan="5"
+                           Grid.ColumnSpan="7"
                            Text="{Binding MessageEdsAutomatique}"
                            Foreground="#00643E"
                            FontSize="11"
@@ -400,8 +408,6 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="160"/>
-                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="180"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
@@ -410,29 +416,24 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <Label Grid.Column="0" Content="Date mouvement:"/>
-                    <DatePicker Grid.Column="1"
-                                SelectedDate="{Binding DateMouvement}"
-                                Margin="0,2,15,2"/>
-
-                    <Label Grid.Column="2" Content="Statut retour:"/>
-                    <ComboBox Grid.Column="3"
+                    <Label Grid.Column="0" Content="Statut retour:"/>
+                    <ComboBox Grid.Column="1"
                               ItemsSource="{Binding StatutsRetour}"
                               SelectedItem="{Binding StatutRetourSelectionne}"
                               DisplayMemberPath="Nom"
                               Margin="0,2,15,2"/>
 
-                    <Label Grid.Column="4" Content="Motif:"/>
-                    <TextBox Grid.Column="5"
+                    <Label Grid.Column="2" Content="Motif:"/>
+                    <TextBox Grid.Column="3"
                              Text="{Binding MotifRetour, UpdateSourceTrigger=PropertyChanged}"
                              Margin="0,2,15,2"/>
 
-                    <Label Grid.Column="6" Content="Commentaire:"/>
-                    <TextBox Grid.Column="7"
+                    <Label Grid.Column="4" Content="Commentaire:"/>
+                    <TextBox Grid.Column="5"
                              Text="{Binding CommentaireRetour, UpdateSourceTrigger=PropertyChanged}"
                              Margin="0,2,15,2"/>
 
-                    <Button Grid.Column="8"
+                    <Button Grid.Column="6"
                             Content="Valider retour"
                             Command="{Binding RetournerCommand}"
                             IsEnabled="{Binding PeutRetourner}"
@@ -441,98 +442,54 @@
             </StackPanel>
         </StackPanel>
 
-        <TextBlock Grid.Row="5"
-                   Text="{Binding MessageSucces}"
-                   Foreground="Green"
-                   FontWeight="SemiBold"
-                   Margin="0,0,0,5"
-                   Visibility="{Binding MessageSucces, Converter={StaticResource StringToVisibilityConverter}}"/>
+        <Grid Grid.Row="5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="24"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-        <TextBlock Grid.Row="5"
-                   Text="{Binding ErreurGlobale}"
-                   Foreground="Red"
-                   FontWeight="SemiBold"
-                   Margin="0,0,0,5"
-                   Visibility="{Binding ErreurGlobale, Converter={StaticResource StringToVisibilityConverter}}"/>
+            <Grid Grid.Row="0">
+                <TextBlock Text="{Binding MessageSucces}"
+                           Foreground="Green"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           Visibility="{Binding MessageSucces, Converter={StaticResource StringToVisibilityConverter}}"/>
 
-        <DataGrid Grid.Row="5"
-                  ItemsSource="{Binding Affectations}"
-                  SelectedItem="{Binding AffectationSelectionnee}"
-                  AutoGenerateColumns="False"
-                  SelectionMode="Single"
-                  SelectionUnit="FullRow"
-                  CanUserAddRows="False"
-                  IsReadOnly="True"
-                  EnableRowVirtualization="True"
-                  EnableColumnVirtualization="True"
-                  VirtualizingPanel.VirtualizationMode="Recycling">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Asset" Binding="{Binding Stock.Asset}" Width="Auto"/>
-                <DataGridTextColumn Header="Date d&#233;but" Binding="{Binding DateDebut, StringFormat={}{0:dd/MM/yyyy}}" Width="Auto"/>
-                <DataGridTextColumn Header="Mat&#233;riel" Binding="{Binding Stock.Modele.Materiel.Nom}" Width="Auto"/>
-                <DataGridTextColumn Header="Marque" Binding="{Binding Stock.Modele.Marque.Nom}" Width="Auto"/>
-                <DataGridTextColumn Header="Mod&#232;le" Binding="{Binding Stock.Modele.Nom}" Width="*"/>
-                <DataGridTextColumn Header="N&#176; S&#233;rie" Binding="{Binding Stock.NumSerie}" Width="Auto"/>
-                <DataGridTextColumn Header="Utilisateur" Binding="{Binding Utilisateur.NomComplet}" Width="*"/>
-                <DataGridTextColumn Header="EDS auto" Binding="{Binding EdsAutomatique.Cnx}" Width="Auto"/>
-                <DataGridTextColumn Header="EDS" Binding="{Binding Eds.Cnx}" Width="Auto"/>
-                <DataGridCheckBoxColumn Header="Actif" Binding="{Binding Actif}" Width="Auto"/>
-            </DataGrid.Columns>
-        </DataGrid>
-
-        <Border Grid.Row="6"
-                Margin="0,8,0,0"
-                Padding="10"
-                Background="#F9F9F9"
-                BorderBrush="#CCCCCC"
-                BorderThickness="1"
-                Visibility="{Binding Detail, Converter={StaticResource NullToVisibilityConverter}}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <StackPanel Grid.Column="0" Margin="0,0,20,0">
-                    <TextBlock Text="Mat&#233;riel" Foreground="#00643E" FontWeight="Bold" FontSize="12" Margin="0,0,0,6"/>
-                    <TextBlock Text="Asset" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
-                    <TextBlock Text="{Binding Detail.Stock.Asset}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
-                    <TextBlock Text="Mod&#232;le" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
-                    <TextBlock Text="{Binding Detail.Stock.Modele.Nom}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
-                    <TextBlock Text="N&#176; s&#233;rie" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
-                    <TextBlock Text="{Binding Detail.Stock.NumSerie}" FontSize="12" Foreground="#535353"/>
-                </StackPanel>
-
-                <StackPanel Grid.Column="1" Margin="0,0,20,0">
-                    <TextBlock Text="Affect&#233; &#224;" Foreground="#00643E" FontWeight="Bold" FontSize="12" Margin="0,0,0,6"/>
-                    <TextBlock Text="Utilisateur" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
-                    <TextBlock Text="{Binding Detail.Utilisateur.NomComplet}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
-                    <TextBlock Text="ID Windows" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
-                    <TextBlock Text="{Binding Detail.Utilisateur.IdWindows}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
-                    <TextBlock Text="EDS" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
-                    <TextBlock Text="{Binding Detail.Eds.Nom}" FontSize="12" Foreground="#535353"/>
-                </StackPanel>
-
-                <StackPanel Grid.Column="2">
-                    <TextBlock Text="D&#233;tail" Foreground="#00643E" FontWeight="Bold" FontSize="12" Margin="0,0,0,6"/>
-                    <TextBlock Text="P&#233;riode" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                        <TextBlock Text="{Binding Detail.DateDebut, StringFormat={}{0:dd/MM/yyyy}}" FontSize="12" Foreground="#535353"/>
-                        <TextBlock Text=" -> " FontSize="12" Foreground="#535353"/>
-                        <TextBlock Text="{Binding Detail.DateFin, StringFormat={}{0:dd/MM/yyyy}}" FontSize="12" Foreground="#535353"/>
-                    </StackPanel>
-                    <TextBlock Text="Dernier mouvement" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
-                    <TextBlock Text="{Binding Detail.DateMouvement, StringFormat={}{0:dd/MM/yyyy}}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
-                    <TextBlock Text="T&#233;l&#233;phonie" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
-                    <TextBlock Text="{Binding Detail.NumTelMobile}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
-                    <TextBlock Text="R&#233;seau" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
-                    <TextBlock Text="{Binding Detail.AdresseIP}" FontSize="12" Foreground="#535353"/>
-                    <TextBlock Text="{Binding Detail.NomPC}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
-                    <TextBlock Text="Commentaire" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
-                    <TextBlock Text="{Binding Detail.Commentaire}" TextWrapping="Wrap" FontSize="12" Foreground="#535353"/>
-                </StackPanel>
+                <TextBlock Text="{Binding ErreurGlobale}"
+                           Foreground="Red"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           Visibility="{Binding ErreurGlobale, Converter={StaticResource StringToVisibilityConverter}}"/>
             </Grid>
-        </Border>
+
+            <DataGrid Grid.Row="1"
+                      Grid.Column="0"
+                      ItemsSource="{Binding Affectations}"
+                      SelectedItem="{Binding AffectationSelectionnee}"
+                      AutoGenerateColumns="False"
+                      SelectionMode="Single"
+                      SelectionUnit="FullRow"
+                      CanUserAddRows="False"
+                      IsReadOnly="True"
+                      EnableRowVirtualization="True"
+                      EnableColumnVirtualization="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Asset" Binding="{Binding Stock.Asset}" Width="Auto"/>
+                    <DataGridTextColumn Header="Date d&#233;but" Binding="{Binding DateDebut, StringFormat={}{0:dd/MM/yyyy}}" Width="Auto"/>
+                    <DataGridTextColumn Header="Date fin" Binding="{Binding DateFin, StringFormat={}{0:dd/MM/yyyy}}" Width="Auto"/>
+                    <DataGridTextColumn Header="Mat&#233;riel" Binding="{Binding Stock.Modele.Materiel.Nom}" Width="Auto"/>
+                    <DataGridTextColumn Header="Marque" Binding="{Binding Stock.Modele.Marque.Nom}" Width="Auto"/>
+                    <DataGridTextColumn Header="Mod&#232;le" Binding="{Binding Stock.Modele.Nom}" Width="*"/>
+                    <DataGridTextColumn Header="N&#176; S&#233;rie" Binding="{Binding Stock.NumSerie}" Width="Auto"/>
+                    <DataGridTextColumn Header="Utilisateur" Binding="{Binding Utilisateur.NomComplet}" Width="*"/>
+                    <DataGridTextColumn Header="EDS auto" Binding="{Binding EdsAutomatique.Cnx}" Width="Auto"/>
+                    <DataGridTextColumn Header="EDS" Binding="{Binding Eds.Cnx}" Width="Auto"/>
+                    <DataGridCheckBoxColumn Header="Actif" Binding="{Binding Actif}" Width="Auto"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
     </Grid>
 </UserControl>

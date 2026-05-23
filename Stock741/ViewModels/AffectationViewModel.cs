@@ -17,6 +17,7 @@ namespace Stock741.ViewModels
         private readonly ForfaitRepository _forfaitRepository;
         private readonly StatutRepository _statutRepository;
         private readonly List<Statut> _tousStatutsAffectation = new();
+        private bool _resetEnCours;
 
         public ObservableCollection<Affectation> Affectations { get; } = new();
         public ObservableCollection<Stock> StocksDisponibles { get; } = new();
@@ -37,9 +38,11 @@ namespace Stock741.ViewModels
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(PeutRetourner));
                 OnPropertyChanged(nameof(PeutModifier));
+                OnPropertyChanged(nameof(AfficherModifier));
                 OnPropertyChanged(nameof(EstModification));
                 OnPropertyChanged(nameof(PeutAjouter));
                 OnPropertyChanged(nameof(PeutChoisirMateriel));
+                OnPropertyChanged(nameof(PeutVoirStock));
                 ActualiserStatutsAffectationDisponibles();
                 CommandManager.InvalidateRequerySuggested();
                 if (value != null)
@@ -65,6 +68,7 @@ namespace Stock741.ViewModels
                 OnPropertyChanged(nameof(AfficherPoste));
                 OnPropertyChanged(nameof(AfficherTelephonie));
                 OnPropertyChanged(nameof(AfficherReseau));
+                OnPropertyChanged(nameof(PeutVoirStock));
                 SelectionnerStatutParDefaut();
             }
         }
@@ -77,7 +81,7 @@ namespace Stock741.ViewModels
             {
                 _statutAffectationSelectionne = value;
                 OnPropertyChanged();
-                OnPropertyChanged(nameof(DatePretObligatoire));
+                OnPropertyChanged(nameof(DateFinObligatoire));
             }
         }
 
@@ -89,7 +93,8 @@ namespace Stock741.ViewModels
             {
                 _utilisateurSelectionne = value;
                 OnPropertyChanged();
-                _ = SelectionnerEdsDepuisUtilisateurAsync();
+                if (!_resetEnCours)
+                    _ = SelectionnerEdsDepuisUtilisateurAsync();
             }
         }
 
@@ -140,11 +145,11 @@ namespace Stock741.ViewModels
             set { _dateDebut = value; OnPropertyChanged(); }
         }
 
-        private DateTime? _datePret;
-        public DateTime? DatePret
+        private DateTime? _dateFin;
+        public DateTime? DateFin
         {
-            get => _datePret;
-            set { _datePret = value; OnPropertyChanged(); }
+            get => _dateFin;
+            set { _dateFin = value; OnPropertyChanged(); }
         }
 
         private DateTime? _dateMouvement = DateTime.Today;
@@ -357,8 +362,10 @@ namespace Stock741.ViewModels
         public bool EstModification => AffectationSelectionnee != null;
         public bool PeutAjouter => !EstModification;
         public bool PeutModifier => AffectationSelectionnee != null;
+        public bool AfficherModifier => AffectationSelectionnee?.Actif == true;
         public bool PeutChoisirMateriel => !EstModification;
-        public bool DatePretObligatoire => EstStatutSelectionne("pret");
+        public bool PeutVoirStock => AffectationSelectionnee?.StockId != null || StockSelectionne?.Id != null;
+        public bool DateFinObligatoire => EstStatutSelectionne("pret");
 
         public ICommand AjouterCommand { get; }
         public ICommand ModifierCommand { get; }
@@ -437,6 +444,7 @@ namespace Stock741.ViewModels
 
         public void EffacerChamps()
         {
+            _resetEnCours = true;
             _affectationSelectionnee = null;
             OnPropertyChanged(nameof(AffectationSelectionnee));
             ActualiserStatutsAffectationDisponibles();
@@ -452,7 +460,7 @@ namespace Stock741.ViewModels
             FiltreUtilisateur = string.Empty;
             FiltreEds = string.Empty;
             DateDebut = DateTime.Today;
-            DatePret = null;
+            DateFin = null;
             DateMouvement = DateTime.Today;
             StatutRetourSelectionne = GetStatutRetourDefaut();
             NomAppareil = string.Empty;
@@ -467,11 +475,18 @@ namespace Stock741.ViewModels
             Commentaire = string.Empty;
             MotifRetour = string.Empty;
             CommentaireRetour = string.Empty;
+            Utilisateurs.Clear();
+            EdsListe.Clear();
+            OnPropertyChanged(nameof(EdsEstModifieManuellement));
+            OnPropertyChanged(nameof(MessageEdsAutomatique));
+            _resetEnCours = false;
             OnPropertyChanged(nameof(EstModification));
             OnPropertyChanged(nameof(PeutAjouter));
             OnPropertyChanged(nameof(PeutModifier));
+            OnPropertyChanged(nameof(AfficherModifier));
             OnPropertyChanged(nameof(PeutRetourner));
             OnPropertyChanged(nameof(PeutChoisirMateriel));
+            OnPropertyChanged(nameof(PeutVoirStock));
             CommandManager.InvalidateRequerySuggested();
             EffacerErreur();
         }
@@ -480,6 +495,32 @@ namespace Stock741.ViewModels
         {
             ErreurGlobale = string.Empty;
             MessageSucces = string.Empty;
+        }
+
+        public Task SelectionnerDepuisStockAsync(int stockId)
+        {
+            var affectationActive = Affectations.FirstOrDefault(a => a.StockId == stockId && a.Actif);
+            if (affectationActive != null)
+            {
+                AffectationSelectionnee = affectationActive;
+                return Task.CompletedTask;
+            }
+
+            var stock = StocksDisponibles.FirstOrDefault(s => s.Id == stockId);
+            if (stock == null)
+            {
+                ErreurGlobale = "Le matériel sélectionné n'est pas disponible pour une nouvelle affectation.";
+                return Task.CompletedTask;
+            }
+
+            AffectationSelectionnee = null;
+            StockSelectionne = stock;
+            return Task.CompletedTask;
+        }
+
+        public int? GetStockCourantId()
+        {
+            return AffectationSelectionnee?.StockId ?? StockSelectionne?.Id;
         }
 
         private async Task ChargerDetailAsync(int id)
@@ -521,7 +562,7 @@ namespace Stock741.ViewModels
                     OperateurId = OperateurSelectionne?.Id,
                     ForfaitId = ForfaitSelectionne?.Id,
                     DateDebut = DateDebut.Date,
-                    DatePret = DatePret,
+                    DateFin = DateFinObligatoire ? DateFin : null,
                     NomAppareil = NomAppareil?.Trim() ?? string.Empty,
                     AdresseIP = AdresseIP?.Trim() ?? string.Empty,
                     MasqueIP = MasqueIP?.Trim() ?? string.Empty,
@@ -578,7 +619,7 @@ namespace Stock741.ViewModels
                     OperateurId = OperateurSelectionne?.Id,
                     ForfaitId = ForfaitSelectionne?.Id,
                     DateDebut = DateDebut.Date,
-                    DatePret = DatePret,
+                    DateFin = DateFinObligatoire ? DateFin : null,
                     NomAppareil = NomAppareil?.Trim() ?? string.Empty,
                     AdresseIP = AdresseIP?.Trim() ?? string.Empty,
                     MasqueIP = MasqueIP?.Trim() ?? string.Empty,
@@ -621,7 +662,7 @@ namespace Stock741.ViewModels
                 {
                     await _affectationRepository.Retourner(
                         AffectationSelectionnee.Id,
-                        DateMouvement!.Value.Date,
+                        DateTime.Now,
                         StatutRetourSelectionne!.Id,
                         MotifRetour?.Trim() ?? string.Empty,
                         CommentaireRetour?.Trim() ?? string.Empty,
@@ -737,6 +778,13 @@ namespace Stock741.ViewModels
 
         private async Task SelectionnerEdsDepuisUtilisateurAsync()
         {
+            if (_resetEnCours || UtilisateurSelectionne == null)
+            {
+                EdsAutomatiqueSelectionne = null;
+                EdsSelectionne = null;
+                return;
+            }
+
             var service = UtilisateurSelectionne?.Departement;
             if (string.IsNullOrWhiteSpace(service))
                 return;
@@ -746,6 +794,9 @@ namespace Stock741.ViewModels
                 return;
 
             var eds = await _edsLiaisonRepository.GetEdsParService(cible);
+            if (_resetEnCours || UtilisateurSelectionne == null)
+                return;
+
             if (eds == null)
             {
                 MessageSucces = string.Empty;
@@ -828,7 +879,7 @@ namespace Stock741.ViewModels
                 : Forfaits.FirstOrDefault(f => f.Id == affectation.ForfaitId);
 
             DateDebut = affectation.DateDebut;
-            DatePret = affectation.DatePret;
+            DateFin = affectation.DateFin;
             NomAppareil = affectation.NomAppareil;
             AdresseIP = affectation.AdresseIP;
             MasqueIP = affectation.MasqueIP;
@@ -857,12 +908,6 @@ namespace Stock741.ViewModels
 
         private bool ValiderRetour()
         {
-            if (DateMouvement == null)
-            {
-                ErreurGlobale = "La date de mouvement est obligatoire.";
-                return false;
-            }
-
             if (StatutRetourSelectionne == null)
             {
                 ErreurGlobale = "Le statut de retour est obligatoire.";
@@ -901,9 +946,9 @@ namespace Stock741.ViewModels
                 return false;
             }
 
-            if (DatePretObligatoire && DatePret == null)
+            if (DateFinObligatoire && DateFin == null)
             {
-                ErreurGlobale = "La date de pret est obligatoire pour le statut Pret.";
+                ErreurGlobale = "La date de fin est obligatoire pour le statut Pret.";
                 return false;
             }
 

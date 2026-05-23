@@ -50,6 +50,16 @@ namespace Stock741.Models
         [ForeignKey(nameof(AncienEdsId))]
         public Eds? AncienEds { get; set; }
 
+        // Nouvel utilisateur
+        public int? NouveauUtilisateurId { get; set; }
+        [ForeignKey(nameof(NouveauUtilisateurId))]
+        public Utilisateur? NouveauUtilisateur { get; set; }
+
+        // Nouvel EDS
+        public int? NouveauEdsId { get; set; }
+        [ForeignKey(nameof(NouveauEdsId))]
+        public Eds? NouveauEds { get; set; }
+
         // Ancien PC
         [MaxLength(12)]
         public string? AncienNomPC { get; set; }
@@ -70,6 +80,10 @@ namespace Stock741.Models
 
         // Traçabilité
         public DateTime DateMouvement { get; set; } = DateTime.Now;
+
+        public DateTime? DateDebutAffectation { get; set; }
+
+        public DateTime? DateFinAffectation { get; set; }
 
         [MaxLength(100)]
         public string? EffectuePar { get; set; }

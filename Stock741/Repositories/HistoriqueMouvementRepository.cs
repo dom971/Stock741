@@ -32,6 +32,8 @@ namespace Stock741.Repositories
                 .Include(h => h.NouveauLieu)
                 .Include(h => h.AncienUtilisateur)
                 .Include(h => h.AncienEds)
+                .Include(h => h.NouveauUtilisateur)
+                .Include(h => h.NouveauEds)
                 .OrderByDescending(h => h.DateMouvement)
                 .ToListAsync();
         }

@@ -17,5 +17,17 @@ namespace Stock741.Views
         {
             e.Handled = !EntierNaturelRegex.IsMatch(e.Text);
         }
+
+        private void StocksDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is DataGrid dataGrid && dataGrid.SelectedItem != null)
+            {
+                dataGrid.Dispatcher.BeginInvoke(() =>
+                {
+                    dataGrid.ScrollIntoView(dataGrid.SelectedItem);
+                    dataGrid.Focus();
+                });
+            }
+        }
     }
 }

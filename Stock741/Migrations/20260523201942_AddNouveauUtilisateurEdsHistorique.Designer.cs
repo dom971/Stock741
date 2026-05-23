@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Stock741.Data;
 
@@ -11,9 +12,11 @@ using Stock741.Data;
 namespace Stock741.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260523201942_AddNouveauUtilisateurEdsHistorique")]
+    partial class AddNouveauUtilisateurEdsHistorique
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -54,6 +57,9 @@ namespace Stock741.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DateMouvement")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DatePret")
                         .HasColumnType("datetime2");
 
                     b.Property<int?>("EdsAutomatiqueId")
@@ -374,12 +380,6 @@ namespace Stock741.Migrations
                     b.Property<string>("Commentaire")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime?>("DateDebutAffectation")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DateFinAffectation")
-                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("DateMouvement")
                         .HasColumnType("datetime2");
