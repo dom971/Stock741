@@ -524,6 +524,10 @@ namespace Stock741.ViewModels
         {
             if (string.IsNullOrWhiteSpace(NumSerieSelectionne))
                 ErreurNumSerie = "Numéro de série obligatoire";
+            else if (Stocks.Any(s => string.Equals(s.NumSerie, NumSerieSelectionne, StringComparison.OrdinalIgnoreCase) &&
+                                     s.Modele?.Marque?.Id == MarqueSelectionnee?.Id &&
+                                     (StockSelectionne == null || s.Id != StockSelectionne.Id)))
+                ErreurNumSerie = "Numéro de série déjà utilisé pour cette marque";
             else
                 ErreurNumSerie = string.Empty;
         }

@@ -27,6 +27,7 @@ namespace Stock741.ViewModels
         public ObservableCollection<Forfait> Forfaits { get; } = new();
         public ObservableCollection<Statut> StatutsAffectation { get; } = new();
         public ObservableCollection<Statut> StatutsRetour { get; } = new();
+        public ObservableCollection<string> TypesConnexion { get; } = new() { "USB", "Réseau" };
 
         private Affectation? _affectationSelectionnee;
         public Affectation? AffectationSelectionnee
@@ -68,7 +69,10 @@ namespace Stock741.ViewModels
                 OnPropertyChanged(nameof(AfficherPoste));
                 OnPropertyChanged(nameof(AfficherTelephonie));
                 OnPropertyChanged(nameof(AfficherReseau));
+                OnPropertyChanged(nameof(AfficherTypeConnexion));
+                OnPropertyChanged(nameof(ConnexionReseauSelectionnee));
                 OnPropertyChanged(nameof(PeutVoirStock));
+                SelectionnerTypeConnexionParDefaut();
                 SelectionnerStatutParDefaut();
             }
         }
@@ -171,6 +175,19 @@ namespace Stock741.ViewModels
         {
             get => _nomAppareil;
             set { _nomAppareil = value; OnPropertyChanged(); }
+        }
+
+        private string _typeConnexion = string.Empty;
+        public string TypeConnexion
+        {
+            get => _typeConnexion;
+            set
+            {
+                _typeConnexion = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(ConnexionReseauSelectionnee));
+                OnPropertyChanged(nameof(AfficherReseau));
+            }
         }
 
         private string _adresseIP = string.Empty;
@@ -312,6 +329,10 @@ namespace Stock741.ViewModels
         public bool PeutRetourner => AffectationSelectionnee?.Actif == true;
         public bool AfficherPoste => StockSelectionne?.Modele?.Materiel?.Nom?
             .Contains("ordinateur", StringComparison.OrdinalIgnoreCase) == true;
+        public bool AfficherTypeConnexion => EstImprimante();
+        public bool ConnexionReseauSelectionnee => !AfficherTypeConnexion
+            || string.Equals(TypeConnexion, "Réseau", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(TypeConnexion, "Reseau", StringComparison.OrdinalIgnoreCase);
         public bool AfficherTelephonie
         {
             get
@@ -335,8 +356,10 @@ namespace Stock741.ViewModels
                 if (string.IsNullOrWhiteSpace(materiel))
                     return false;
 
+                if (EstImprimante())
+                    return true;
+
                 return materiel.Contains("copieur", StringComparison.OrdinalIgnoreCase)
-                    || materiel.Contains("imprimante", StringComparison.OrdinalIgnoreCase)
                     || materiel.Contains("switch", StringComparison.OrdinalIgnoreCase);
             }
         }
@@ -464,6 +487,7 @@ namespace Stock741.ViewModels
             DateMouvement = DateTime.Today;
             StatutRetourSelectionne = GetStatutRetourDefaut();
             NomAppareil = string.Empty;
+            TypeConnexion = string.Empty;
             AdresseIP = string.Empty;
             MasqueIP = string.Empty;
             PasserelleIP = string.Empty;
@@ -563,10 +587,11 @@ namespace Stock741.ViewModels
                     ForfaitId = ForfaitSelectionne?.Id,
                     DateDebut = DateDebut.Date,
                     DateFin = DateFinObligatoire ? DateFin : null,
-                    NomAppareil = NomAppareil?.Trim() ?? string.Empty,
-                    AdresseIP = AdresseIP?.Trim() ?? string.Empty,
-                    MasqueIP = MasqueIP?.Trim() ?? string.Empty,
-                    PasserelleIP = PasserelleIP?.Trim() ?? string.Empty,
+                    NomAppareil = ConnexionReseauSelectionnee ? NomAppareil?.Trim() ?? string.Empty : string.Empty,
+                    TypeConnexion = AfficherTypeConnexion ? TypeConnexion?.Trim() ?? string.Empty : string.Empty,
+                    AdresseIP = ConnexionReseauSelectionnee ? AdresseIP?.Trim() ?? string.Empty : string.Empty,
+                    MasqueIP = ConnexionReseauSelectionnee ? MasqueIP?.Trim() ?? string.Empty : string.Empty,
+                    PasserelleIP = ConnexionReseauSelectionnee ? PasserelleIP?.Trim() ?? string.Empty : string.Empty,
                     NomPC = NomPC?.Trim() ?? string.Empty,
                     EdsPC = EdsPC?.Trim() ?? string.Empty,
                     AncienPC = AncienPC?.Trim() ?? string.Empty,
@@ -620,10 +645,11 @@ namespace Stock741.ViewModels
                     ForfaitId = ForfaitSelectionne?.Id,
                     DateDebut = DateDebut.Date,
                     DateFin = DateFinObligatoire ? DateFin : null,
-                    NomAppareil = NomAppareil?.Trim() ?? string.Empty,
-                    AdresseIP = AdresseIP?.Trim() ?? string.Empty,
-                    MasqueIP = MasqueIP?.Trim() ?? string.Empty,
-                    PasserelleIP = PasserelleIP?.Trim() ?? string.Empty,
+                    NomAppareil = ConnexionReseauSelectionnee ? NomAppareil?.Trim() ?? string.Empty : string.Empty,
+                    TypeConnexion = AfficherTypeConnexion ? TypeConnexion?.Trim() ?? string.Empty : string.Empty,
+                    AdresseIP = ConnexionReseauSelectionnee ? AdresseIP?.Trim() ?? string.Empty : string.Empty,
+                    MasqueIP = ConnexionReseauSelectionnee ? MasqueIP?.Trim() ?? string.Empty : string.Empty,
+                    PasserelleIP = ConnexionReseauSelectionnee ? PasserelleIP?.Trim() ?? string.Empty : string.Empty,
                     NomPC = NomPC?.Trim() ?? string.Empty,
                     EdsPC = EdsPC?.Trim() ?? string.Empty,
                     AncienPC = AncienPC?.Trim() ?? string.Empty,
@@ -881,6 +907,7 @@ namespace Stock741.ViewModels
             DateDebut = affectation.DateDebut;
             DateFin = affectation.DateFin;
             NomAppareil = affectation.NomAppareil;
+            TypeConnexion = affectation.TypeConnexion;
             AdresseIP = affectation.AdresseIP;
             MasqueIP = affectation.MasqueIP;
             PasserelleIP = affectation.PasserelleIP;
@@ -952,6 +979,28 @@ namespace Stock741.ViewModels
                 return false;
             }
 
+            if (DateFin != null && DateFin.Value.Date < DateDebut.Date)
+            {
+                ErreurGlobale = "La date de fin ne peut pas être antérieure à la date de début.";
+                return false;
+            }
+
+            if (AfficherTypeConnexion && string.IsNullOrWhiteSpace(TypeConnexion))
+            {
+                ErreurGlobale = "Le type de connexion est obligatoire pour une imprimante.";
+                return false;
+            }
+
+            if (ConnexionReseauSelectionnee &&
+                (string.IsNullOrWhiteSpace(NomAppareil) ||
+                 string.IsNullOrWhiteSpace(AdresseIP) ||
+                 string.IsNullOrWhiteSpace(MasqueIP) ||
+                 string.IsNullOrWhiteSpace(PasserelleIP)))
+            {
+                ErreurGlobale = "Nom de l'appareil, adresse IP, masque et passerelle sont obligatoires pour une connexion réseau.";
+                return false;
+            }
+
             return true;
         }
 
@@ -972,6 +1021,22 @@ namespace Stock741.ViewModels
 
             return materiel.Contains("ordinateur", StringComparison.OrdinalIgnoreCase)
                 && materiel.Contains("portable", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool EstImprimante()
+        {
+            var materiel = StockSelectionne?.Modele?.Materiel?.Nom;
+            return !string.IsNullOrWhiteSpace(materiel)
+                && materiel.Contains("imprimante", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void SelectionnerTypeConnexionParDefaut()
+        {
+            if (EstImprimante() && string.IsNullOrWhiteSpace(TypeConnexion))
+                TypeConnexion = "USB";
+
+            if (!EstImprimante())
+                TypeConnexion = string.Empty;
         }
 
         private bool EstStatutSelectionne(string nom)

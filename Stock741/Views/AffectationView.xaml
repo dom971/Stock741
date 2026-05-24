@@ -7,11 +7,8 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,5">
@@ -40,7 +37,27 @@
                       Margin="10,0,0,0"/>
         </StackPanel>
 
-        <StackPanel Grid.Row="1">
+        <Grid Grid.Row="1" MinHeight="24" Margin="0,0,0,4">
+            <TextBlock Text="{Binding MessageSucces}"
+                       Foreground="Green"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center"
+                       Visibility="{Binding MessageSucces, Converter={StaticResource StringToVisibilityConverter}}"/>
+
+            <TextBlock Text="{Binding ErreurGlobale}"
+                       Foreground="Red"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center"
+                       TextWrapping="Wrap"
+                       Visibility="{Binding ErreurGlobale, Converter={StaticResource StringToVisibilityConverter}}"/>
+        </Grid>
+
+        <ScrollViewer Grid.Row="2"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      Margin="0,0,0,8">
+            <StackPanel>
+        <StackPanel>
             <Border BorderBrush="#9AC6A8"
                     BorderThickness="0,1,0,1"
                     Background="#EAF5EE"
@@ -153,6 +170,7 @@
                 <Label Grid.Row="0" Grid.Column="2" Content="Date fin:"/>
                 <DatePicker Grid.Row="0" Grid.Column="3"
                             SelectedDate="{Binding DateFin}"
+                            DisplayDateStart="{Binding DateDebut}"
                             IsEnabled="{Binding DateFinObligatoire}"
                             Margin="0,2,15,2"/>
 
@@ -325,7 +343,20 @@
                     <TextBlock Text="R&#233;seau" Foreground="#00643E" FontWeight="Bold"/>
                 </Border>
 
-                <Grid>
+                <Grid Visibility="{Binding AfficherTypeConnexion, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="180"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Label Grid.Column="0" Content="Connexion:"/>
+                    <ComboBox Grid.Column="1"
+                              ItemsSource="{Binding TypesConnexion}"
+                              SelectedItem="{Binding TypeConnexion}"
+                              Margin="0,2,15,2"/>
+                </Grid>
+
+                <Grid Visibility="{Binding ConnexionReseauSelectionnee, Converter={StaticResource BoolToVisibilityConverter}}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -442,30 +473,18 @@
             </StackPanel>
         </StackPanel>
 
-        <Grid Grid.Row="5">
+            </StackPanel>
+        </ScrollViewer>
+
+        <Grid Grid.Row="3">
             <Grid.RowDefinitions>
-                <RowDefinition Height="24"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Grid Grid.Row="0">
-                <TextBlock Text="{Binding MessageSucces}"
-                           Foreground="Green"
-                           FontWeight="SemiBold"
-                           VerticalAlignment="Center"
-                           Visibility="{Binding MessageSucces, Converter={StaticResource StringToVisibilityConverter}}"/>
-
-                <TextBlock Text="{Binding ErreurGlobale}"
-                           Foreground="Red"
-                           FontWeight="SemiBold"
-                           VerticalAlignment="Center"
-                           Visibility="{Binding ErreurGlobale, Converter={StaticResource StringToVisibilityConverter}}"/>
-            </Grid>
-
-            <DataGrid Grid.Row="1"
+            <DataGrid Grid.Row="0"
                       Grid.Column="0"
                       ItemsSource="{Binding Affectations}"
                       SelectedItem="{Binding AffectationSelectionnee}"

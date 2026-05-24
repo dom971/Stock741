@@ -34,10 +34,12 @@
                   EnableColumnVirtualization="True"
                   VirtualizingPanel.VirtualizationMode="Recycling">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Date" Binding="{Binding DateMouvement, StringFormat={}{0:dd/MM/yyyy HH:mm}}" Width="130"/>
+                <DataGridTextColumn Header="Mouvement" Binding="{Binding DateMouvement, StringFormat={}{0:dd/MM/yyyy HH:mm}}" Width="130"/>
+                <DataGridTextColumn Header="Date stock" Binding="{Binding Stock.Date, StringFormat={}{0:dd/MM/yyyy}}" Width="90"/>
                 <DataGridTextColumn Header="Type" Binding="{Binding TypeMouvement}" Width="110"/>
                 <DataGridTextColumn Header="D&#233;but" Binding="{Binding DateDebutAffectation, StringFormat={}{0:dd/MM/yyyy}}" Width="90"/>
                 <DataGridTextColumn Header="Fin" Binding="{Binding DateFinAffectation, StringFormat={}{0:dd/MM/yyyy}}" Width="90"/>
+                <DataGridTextColumn Header="Connexion" Binding="{Binding TypeConnexion}" Width="90"/>
                 <DataGridTextColumn Header="Asset" Binding="{Binding Stock.Asset}" Width="90"/>
                 <DataGridTextColumn Header="Mat&#233;riel" Binding="{Binding Stock.Modele.Materiel.Nom}" Width="110"/>
                 <DataGridTextColumn Header="Marque" Binding="{Binding Stock.Modele.Marque.Nom}" Width="110"/>
@@ -83,6 +85,8 @@
                     <TextBlock Text="Mat&#233;riel" Foreground="#00643E" FontWeight="Bold" FontSize="12" Margin="0,0,0,6"/>
                     <TextBlock Text="Asset" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
                     <TextBlock Text="{Binding Detail.Stock.Asset}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
+                    <TextBlock Text="Date stock" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.Stock.Date, StringFormat={}{0:dd/MM/yyyy}}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
                     <TextBlock Text="N&#176; S&#233;rie" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
                     <TextBlock Text="{Binding Detail.Stock.NumSerie}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
                     <TextBlock Text="Mat&#233;riel / Marque / Mod&#232;le" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
@@ -124,6 +128,7 @@
                         <Run Text="{Binding Detail.NouveauEds.Nom}"/>
                     </TextBlock>
                     <TextBlock Text="PC / R&#233;seau" Foreground="#00643E" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Detail.TypeConnexion}" FontSize="12" Foreground="#535353" Margin="0,0,0,4"/>
                     <TextBlock FontSize="12" Foreground="#535353">
                         <Run Text="{Binding Detail.AncienNomPC}"/>
                         <Run Text=" "/>

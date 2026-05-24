@@ -68,6 +68,9 @@ namespace Stock741.Models
         [MaxLength(100)]
         public string? AncienNomAppareil { get; set; }
 
+        [MaxLength(10)]
+        public string? TypeConnexion { get; set; }
+
         // Ancien réseau
         [MaxLength(50)]
         public string? AncienAdresseIP { get; set; }

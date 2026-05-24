@@ -43,6 +43,9 @@ namespace Stock741.Models
         [MaxLength(100)]
         public string NomAppareil { get; set; } = string.Empty;
 
+        [MaxLength(10)]
+        public string TypeConnexion { get; set; } = string.Empty;
+
         [MaxLength(50)]
         public string AdresseIP { get; set; } = string.Empty;
 

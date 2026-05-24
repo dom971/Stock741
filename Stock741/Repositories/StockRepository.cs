@@ -57,6 +57,7 @@ namespace Stock741.Repositories
                     Id = s.Id,
                     Asset = s.Asset,
                     Date = s.Date,
+                    DateMouvement = s.DateMouvement,
                     NumSerie = s.NumSerie,
                     StatutId = s.StatutId,
                     Statut = s.Statut == null ? null : new Statut
@@ -152,6 +153,9 @@ namespace Stock741.Repositories
             try
             {
                 using var context = _contextFactory.CreateDbContext();
+                await ValiderUniciteNumSerieParMarque(context, stock);
+
+                stock.DateMouvement = DateTime.Now;
                 context.Stocks.Add(stock);
                 await context.SaveChangesAsync();
 
@@ -172,7 +176,7 @@ namespace Stock741.Repositories
             catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 2601 ||
                                                 (ex.InnerException as SqlException)?.Number == 2627)
             {
-                throw new InvalidOperationException("Un matériel avec cet asset ou ce numéro de série existe déjà.", ex);
+                throw new InvalidOperationException("Un matériel avec cet asset existe déjà.", ex);
             }
         }
 
@@ -197,8 +201,11 @@ namespace Stock741.Repositories
                     .Property(s => s.RowVersion)
                     .OriginalValue = stock.RowVersion;
 
+                await ValiderUniciteNumSerieParMarque(context, stock);
+
                 tracked.Asset = stock.Asset;
                 tracked.Date = stock.Date;
+                tracked.DateMouvement = DateTime.Now;
                 tracked.NumReception = stock.NumReception;
                 tracked.StatutId = stock.StatutId;
                 tracked.LieuId = stock.LieuId;
@@ -241,8 +248,31 @@ namespace Stock741.Repositories
             catch (DbUpdateException ex) when ((ex.InnerException as SqlException)?.Number == 2601 ||
                                                 (ex.InnerException as SqlException)?.Number == 2627)
             {
-                throw new InvalidOperationException("Un matériel avec cet asset ou ce numéro de série existe déjà.", ex);
+                throw new InvalidOperationException("Un matériel avec cet asset existe déjà.", ex);
             }
+        }
+
+        private static async Task ValiderUniciteNumSerieParMarque(AppDbContext context, Stock stock)
+        {
+            if (string.IsNullOrWhiteSpace(stock.NumSerie))
+                return;
+
+            var marqueId = await context.Modeles
+                .AsNoTracking()
+                .Where(m => m.Id == stock.ModeleId)
+                .Select(m => m.MarqueId)
+                .FirstOrDefaultAsync();
+
+            var numeroSerie = stock.NumSerie.Trim().ToLower();
+            var existe = await context.Stocks
+                .AsNoTracking()
+                .AnyAsync(s =>
+                    s.Id != stock.Id &&
+                    s.NumSerie.ToLower() == numeroSerie &&
+                    s.Modele.MarqueId == marqueId);
+
+            if (existe)
+                throw new InvalidOperationException("Un matériel de cette marque avec ce numéro de série existe déjà.");
         }
 
         public async Task Delete(Stock stock)

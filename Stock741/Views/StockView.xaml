@@ -313,6 +313,7 @@
                 <DataGridTextColumn Header="Affectation"  Binding="{Binding EtatAffectation}"                           Width="90"/>
                 <DataGridTextColumn Header="Asset"        Binding="{Binding Asset}"                                      Width="90"/>
                 <DataGridTextColumn Header="Date"         Binding="{Binding Date, StringFormat={}{0:dd/MM/yyyy}}"       Width="90"/>
+                <DataGridTextColumn Header="Mouvement"    Binding="{Binding DateMouvement, StringFormat={}{0:dd/MM/yyyy HH:mm}}" Width="120"/>
                 <DataGridTextColumn Header="Matériel"     Binding="{Binding Modele.Materiel.Nom}"                       Width="120"/>
                 <DataGridTextColumn Header="Marque"       Binding="{Binding Modele.Marque.Nom}"                         Width="110"/>
                 <DataGridTextColumn Header="Modèle"       Binding="{Binding Modele.Nom}"                                Width="*"/>

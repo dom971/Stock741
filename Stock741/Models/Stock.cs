@@ -18,6 +18,8 @@ namespace Stock741.Models
         // Réception
         public DateTime Date { get; set; } = DateTime.Now;
 
+        public DateTime? DateMouvement { get; set; }
+
         [MaxLength(9)]
         public string? NumReception { get; set; } = "0";
 

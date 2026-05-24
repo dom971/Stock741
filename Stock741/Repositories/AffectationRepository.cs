@@ -105,6 +105,7 @@ namespace Stock741.Repositories
 
             context.Affectations.Add(affectation);
             stock.StatutId = statutAffectation.Id;
+            stock.DateMouvement = affectation.DateMouvement;
 
             await context.SaveChangesAsync();
 
@@ -122,6 +123,7 @@ namespace Stock741.Repositories
                 DateMouvement = affectation.DateMouvement ?? DateTime.Now,
                 DateDebutAffectation = affectation.DateDebut,
                 DateFinAffectation = affectation.DateFin,
+                TypeConnexion = affectation.TypeConnexion,
                 EffectuePar = effectuePar,
                 Commentaire = affectation.Commentaire
             });
@@ -169,6 +171,7 @@ namespace Stock741.Repositories
                 tracked.DateFin = affectation.DateFin;
                 tracked.DateMouvement = DateTime.Now;
                 tracked.NomAppareil = affectation.NomAppareil;
+                tracked.TypeConnexion = affectation.TypeConnexion;
                 tracked.AdresseIP = affectation.AdresseIP;
                 tracked.MasqueIP = affectation.MasqueIP;
                 tracked.PasserelleIP = affectation.PasserelleIP;
@@ -181,6 +184,7 @@ namespace Stock741.Repositories
 
                 NormaliserTextes(tracked);
                 stock.StatutId = statutAffectation.Id;
+                stock.DateMouvement = tracked.DateMouvement;
 
                 context.HistoriqueMouvements.Add(new HistoriqueMouvement
                 {
@@ -198,6 +202,7 @@ namespace Stock741.Repositories
                     DateMouvement = tracked.DateMouvement ?? DateTime.Now,
                     DateDebutAffectation = tracked.DateDebut,
                     DateFinAffectation = tracked.DateFin,
+                    TypeConnexion = tracked.TypeConnexion,
                     EffectuePar = effectuePar,
                     Commentaire = "Modification de l'affectation"
                 });
@@ -242,7 +247,10 @@ namespace Stock741.Repositories
             affectation.DateMouvement = DateTime.Now;
 
             if (affectation.Stock != null)
+            {
                 affectation.Stock.StatutId = statutRetour.Id;
+                affectation.Stock.DateMouvement = affectation.DateMouvement;
+            }
 
             var commentaireHistorique = "Retour du materiel";
             if (!string.IsNullOrWhiteSpace(motifRetour))
@@ -263,6 +271,7 @@ namespace Stock741.Repositories
                 AncienEdsId = affectation.EdsId,
                 AncienNomPC = affectation.NomPC,
                 AncienNomAppareil = affectation.NomAppareil,
+                TypeConnexion = affectation.TypeConnexion,
                 AncienAdresseIP = affectation.AdresseIP,
                 AncienMasqueIP = affectation.MasqueIP,
                 AnciennePasserelle = affectation.PasserelleIP,
@@ -300,6 +309,7 @@ namespace Stock741.Repositories
         private static void NormaliserTextes(Affectation affectation)
         {
             affectation.NomAppareil ??= string.Empty;
+            affectation.TypeConnexion ??= string.Empty;
             affectation.AdresseIP ??= string.Empty;
             affectation.MasqueIP ??= string.Empty;
             affectation.PasserelleIP ??= string.Empty;
