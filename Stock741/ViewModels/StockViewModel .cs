@@ -23,6 +23,28 @@ namespace Stock741.ViewModels
         private const string StatutCreationNom = "Stock";
         private const string NumReceptionDefaut = "0";
         private const string ColisDefaut = "0";
+        private string? _etatInitialFormulaire;
+        private static readonly HashSet<string> ProprietesFormulaire = new()
+        {
+            nameof(AssetSelectionne),
+            nameof(NumSerieSelectionne),
+            nameof(DateSelectionne),
+            nameof(NumReceptionSelectionne),
+            nameof(QteSelectionne),
+            nameof(GarantieSelectionnee),
+            nameof(SousGarantieSelectionne),
+            nameof(ColisSelectionne),
+            nameof(MaterielSelectionne),
+            nameof(MarqueSelectionnee),
+            nameof(ModeleSelectionne),
+            nameof(FournisseurSelectionne),
+            nameof(StatutSelectionne),
+            nameof(LieuSelectionne),
+            nameof(SystemeSelectionne),
+            nameof(NumSimSelectionne),
+            nameof(Imei1Selectionne),
+            nameof(Imei2Selectionne)
+        };
 
         public ObservableCollection<Stock> Stocks { get; set; }
         public ObservableCollection<Modele> Modeles { get; set; }
@@ -62,7 +84,8 @@ namespace Stock741.ViewModels
         private bool _peutSupprimerSelection = true;
         public bool PeutSupprimer => StockSelectionne != null && _peutSupprimerSelection;
         public bool PeutAjouter => StockSelectionne == null;
-        public bool AfficherModifier => StockSelectionne != null && PeutModifier;
+        public bool FormulaireModifie => _etatInitialFormulaire != null && ConstruireEtatFormulaire() != _etatInitialFormulaire;
+        public bool AfficherModifier => StockSelectionne != null && PeutModifier && FormulaireModifie;
         public bool PeutAffecter => StockSelectionne != null;
         public string LibelleAffecter => StockSelectionne?.AffectationActive == true ? "Voir affectation" : "Affecter";
         public bool PeutModifierGarantie => PeutModifier && SousGarantieSelectionne;
@@ -434,6 +457,12 @@ namespace Stock741.ViewModels
                     EffacerErreur();
                 });
             });
+
+            PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName != null && ProprietesFormulaire.Contains(e.PropertyName))
+                    NotifierEtatModification();
+            };
         }
 
         private void FiltrerMarques()
@@ -641,6 +670,7 @@ namespace Stock741.ViewModels
                 Imei1Selectionne = stock.Imei1;
                 Imei2Selectionne = stock.Imei2;
                 CheminPhoto = stock.Modele?.CheminPhoto;
+                CapturerEtatInitialFormulaire();
             }
         }
 
@@ -705,6 +735,7 @@ namespace Stock741.ViewModels
 
         public void EffacerChamps()
         {
+            _etatInitialFormulaire = null;
             _stockSelectionne = null;
             OnPropertyChanged(nameof(StockSelectionne));
             OnPropertyChanged(nameof(PeutChoisirStatut));
@@ -737,6 +768,51 @@ namespace Stock741.ViewModels
             NumSimSelectionne = string.Empty;
             Imei1Selectionne = string.Empty;
             Imei2Selectionne = string.Empty;
+            OnPropertyChanged(nameof(FormulaireModifie));
+            OnPropertyChanged(nameof(AfficherModifier));
+        }
+
+        private void CapturerEtatInitialFormulaire()
+        {
+            _etatInitialFormulaire = ConstruireEtatFormulaire();
+            NotifierEtatModification();
+        }
+
+        private void NotifierEtatModification()
+        {
+            OnPropertyChanged(nameof(FormulaireModifie));
+            OnPropertyChanged(nameof(AfficherModifier));
+            CommandManager.InvalidateRequerySuggested();
+        }
+
+        private string ConstruireEtatFormulaire()
+        {
+            return string.Join("|", new[]
+            {
+                NormaliserTexte(AssetSelectionne),
+                NormaliserTexte(NumSerieSelectionne),
+                DateSelectionne.Date.ToString("O"),
+                NormaliserTexte(NumReceptionSelectionne),
+                QteSelectionne.ToString(),
+                GarantieSelectionnee?.Date.ToString("O") ?? string.Empty,
+                SousGarantieSelectionne.ToString(),
+                NormaliserTexte(ColisSelectionne),
+                MaterielSelectionne?.Id.ToString() ?? string.Empty,
+                MarqueSelectionnee?.Id.ToString() ?? string.Empty,
+                ModeleSelectionne?.Id.ToString() ?? string.Empty,
+                FournisseurSelectionne?.Id.ToString() ?? string.Empty,
+                StatutSelectionne?.Id.ToString() ?? string.Empty,
+                LieuSelectionne?.Id.ToString() ?? string.Empty,
+                SystemeSelectionne?.Id.ToString() ?? string.Empty,
+                NormaliserTexte(NumSimSelectionne),
+                NormaliserTexte(Imei1Selectionne),
+                NormaliserTexte(Imei2Selectionne)
+            });
+        }
+
+        private static string NormaliserTexte(string? valeur)
+        {
+            return valeur?.Trim() ?? string.Empty;
         }
 
         public void EffacerErreur()
@@ -852,6 +928,8 @@ namespace Stock741.ViewModels
                 ErreurGlobale = "Impossible de modifier : ce matériel a des affectations.";
                 return;
             }
+            if (!FormulaireModifie)
+                return;
 
             ValidateNumSerie();
             ValidateAsset();

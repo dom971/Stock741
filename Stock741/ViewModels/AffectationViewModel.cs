@@ -18,6 +18,31 @@ namespace Stock741.ViewModels
         private readonly StatutRepository _statutRepository;
         private readonly List<Statut> _tousStatutsAffectation = new();
         private bool _resetEnCours;
+        private string? _etatInitialFormulaire;
+        private static readonly HashSet<string> ProprietesFormulaire = new()
+        {
+            nameof(StockSelectionne),
+            nameof(StatutAffectationSelectionne),
+            nameof(UtilisateurSelectionne),
+            nameof(EdsSelectionne),
+            nameof(EdsAutomatiqueSelectionne),
+            nameof(OperateurSelectionne),
+            nameof(ForfaitSelectionne),
+            nameof(DateDebut),
+            nameof(DateFin),
+            nameof(NomAppareil),
+            nameof(TypeConnexion),
+            nameof(AdresseIP),
+            nameof(MasqueIP),
+            nameof(PasserelleIP),
+            nameof(NomPC),
+            nameof(EdsPC),
+            nameof(AncienPC),
+            nameof(AncienPcNC),
+            nameof(NumTelMobile),
+            nameof(Motif),
+            nameof(Commentaire)
+        };
 
         public ObservableCollection<Affectation> Affectations { get; } = new();
         public ObservableCollection<Stock> StocksDisponibles { get; } = new();
@@ -42,12 +67,16 @@ namespace Stock741.ViewModels
                 OnPropertyChanged(nameof(AfficherModifier));
                 OnPropertyChanged(nameof(EstModification));
                 OnPropertyChanged(nameof(PeutAjouter));
+                OnPropertyChanged(nameof(PeutAffecter));
                 OnPropertyChanged(nameof(PeutChoisirMateriel));
                 OnPropertyChanged(nameof(PeutVoirStock));
                 ActualiserStatutsAffectationDisponibles();
                 CommandManager.InvalidateRequerySuggested();
                 if (value != null)
+                {
+                    AfficherListe = false;
                     _ = ChargerDetailAsync(value.Id);
+                }
             }
         }
 
@@ -72,6 +101,8 @@ namespace Stock741.ViewModels
                 OnPropertyChanged(nameof(AfficherTypeConnexion));
                 OnPropertyChanged(nameof(ConnexionReseauSelectionnee));
                 OnPropertyChanged(nameof(PeutVoirStock));
+                OnPropertyChanged(nameof(PeutAffecter));
+                SelectionnerAncienPcParDefaut();
                 SelectionnerTypeConnexionParDefaut();
                 SelectionnerStatutParDefaut();
             }
@@ -229,8 +260,29 @@ namespace Stock741.ViewModels
         public string AncienPC
         {
             get => _ancienPC;
-            set { _ancienPC = value; OnPropertyChanged(); }
+            set
+            {
+                _ancienPC = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(AncienPcNC));
+            }
         }
+
+        public bool AncienPcNC
+        {
+            get => string.Equals(AncienPC?.Trim(), "NC", StringComparison.OrdinalIgnoreCase);
+            set
+            {
+                if (value)
+                    AncienPC = "NC";
+                else if (AncienPcNC)
+                    AncienPC = string.Empty;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(PeutSaisirAncienPC));
+            }
+        }
+
+        public bool PeutSaisirAncienPC => !AncienPcNC;
 
         private string _numTelMobile = string.Empty;
         public string NumTelMobile
@@ -330,9 +382,10 @@ namespace Stock741.ViewModels
         public bool AfficherPoste => StockSelectionne?.Modele?.Materiel?.Nom?
             .Contains("ordinateur", StringComparison.OrdinalIgnoreCase) == true;
         public bool AfficherTypeConnexion => EstImprimante();
-        public bool ConnexionReseauSelectionnee => !AfficherTypeConnexion
-            || string.Equals(TypeConnexion, "Réseau", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(TypeConnexion, "Reseau", StringComparison.OrdinalIgnoreCase);
+        public bool ConnexionReseauSelectionnee => AfficherReseau &&
+            (!AfficherTypeConnexion
+             || string.Equals(TypeConnexion, "Réseau", StringComparison.OrdinalIgnoreCase)
+             || string.Equals(TypeConnexion, "Reseau", StringComparison.OrdinalIgnoreCase));
         public bool AfficherTelephonie
         {
             get
@@ -354,6 +407,9 @@ namespace Stock741.ViewModels
             {
                 var materiel = StockSelectionne?.Modele?.Materiel?.Nom;
                 if (string.IsNullOrWhiteSpace(materiel))
+                    return false;
+
+                if (materiel.Contains("ordinateur", StringComparison.OrdinalIgnoreCase))
                     return false;
 
                 if (EstImprimante())
@@ -384,11 +440,27 @@ namespace Stock741.ViewModels
         }
         public bool EstModification => AffectationSelectionnee != null;
         public bool PeutAjouter => !EstModification;
-        public bool PeutModifier => AffectationSelectionnee != null;
-        public bool AfficherModifier => AffectationSelectionnee?.Actif == true;
+        public bool PeutAffecter => PeutAjouter && StockSelectionne != null;
+        public bool FormulaireModifie => _etatInitialFormulaire != null && ConstruireEtatFormulaire() != _etatInitialFormulaire;
+        public bool PeutModifier => AffectationSelectionnee?.Actif == true && FormulaireModifie;
+        public bool AfficherModifier => PeutModifier;
         public bool PeutChoisirMateriel => !EstModification;
         public bool PeutVoirStock => AffectationSelectionnee?.StockId != null || StockSelectionne?.Id != null;
         public bool DateFinObligatoire => EstStatutSelectionne("pret");
+
+        private bool _afficherListe = true;
+        public bool AfficherListe
+        {
+            get => _afficherListe;
+            set
+            {
+                _afficherListe = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(AfficherFormulaire));
+            }
+        }
+
+        public bool AfficherFormulaire => !AfficherListe;
 
         public ICommand AjouterCommand { get; }
         public ICommand ModifierCommand { get; }
@@ -416,15 +488,26 @@ namespace Stock741.ViewModels
             AjouterCommand = new AsyncRelayCommand(Ajouter);
             ModifierCommand = new AsyncRelayCommand(Modifier, _ => PeutModifier);
             RetournerCommand = new AsyncRelayCommand(Retourner, _ => PeutRetourner);
-            NouveauCommand = new RelayCommand(_ => EffacerChamps());
+            NouveauCommand = new RelayCommand(_ =>
+            {
+                EffacerChamps();
+                AfficherListe = false;
+            });
             ActualiserCommand = new AsyncRelayCommand(async _ =>
             {
                 await RunBusyAsync(async () =>
                 {
                     await Rafraichir();
                     EffacerErreur();
+                    AfficherListe = true;
                 });
             });
+
+            PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName != null && ProprietesFormulaire.Contains(e.PropertyName))
+                    NotifierEtatModification();
+            };
         }
 
         public async Task Rafraichir()
@@ -467,6 +550,7 @@ namespace Stock741.ViewModels
 
         public void EffacerChamps()
         {
+            _etatInitialFormulaire = null;
             _resetEnCours = true;
             _affectationSelectionnee = null;
             OnPropertyChanged(nameof(AffectationSelectionnee));
@@ -506,11 +590,13 @@ namespace Stock741.ViewModels
             _resetEnCours = false;
             OnPropertyChanged(nameof(EstModification));
             OnPropertyChanged(nameof(PeutAjouter));
+            OnPropertyChanged(nameof(PeutAffecter));
             OnPropertyChanged(nameof(PeutModifier));
             OnPropertyChanged(nameof(AfficherModifier));
             OnPropertyChanged(nameof(PeutRetourner));
             OnPropertyChanged(nameof(PeutChoisirMateriel));
             OnPropertyChanged(nameof(PeutVoirStock));
+            OnPropertyChanged(nameof(FormulaireModifie));
             CommandManager.InvalidateRequerySuggested();
             EffacerErreur();
         }
@@ -526,6 +612,7 @@ namespace Stock741.ViewModels
             var affectationActive = Affectations.FirstOrDefault(a => a.StockId == stockId && a.Actif);
             if (affectationActive != null)
             {
+                AfficherListe = false;
                 AffectationSelectionnee = affectationActive;
                 return Task.CompletedTask;
             }
@@ -539,6 +626,7 @@ namespace Stock741.ViewModels
 
             AffectationSelectionnee = null;
             StockSelectionne = stock;
+            AfficherListe = false;
             return Task.CompletedTask;
         }
 
@@ -622,6 +710,9 @@ namespace Stock741.ViewModels
                 EffacerErreur();
 
                 if (AffectationSelectionnee == null)
+                    return;
+
+                if (!PeutModifier)
                     return;
 
                 if (UtilisateurSelectionne == null)
@@ -930,7 +1021,54 @@ namespace Stock741.ViewModels
             OnPropertyChanged(nameof(PeutModifier));
             OnPropertyChanged(nameof(PeutRetourner));
             OnPropertyChanged(nameof(PeutChoisirMateriel));
+            CapturerEtatInitialFormulaire();
             CommandManager.InvalidateRequerySuggested();
+        }
+
+        private void CapturerEtatInitialFormulaire()
+        {
+            _etatInitialFormulaire = ConstruireEtatFormulaire();
+            NotifierEtatModification();
+        }
+
+        private void NotifierEtatModification()
+        {
+            OnPropertyChanged(nameof(FormulaireModifie));
+            OnPropertyChanged(nameof(PeutModifier));
+            OnPropertyChanged(nameof(AfficherModifier));
+            CommandManager.InvalidateRequerySuggested();
+        }
+
+        private string ConstruireEtatFormulaire()
+        {
+            return string.Join("|", new[]
+            {
+                StockSelectionne?.Id.ToString() ?? string.Empty,
+                StatutAffectationSelectionne?.Id.ToString() ?? string.Empty,
+                UtilisateurSelectionne?.Id.ToString() ?? string.Empty,
+                EdsSelectionne?.Id.ToString() ?? string.Empty,
+                EdsAutomatiqueSelectionne?.Id.ToString() ?? string.Empty,
+                OperateurSelectionne?.Id.ToString() ?? string.Empty,
+                ForfaitSelectionne?.Id.ToString() ?? string.Empty,
+                DateDebut.Date.ToString("O"),
+                DateFin?.Date.ToString("O") ?? string.Empty,
+                NormaliserTexte(NomAppareil),
+                NormaliserTexte(TypeConnexion),
+                NormaliserTexte(AdresseIP),
+                NormaliserTexte(MasqueIP),
+                NormaliserTexte(PasserelleIP),
+                NormaliserTexte(NomPC),
+                NormaliserTexte(EdsPC),
+                NormaliserTexte(AncienPC),
+                NormaliserTexte(NumTelMobile),
+                NormaliserTexte(Motif),
+                NormaliserTexte(Commentaire)
+            });
+        }
+
+        private static string NormaliserTexte(string? valeur)
+        {
+            return valeur?.Trim() ?? string.Empty;
         }
 
         private bool ValiderRetour()
@@ -1001,6 +1139,15 @@ namespace Stock741.ViewModels
                 return false;
             }
 
+            if (AfficherPoste &&
+                (string.IsNullOrWhiteSpace(NomPC) ||
+                 string.IsNullOrWhiteSpace(EdsPC) ||
+                 string.IsNullOrWhiteSpace(AncienPC)))
+            {
+                ErreurGlobale = "Nom PC, EDS PC et ancien PC sont obligatoires pour un ordinateur. Saisir NC pour un nouveau poste.";
+                return false;
+            }
+
             return true;
         }
 
@@ -1037,6 +1184,15 @@ namespace Stock741.ViewModels
 
             if (!EstImprimante())
                 TypeConnexion = string.Empty;
+        }
+
+        private void SelectionnerAncienPcParDefaut()
+        {
+            if (AfficherPoste && string.IsNullOrWhiteSpace(AncienPC))
+                AncienPC = "NC";
+
+            if (!AfficherPoste)
+                AncienPC = string.Empty;
         }
 
         private bool EstStatutSelectionne(string nom)
